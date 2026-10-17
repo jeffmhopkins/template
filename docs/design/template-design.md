@@ -340,7 +340,8 @@ the approval contract.
 -->
 
 Agents don't change repo settings. `scripts/bootstrap.sh` is idempotent, uses template
-defaults, and runs before intake. The maintainer runs it, or a device session runs it on their
+defaults, and runs before intake and again after intake's design PR merges. On a private repo
+without a paid plan or GitHub Code Security it stops before changing anything. The maintainer runs it, or a device session runs it on their
 machine under their `gh` login. `--check` compares the live settings with the desired ones and
 prints the commands to fix any difference; any agent may run it read-only.
 
@@ -356,11 +357,12 @@ prints the commands to fix any difference; any agent may run it read-only.
      creation.
 3. **Actions:** default token read-only; SHA-pinned actions required; fork PRs need approval.
 4. **Labels:** `governance-approved`, `review-override`, `needs-human`, `hardware`.
-5. **The repo variable `REVIEWER_SESSIONS`.**
-6. **Security:** Dependabot vulnerability alerts and security fixes; secret scanning and push
-   protection.
-7. **By hand:** install the Claude GitHub App, and paste the project instructions into the
-   Claude project.
+5. **Repo variables:** `REVIEWER_SESSIONS`, `REVIEWER_LOGIN` and `MAINTAINER_LOGIN`.
+6. **Security:** Dependabot vulnerability alerts and security fixes; private vulnerability
+   reporting; secret scanning and push protection.
+7. **By hand:** install the Claude GitHub App, paste the project instructions into the
+   Claude project, set `REVIEWER_SESSIONS` each time the reviewers change, and on a private
+   repo turn on the dependency graph.
 
 <a id="build-plan"></a>
 ## 5. Building the template

@@ -52,8 +52,14 @@ while (($#)); do
   shift
 done
 
-command -v gh >/dev/null || die "gh is not installed (https://cli.github.com)"
-command -v python3 >/dev/null || die "python3 is not installed"
+# What bootstrap needs, checked before anything else (docs/GETTING-STARTED.md#before).
+# Written for the bash 3.2 that macOS ships: no associative arrays, no ${var,,}.
+command -v git >/dev/null || die "git is not installed; see docs/GETTING-STARTED.md#before"
+command -v gh >/dev/null ||
+  die "gh (GitHub's command-line tool) is not installed; see docs/GETTING-STARTED.md#before"
+command -v python3 >/dev/null || die "python3 is not installed; bootstrap needs Python 3.11 or later"
+python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' ||
+  die "python3 is version $(python3 -c 'import platform; print(platform.python_version())'); bootstrap needs 3.11 or later"
 gh auth status >/dev/null 2>&1 || die "gh is not logged in: run 'gh auth login'"
 [ -f "$root/repo.toml" ] || die "no repo.toml at $root"
 
@@ -69,8 +75,8 @@ fi
 #   ruleset <name> <include> <methods> <dnec> <checks>  -> desired ruleset JSON
 #   ruleset-diff <desired> (live JSON on stdin)          -> one line per difference
 #   label <name> (label list JSON on stdin)   -> "<color>\t<description>", nothing if absent
-PYLIB=$(
-  cat <<'PY'
+# Read with `read`, not $(cat <<...): bash 3.2 can misparse a heredoc inside $(...).
+IFS= read -r -d '' PYLIB <<'PY' || true
 import json, sys
 
 def show(v):
@@ -169,7 +175,6 @@ elif cmd == "label":
 else:
     sys.exit(f"unknown helper command {cmd}")
 PY
-)
 
 py() {
   ACTIONS_APP_ID=$ACTIONS_APP_ID python3 -c "import os; ACTIONS_APP_ID = os.environ['ACTIONS_APP_ID']
@@ -208,11 +213,14 @@ fix() {
 }
 
 checks=()
-declare -A labels=()
+label_governance="" label_override="" label_human="" label_hardware=""
 while read -r kind a b; do
-  case $kind in
-    check) checks+=("$a") ;;
-    label) labels[$a]=$b ;;
+  case $kind:$a in
+    check:*) checks+=("$a") ;;
+    label:governance) label_governance=$b ;;
+    label:override) label_override=$b ;;
+    label:human) label_human=$b ;;
+    label:hardware) label_hardware=$b ;;
   esac
 done < <(py config "$root/repo.toml")
 ((${#checks[@]})) || die "repo.toml has no [checks].required"
@@ -223,9 +231,71 @@ checks_csv=$(
 
 printf '%s %s\n\n' "$( ((check)) && echo "Checking" || echo "Setting up")" "$repo"
 
+me=$(gh api user --jq .login)
+
+# 0. Access and plan. A private repo needs a paid plan for rulesets, and GitHub Code Security
+# for the required dependency-review check. Without them nothing can merge, so setup stops
+# here instead of failing partway. --check reports what the plan lacks as `skip:`.
+echo "== access and plan"
+live=$(gh api "repos/$repo")
+private=$(py get private <<<"$live")
+if [ "$(py get permissions.admin <<<"$live")" = true ]; then
+  ok "$me has admin rights on $repo"
+elif ((check)); then
+  echo "skip: $me has no admin rights on $repo, so some settings are not visible"
+else
+  die "$me needs admin rights on $repo to change its settings"
+fi
+rulesets_offered=1
+missing=()
+if [ "$private" = true ]; then
+  owner=${repo%%/*}
+  plan=""
+  if [ "$(py get owner.type <<<"$live")" = Organization ]; then
+    plan=$(gh api "orgs/$owner" --jq '.plan.name // ""' 2>/dev/null || true)
+  elif [ "$owner" = "$me" ]; then
+    plan=$(gh api user --jq '.plan.name // ""' 2>/dev/null || true)
+  fi
+  case $plan in
+    "") echo "skip: cannot see the plan of $owner; a private repo needs a paid plan for rulesets" ;;
+    free)
+      rulesets_offered=0
+      missing+=("rulesets, which protect main: a paid plan (GitHub Pro for a personal account, GitHub Team for an organization)")
+      ;;
+    *) ok "private repo on the '$plan' plan, which offers rulesets" ;;
+  esac
+  cs=$(py get security_and_analysis.code_security.status <<<"$live")
+  [ "$cs" = enabled ] || cs=$(py get security_and_analysis.advanced_security.status <<<"$live")
+  if [ "$cs" = enabled ]; then
+    ok "GitHub Code Security on, for the dependency-review check"
+  else
+    missing+=("GitHub Code Security, which the required dependency-review check needs")
+  fi
+else
+  ok "public repo: every feature the template uses is free"
+fi
+if ((${#missing[@]})); then
+  for m in "${missing[@]}"; do
+    echo "skip: not on this plan: $m"
+  done
+  if ! ((check)); then
+    {
+      echo
+      echo "bootstrap: $repo is private, and its plan lacks what the template needs:"
+      for m in "${missing[@]}"; do
+        echo "  - $m"
+      done
+      echo "Without these the template can't work: either nothing protects main, or no PR can"
+      echo "pass its required checks. Make the repo public (Settings > General > Danger Zone >"
+      echo "Change visibility), or add them to the plan, then run bootstrap again."
+      echo "Nothing was changed. See docs/GETTING-STARTED.md#before."
+    } >&2
+    exit 2
+  fi
+fi
+
 # 1. Repository settings.
 echo "== repository settings"
-live=$(gh api "repos/$repo")
 want_bool=(allow_squash_merge=true allow_merge_commit=true allow_rebase_merge=false
   allow_auto_merge=true delete_branch_on_merge=true)
 ((template)) && want_bool+=(is_template=true)
@@ -270,8 +340,12 @@ ruleset() {
       gh api -X PUT "repos/$repo/rulesets/$id" --input -
   fi
 }
-ruleset main refs/heads/main squash 0
-ruleset 'wave/*' 'refs/heads/wave/*' squash,merge 1
+if ((rulesets_offered)); then
+  ruleset main refs/heads/main squash 0
+  ruleset 'wave/*' 'refs/heads/wave/*' squash,merge 1
+else
+  echo "skip: rulesets 'main' and 'wave/*' (not offered for a private repo on this plan)"
+fi
 
 # 3. Actions permissions.
 echo "== actions"
@@ -330,7 +404,12 @@ label_description() {
 }
 live=$(gh label list -R "$repo" --limit 500 --json name,color,description)
 for key in governance override human hardware; do
-  name=${labels[$key]:-}
+  case $key in
+    governance) name=$label_governance ;;
+    override) name=$label_override ;;
+    human) name=$label_human ;;
+    hardware) name=$label_hardware ;;
+  esac
   [ -n "$name" ] || die "repo.toml [labels] has no '$key'"
   color=$(label_color "$key") desc=$(label_description "$key")
   got=$(py label "$name" <<<"$live")
@@ -342,7 +421,8 @@ for key in governance override human hardware; do
   fi
 done
 
-# 5. Repository variables. Existing values are never overwritten.
+# 5. Repository variables. REVIEWER_SESSIONS and REVIEWER_LOGIN are created only when missing,
+# never overwritten. MAINTAINER_LOGIN always names the login that runs bootstrap.
 echo "== variables"
 variable() {
   local name=$1 default=$2
@@ -354,9 +434,19 @@ variable() {
 }
 # Placeholder until the maintainer lists the reviewer sessions.
 variable REVIEWER_SESSIONS "$SESSIONS_PLACEHOLDER"
-variable REVIEWER_LOGIN "$(gh api user --jq .login)"
+variable REVIEWER_LOGIN "$me"
+# The person the label checks trust. Without it the workflows fall back to the repo's owner,
+# which for an organization's repo is the organization: a login no person has.
+got=$(gh api "repos/$repo/actions/variables/MAINTAINER_LOGIN" --jq .value 2>/dev/null || true)
+if [ "$got" = "$me" ]; then
+  ok "variable MAINTAINER_LOGIN=$me"
+else
+  fix "variable MAINTAINER_LOGIN is '${got:-not set}', want $me" "" \
+    gh variable set MAINTAINER_LOGIN -R "$repo" --body "$me"
+fi
 
-# 6. Dependabot security alerts and fixes, secret scanning and push protection.
+# 6. Dependabot security alerts and fixes, private vulnerability reporting, secret scanning and
+# push protection.
 echo "== security"
 # GET answers 204 when alerts are on and 404 when they are off.
 if gh api "repos/$repo/vulnerability-alerts" --silent 2>/dev/null; then
@@ -369,6 +459,20 @@ if [ "$got" = true ]; then
   ok "automated security fixes on"
 else
   fix "automated security fixes are off" "" gh api -X PUT "repos/$repo/automated-security-fixes"
+fi
+# Private vulnerability reporting: the Security tab's "Report a vulnerability" (SECURITY.md).
+# GitHub offers it on public repositories only.
+if [ "$private" = true ]; then
+  echo "skip: private vulnerability reporting (offered on public repos only)"
+else
+  got=$(gh api "repos/$repo/private-vulnerability-reporting" --jq .enabled 2>/dev/null || true)
+  if [ "$got" = true ]; then
+    ok "private vulnerability reporting on"
+  else
+    fix "private vulnerability reporting is off" "" \
+      gh api -X PUT "repos/$repo/private-vulnerability-reporting" ||
+      echo "warn: GitHub refused to enable private vulnerability reporting for $repo"
+  fi
 fi
 # Secret scanning and push protection. GitHub shows security_and_analysis only to admins, and
 # offers it on private repositories only with GitHub Secret Protection.
@@ -387,12 +491,19 @@ for feature in secret_scanning secret_scanning_push_protection; do
   fi
 done
 
+# The same list as docs/runbooks/bootstrap.md#by-hand.
 cat <<'EOF'
 
-By hand (bootstrap cannot do these):
-  1. Install the Claude GitHub App on this repository: https://github.com/apps/claude
-  2. Paste docs/agents/project-instructions.md, with the project name filled in, into the
-     Claude project's instructions.
+By hand (bootstrap cannot do these; docs/runbooks/bootstrap.md#by-hand):
+  1. Install the Claude GitHub App on this repository, before adding the repository to the
+     Claude project: https://github.com/apps/claude
+  2. Paste the project instructions (the block in docs/agents/project-instructions.md, with
+     PROJECT_NAME and OWNER/REPO replaced) into the Claude project, if you haven't yet.
+  3. When the coordinator posts the reviewer session ids, set REVIEWER_SESSIONS to them,
+     then tell the coordinator. Do it again each time it posts new ids.
+  4. Private repo only: turn on the dependency graph in Settings > Code security.
+  5. After intake's design PR merges, paste the project instructions again and run
+     bootstrap again: intake may have changed both.
 EOF
 
 if ((check)); then
