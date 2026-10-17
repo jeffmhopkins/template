@@ -4,7 +4,13 @@
 stamp = { hash = "b3:8db1793870ca28f5", by = "agent:routing-fixer", note = "Day 0 writes ops/maintainer.md (author_id, source) from the first user message, creates ops files from README state, and re-runs review-gate on every open PR after the ids card's Done" }
 
 ["AGENT-COORDINATOR#day-0"."dep:AGENTS#state"]
-stamp = { hash = "b3:519d327fa9623695", by = "agent:routing-fixer", note = "Day 0 writes ops/maintainer.md (author_id, source) from the first user message, creates ops files from README state, and re-runs review-gate on every open PR after the ids card's Done" }
+stamp = { hash = "b3:47c5da5b2dd47ec9", by = "agent:trust-batch", note = "AGENTS#state changed the review state format and added last marker audit to coordinator.md's starting content; day 0 still creates every ops file from README's starting content, so it holds." }
+
+["AGENT-COORDINATOR#marker-audit"."body"]
+stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "New section: daily cross-check of every marker the gate counted on merged PRs against the comment ids in reviewer state files, card to the maintainer on a miss; matches reviewer.md#state and ADR-0002's new negative consequence." }
+
+["AGENT-COORDINATOR#marker-audit"."dep:AGENT-REVIEWER#state"]
+stamp = { hash = "b3:2ea838681cb23252", by = "agent:trust-batch", note = "New section: daily cross-check of every marker the gate counted on merged PRs against the comment ids in reviewer state files, card to the maintainer on a miss; matches reviewer.md#state and ADR-0002's new negative consequence." }
 
 ["AGENT-DEVICE#bootstrap"."body"]
 stamp = { hash = "b3:f145710602f206cd", by = "agent:day0-fixer", note = "New section: the bootstrap procedure under the maintainer's gh login, checked against the runbook's run steps (check tools, run, --check must say All settings match, exit 2 stops) and the BOOTSTRAP-RESULT line in the agents README" }
@@ -18,8 +24,14 @@ stamp = { hash = "b3:a0e787231bd47ece", by = "agent:routing-fixer", note = "Rewr
 ["AGENT-INTEGRATOR#waves"."dep:RUNBOOK-WAVES#landing"]
 stamp = { hash = "b3:7247bff6d042b758", by = "agent:routing-fixer", note = "Rewrote against RUNBOOK-WAVES#landing: BASE lines after create, sync and cut; next wave from the cut wave's tip; fix PRs listed; GitHub deletes the landed wave; integrator authors sync, landing and fix PRs" }
 
+["AGENTS#permissions"."body"]
+stamp = { hash = "b3:eac96200b6d55e59", by = "agent:trust-batch", note = "New section describing .claude/settings.json: allow list (check-only bootstrap, gh api reads, --disable-auto) and deny list (review-override labels, gh api method/body flags in every spelling); checked line by line against the file." }
+
+["AGENTS#permissions"."file:.claude/settings.json"]
+stamp = { hash = "b3:7b02237c5ff640e9", by = "agent:trust-batch", note = "New section describing .claude/settings.json: allow list (check-only bootstrap, gh api reads, --disable-auto) and deny list (review-override labels, gh api method/body flags in every spelling); checked line by line against the file." }
+
 ["AGENTS#state"."body"]
-stamp = { hash = "b3:519d327fa9623695", by = "agent:routing-fixer", note = "Rewrote: ops/maintainer.md and heads/<role>.txt added, hw/ files dropped for the hardware issue, every file's format and day-0 content; roster tables match plan.rs (role table skipped, row table read, merged/ended finished) per TOOL#plans" }
+stamp = { hash = "b3:47c5da5b2dd47ec9", by = "agent:trust-batch", note = "Review state lines gain a comment column with the marker's comment id, and coordinator.md gains last marker audit; matches reviewer.md#state and coordinator.md#marker-audit." }
 
 ["AGENTS#state"."dep:TOOL#plans"]
 stamp = { hash = "b3:e26320717bd7b6a7", by = "agent:routing-fixer", note = "Rewrote: ops/maintainer.md and heads/<role>.txt added, hw/ files dropped for the hardware issue, every file's format and day-0 content; roster tables match plan.rs (role table skipped, row table read, merged/ended finished) per TOOL#plans" }
@@ -28,7 +40,7 @@ stamp = { hash = "b3:e26320717bd7b6a7", by = "agent:routing-fixer", note = "Rewr
 stamp = { hash = "b3:899ff35bb8f5b065", by = "agent:skeleton-verifier", note = "Each row checked against the DOCS#tool table and main.rs: docs check/for/verify/generate/merge-main --from/log, governance --base, pr-title, progress, stack run <job>; all exist with the stated arguments" }
 
 ["CLAUDE#commands"."dep:DOCS#tool"]
-stamp = { hash = "b3:19be5148a0988453", by = "agent:routing-fixer", note = "DOCS#tool gained governance --into/--main and lane-guard --head-ref/--base-ref; this builder table lists only the everyday commands and every row still matches" }
+stamp = { hash = "b3:7f3c6935c767359f", by = "agent:trust-batch", note = "DOCS#tool gained the config check copies comparison and the governance R-GOV and accepted-ADR wording; this command table lists none of those details and still matches the tool." }
 
 ["CLAUDE#docs-duty"."body"]
 stamp = { hash = "b3:60f470f0b966d94b", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
@@ -64,22 +76,22 @@ stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:638c30390db3cef7", by = "agent:routing-fixer", note = "Intake outputs now also record [template].commit in repo.toml; the template-or-project test and the upgrade runbook pointer still hold" }
 
 ["DOCS#governance"."body"]
-stamp = { hash = "b3:0391deebada2d9be", by = "agent:routing-fixer", note = "Added --into wave/<name>: files whose head version is main's are skipped and other protected paths fail; governance.yml passes --into BASE_REF and --main origin/<default branch>, fetching it first" }
+stamp = { hash = "b3:87eae5955d63607f", by = "agent:trust-batch", note = "Added the R-GOV rule bullet, the path#rule maintainer-only output line and the paragraph that accepted ADR edits fail whatever the labels; checked against classify, decision_rules and hard_problems in governance.rs and ADR-0002's pointer to repo.toml." }
 
 ["DOCS#governance"."dep:ADR-0002"]
-stamp = { hash = "b3:7b1db7c0eb713342", by = "agent:trust-fixer", note = "Added rule-text edits, doc moves by id, protected manifest tables, maintainer-only paths, --author Dependabot exemption, label removal on push, and the self-protecting list; checked against governance.rs, governance.yml and amended ADR-0002" }
+stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "Added the R-GOV rule bullet, the path#rule maintainer-only output line and the paragraph that accepted ADR edits fail whatever the labels; checked against classify, decision_rules and hard_problems in governance.rs and ADR-0002's pointer to repo.toml." }
 
 ["DOCS#governance"."file:.github/workflows/governance.yml"]
 stamp = { hash = "b3:6217f1d29f39cce4", by = "agent:routing-fixer", note = "Added --into wave/<name>: files whose head version is main's are skipped and other protected paths fail; governance.yml passes --into BASE_REF and --main origin/<default branch>, fetching it first" }
 
 ["DOCS#tool"."body"]
-stamp = { hash = "b3:19be5148a0988453", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
+stamp = { hash = "b3:7f3c6935c767359f", by = "agent:trust-batch", note = "config check row now names the copies comparison (new #copies section), checked against check_constants and check_maintainer_copies in config.rs; governance row unchanged, its R-DOC-008 and R-GOV behaviour is in #governance and the usage text in main.rs." }
 
 ["DOCS#tool"."file:tools/repo/src/args.rs"]
 stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/config.rs"]
-stamp = { hash = "b3:e0c281c9a5544de4", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
+stamp = { hash = "b3:5b018202fdcf7dfe", by = "agent:trust-batch", note = "config check row now names the copies comparison (new #copies section), checked against check_constants and check_maintainer_copies in config.rs; governance row unchanged, its R-DOC-008 and R-GOV behaviour is in #governance and the usage text in main.rs." }
 
 ["DOCS#tool"."file:tools/repo/src/docs/backrefs.rs"]
 stamp = { hash = "b3:530e42b902d67075", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -121,7 +133,7 @@ stamp = { hash = "b3:1c22ea8917bc0be1", by = "agent:trust-fixer", note = "Table 
 stamp = { hash = "b3:ddc6d36f0bffe580", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/governance.rs"]
-stamp = { hash = "b3:419aa70fe10793a9", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
+stamp = { hash = "b3:512d4ee788d1d59f", by = "agent:trust-batch", note = "config check row now names the copies comparison (new #copies section), checked against check_constants and check_maintainer_copies in config.rs; governance row unchanged, its R-DOC-008 and R-GOV behaviour is in #governance and the usage text in main.rs." }
 
 ["DOCS#tool"."file:tools/repo/src/heads.rs"]
 stamp = { hash = "b3:d92d274f38a43615", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -130,7 +142,7 @@ stamp = { hash = "b3:d92d274f38a43615", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:c2e8bca7bbe0a31b", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/main.rs"]
-stamp = { hash = "b3:36fe1f02f2291a40", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
+stamp = { hash = "b3:e93e6dff2ee6e852", by = "agent:trust-batch", note = "config check row now names the copies comparison (new #copies section), checked against check_constants and check_maintainer_copies in config.rs; governance row unchanged, its R-DOC-008 and R-GOV behaviour is in #governance and the usage text in main.rs." }
 
 ["DOCS#tool"."file:tools/repo/src/plan.rs"]
 stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
@@ -150,11 +162,47 @@ stamp = { hash = "b3:eb152e9aae06f174", by = "agent:callout-pass", note = "Moved
 ["DOCS#ttl"."file:.github/workflows/sweep.yml"]
 stamp = { hash = "b3:1ff26bce11fe5e74", by = "agent:trust-fixer", note = "sweep.yml changed only its header comment to maintainer-only; the weekly sweep contents listed here are unchanged" }
 
+["GETTING-STARTED#github"."body"]
+stamp = { hash = "b3:a127ae1b425ede7d", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+
+["GETTING-STARTED#github"."dep:ADR-0002"]
+stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+
+["GETTING-STARTED#github"."dep:AGENT-COORDINATOR#daily-digest"]
+stamp = { hash = "b3:40870164846f0f80", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+
+["GETTING-STARTED#github"."dep:AGENT-COORDINATOR#marker-audit"]
+stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+
+["GETTING-STARTED#github"."dep:AGENT-COORDINATOR#stop"]
+stamp = { hash = "b3:9bdbcb36eb81a8c5", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+
+["GETTING-STARTED#github"."dep:REVIEW#tiers"]
+stamp = { hash = "b3:1656af2c7e78080b", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+
 ["GETTING-STARTED#intake"."body"]
 stamp = { hash = "b3:bece2edd8816a242", by = "agent:day0-fixer", note = "Intake round 1 now confirms visibility and round 3 has two cards; this summary still holds, and now says the coordinator asks for the re-paste and re-run after the design PR merges" }
 
 ["GETTING-STARTED#intake"."dep:AGENT-INTAKE#the-rounds"]
 stamp = { hash = "b3:2ba469026bdb3333", by = "agent:day0-fixer", note = "Intake round 1 now confirms visibility and round 3 has two cards; this summary still holds, and now says the coordinator asks for the re-paste and re-run after the design PR merges" }
+
+["GETTING-STARTED#safety"."body"]
+stamp = { hash = "b3:a663f277cef5add7", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
+
+["GETTING-STARTED#safety"."dep:ADR-0002"]
+stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
+
+["GETTING-STARTED#safety"."dep:AGENT-COORDINATOR#daily-digest"]
+stamp = { hash = "b3:40870164846f0f80", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
+
+["GETTING-STARTED#safety"."dep:AGENT-COORDINATOR#marker-audit"]
+stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
+
+["GETTING-STARTED#safety"."dep:AGENT-COORDINATOR#stop"]
+stamp = { hash = "b3:9bdbcb36eb81a8c5", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
+
+["GETTING-STARTED#safety"."dep:REVIEW#tiers"]
+stamp = { hash = "b3:1656af2c7e78080b", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
 
 ["GETTING-STARTED#setup"."body"]
 stamp = { hash = "b3:ea87a79cf064aa45", by = "agent:routing-fixer", note = "Wave rules row now says a landed batch branch is deleted, matching the wave/* ruleset without a deletion rule in the bootstrap runbook's settings table" }
@@ -199,34 +247,34 @@ stamp = { hash = "b3:719c860cc28f8ec9", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes only reformatted its first bullet as a CAUTION alert, wording unchanged; the note-judging bullets still match it" }
 
 ["REVIEW#gather"."body"]
-stamp = { hash = "b3:35f1f32664822801", by = "agent:routing-fixer", note = "Added --into wave/<name> to the base tool's governance run with a protected path into a wave as blocking, and landing review only when ops/waves.md names the wave; checked against DOCS#tool's new options" }
+stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
 
 ["REVIEW#gather"."dep:DOCS#tool"]
-stamp = { hash = "b3:19be5148a0988453", by = "agent:routing-fixer", note = "Added --into wave/<name> to the base tool's governance run with a protected path into a wave as blocking, and landing review only when ops/waves.md names the wave; checked against DOCS#tool's new options" }
+stamp = { hash = "b3:7f3c6935c767359f", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
 
 ["REVIEW#governance"."body"]
-stamp = { hash = "b3:65eea51163b14080", by = "agent:trust-fixer", note = "Added /approve for maintainer-only paths, agents never apply the two labels, override source check, and Dependabot pin-only exemption; matches DOCS#governance, R-GOV-002 and R-GOV-007" }
+stamp = { hash = "b3:3001235f745797eb", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
 
 ["REVIEW#governance"."dep:DOCS#governance"]
-stamp = { hash = "b3:0391deebada2d9be", by = "agent:routing-fixer", note = "DOCS#governance now fails protected paths in PRs into wave/* and skips files as on main; this section's label, section and maintainer-only checks are unchanged and still consistent" }
+stamp = { hash = "b3:87eae5955d63607f", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-002"]
 stamp = { hash = "b3:7af5a94a51967f13", by = "agent:trust-fixer", note = "Added /approve for maintainer-only paths, agents never apply the two labels, override source check, and Dependabot pin-only exemption; matches DOCS#governance, R-GOV-002 and R-GOV-007" }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-007"]
-stamp = { hash = "b3:60baf87b561d3d22", by = "agent:trust-fixer", note = "Added /approve for maintainer-only paths, agents never apply the two labels, override source check, and Dependabot pin-only exemption; matches DOCS#governance, R-GOV-002 and R-GOV-007" }
+stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
 
 ["REVIEW#ground-rules"."body"]
 stamp = { hash = "b3:50dd88429baca7ae", by = "agent:trust-fixer", note = "Added never-run-PR-code (base tool plus --root) and recusal leaving out main's commits; checked against amended ADR-0002 decision and negatives on the shared login" }
 
 ["REVIEW#ground-rules"."dep:ADR-0002"]
-stamp = { hash = "b3:7b1db7c0eb713342", by = "agent:trust-fixer", note = "Added never-run-PR-code (base tool plus --root) and recusal leaving out main's commits; checked against amended ADR-0002 decision and negatives on the shared login" }
+stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names verdict-marker forgery and points the maintainer-only list at repo.toml; the ground rules (only comment, base branch, recusal by trailer) are unaffected and still hold." }
 
 ["REVIEW#output"."body"]
 stamp = { hash = "b3:eae60e9a93944299", by = "agent:trust-fixer", note = "review-gate.yml now skips commits on main, needs verified signatures for Dependabot, removes review-override on synchronize and fails on unset MAINTAINER_LOGIN; the gate paragraph says so" }
 
 ["REVIEW#output"."file:.github/workflows/review-gate.yml"]
-stamp = { hash = "b3:74ead1181be49d56", by = "agent:template-thread", note = "Only change to review-gate.yml is dropping the duplicate pull-requests: read permission key; the marker format, verdict rules and status posting described here are unchanged" }
+stamp = { hash = "b3:f8dd2ace317c1b1c", by = "agent:trust-batch", note = "review-gate.yml now uses the OVERRIDE constant for the label-event filter instead of a literal; marker format and counting rules described here are unchanged." }
 
 ["REVIEW#tiers"."body"]
 stamp = { hash = "b3:1656af2c7e78080b", by = "agent:routing-fixer", note = "Added the card tap rule: source is the card's message id, words the option label, tapper's author_id from the coordinator's decision file; a close_decision is not a tap" }
@@ -247,16 +295,16 @@ stamp = { hash = "b3:eae60e9a93944299", by = "agent:trust-fixer", note = "Added 
 stamp = { hash = "b3:d8bd0cf6fe14dee7", by = "agent:skeleton-lead", note = "Parts and order match REVIEW#output's seven items, the B and N finding format with Problem, Path and Fix, the marker line, the four verdicts with their human lines, and the footer. Earlier-finding statuses and new round numbers match REVIEW#rounds. The caution about edited comments matches the gate's unedited-only rule" }
 
 ["RULES#documentation"."body"]
-stamp = { hash = "b3:b68fd9129988a34a", by = "agent:skeleton-verifier", note = "Checked R-DOC-001..011 against DOCS#gate's eight failure classes: metadata blocks, references, stale ledger, covers bounds (draft warning), enforced_by, generated drift, file facts, back-references; R-DOC-008 matches governance.rs ADR exceptions" }
+stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-008 now says status changes only to superseded with superseded_by and that governance fails any other edit whatever the labels; the section's dependency DOCS#gate is unchanged and the group still holds." }
 
 ["RULES#documentation"."dep:DOCS#gate"]
 stamp = { hash = "b3:a2da6e7fc4cb2041", by = "agent:skeleton-verifier", note = "Checked R-DOC-001..011 against DOCS#gate's eight failure classes: metadata blocks, references, stale ledger, covers bounds (draft warning), enforced_by, generated drift, file facts, back-references; R-DOC-008 matches governance.rs ADR exceptions" }
 
 ["RULES#governance"."body"]
-stamp = { hash = "b3:dcbbb45106f83cd8", by = "agent:trust-fixer", note = "R-GOV-002 bars agents from review-override and maintainer-only governance-approved and ties labels to the head, R-GOV-005/006 add the checked source, R-GOV-007 lists the new maintainer-only globs from repo.toml" }
+stamp = { hash = "b3:b24ffc237966c908", by = "agent:trust-batch", note = "ADR-0002 now names marker forgery and points to repo.toml for the maintainer-only list; R-GOV-007 gained the R-GOV rule clause and the extended applies_to that config check compares with repo.toml." }
 
 ["RULES#governance"."dep:ADR-0002"]
-stamp = { hash = "b3:7b1db7c0eb713342", by = "agent:trust-fixer", note = "R-GOV-002 bars agents from review-override and maintainer-only governance-approved and ties labels to the head, R-GOV-005/006 add the checked source, R-GOV-007 lists the new maintainer-only globs from repo.toml" }
+stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names marker forgery and points to repo.toml for the maintainer-only list; R-GOV-007 gained the R-GOV rule clause and the extended applies_to that config check compares with repo.toml." }
 
 ["RULES#governance"."dep:ADR-0003"]
 stamp = { hash = "b3:9f8bce207e2aff0c", by = "agent:trust-fixer", note = "R-GOV-002 bars agents from review-override and maintainer-only governance-approved and ties labels to the head, R-GOV-005/006 add the checked source, R-GOV-007 lists the new maintainer-only globs from repo.toml" }
@@ -328,7 +376,7 @@ stamp = { hash = "b3:de25f290f1c491dd", by = "agent:routing-fixer", note = "Step
 stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RULES#R-GOV-007"]
-stamp = { hash = "b3:60baf87b561d3d22", by = "agent:trust-fixer", note = "R-GOV-007 now needs an /approve decision and the maintainer's own label; steps 3 and 4 say the agent labels only without maintainer-only paths" }
+stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "R-GOV-007 now also covers R-GOV rule edits and a longer maintainer-only list; steps 3 and 4 still say to apply the label only with no maintainer-only line and get /approve otherwise, which covers path#rule entries too." }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RUNBOOK-BOOTSTRAP#check"]
 stamp = { hash = "b3:e74c079604734f70", by = "agent:routing-fixer", note = "Step 5 now changes rulesets in two steps with bootstrap --also-require before the merge and a plain run after, as in the bootstrap runbook" }
@@ -358,7 +406,7 @@ stamp = { hash = "b3:7247bff6d042b758", by = "agent:routing-fixer", note = "Rewr
 stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and split consequences (landing-PR failures now under Negative); cut condition, landing PR body, review of sync merges and fix PRs still match it and the intro diagram" }
 
 ["RUNBOOK-WAVES#landing"."dep:REVIEW#gather"]
-stamp = { hash = "b3:35f1f32664822801", by = "agent:routing-fixer", note = "Rewrote: next wave from the cut wave's tip, fix PRs listed in the landing body, reviewer fails other PRs into a cut wave, GitHub deletes the landed wave; REVIEW#gather's landing check still matches" }
+stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "REVIEW#gather step 4 now names path#rule maintainer-only entries; the landing steps refer to gather generally and still hold." }
 
 ["RUNBOOK-WAVES#sync"."body"]
 stamp = { hash = "b3:934128a6d3efe176", by = "agent:routing-fixer", note = "Sync PR now followed by BASE lines to the wave's PRs; governance skips files unchanged from main; sync into the next wave after a landing" }
@@ -379,7 +427,7 @@ stamp = { hash = "b3:4424c418b93fa76b", by = "agent:routing-fixer", note = "Prot
 stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and split consequences; which PRs target the wave versus main and moving a base with update_pull_request are unchanged against its decision" }
 
 ["SECURITY-AGENTS#approvals"."body"]
-stamp = { hash = "b3:6f5da23736b3b75e", by = "agent:routing-fixer", note = "Added that a tap's words are the option label and its author the tapper's author_id in the decision file, and that a close_decision records nothing the maintainer said" }
+stamp = { hash = "b3:4c12dfba8119d234", by = "agent:trust-batch", note = "Maintainer-only bullet now includes R-GOV rule changes, matching R-GOV-007 and the governance tool's path#rule entries; the rest of the approvals list still matches R-GOV-002/005/006." }
 
 ["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-002"]
 stamp = { hash = "b3:7af5a94a51967f13", by = "agent:trust-fixer", note = "Records the maintainer user id in ops/maintainer.md, says the shared login proves nothing, and bars agents from the two labels; matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 as edited" }
@@ -391,7 +439,7 @@ stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Record
 stamp = { hash = "b3:77b4d9a0d3382d15", by = "agent:trust-fixer", note = "Records the maintainer user id in ops/maintainer.md, says the shared login proves nothing, and bars agents from the two labels; matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 as edited" }
 
 ["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-007"]
-stamp = { hash = "b3:60baf87b561d3d22", by = "agent:trust-fixer", note = "Records the maintainer user id in ops/maintainer.md, says the shared login proves nothing, and bars agents from the two labels; matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 as edited" }
+stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "Maintainer-only bullet now includes R-GOV rule changes, matching R-GOV-007 and the governance tool's path#rule entries; the rest of the approvals list still matches R-GOV-002/005/006." }
 
 ["SECURITY-AGENTS#secrets"."body"]
 stamp = { hash = "b3:6553df6e65b74cc6", by = "agent:callout-pass", note = "Split the compromised-secret sentence into a CAUTION alert after the list; message format and no-history-rewrite wording unchanged" }
@@ -409,7 +457,7 @@ stamp = { hash = "b3:b05f79761637adfe", by = "agent:trust-fixer", note = "Added 
 stamp = { hash = "b3:c45a2db98cce2be4", by = "agent:trust-fixer", note = "Added that a worker builds the tool from the base and never runs head code, and lists sources instead of checking them; matches reviewer-worker steps 2 and 6" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
-stamp = { hash = "b3:519d327fa9623695", by = "agent:routing-fixer", note = "AGENTS#state now defines each ops/ file's format; sub-workers still never write ops/, and the reviewer worker rules match its brief" }
+stamp = { hash = "b3:47c5da5b2dd47ec9", by = "agent:trust-batch", note = "AGENTS#state changed only the review state format (comment column), the coordinator.md marker-audit line and the owner table row; sub-workers still never write ops/, so this holds." }
 
 ["SECURITY-AGENTS#untrusted-text"."body"]
 stamp = { hash = "b3:50ae3d88621d3e93", by = "agent:structure-pass", note = "New section; checked against REVIEW ground-rules (base-branch instructions, PR content is data), R-GOV-004 for findings, and the fixed lines in AGENTS#messages" }
@@ -532,7 +580,7 @@ stamp = { hash = "b3:2e8a2e79bc55d1ed", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:0d42bdb64178a8be", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
 
 ["STACKS#adding"."body"]
-stamp = { hash = "b3:fd29eb8f7e1b0b92", by = "agent:trust-fixer", note = "Step 2 names [protected_tables]; the IMPORTANT note now says the setup action and CI jobs are maintainer-only, so the maintainer approves and labels the PR" }
+stamp = { hash = "b3:23a1574cb923e1a8", by = "agent:trust-batch", note = "Callout now names pack.toml as maintainer-only alongside the setup action and CI jobs, matching repo.toml maintainer_only's new stacks/*/pack.toml entry." }
 
 ["STACKS#adding"."dep:STACKS#pack-toml"]
 stamp = { hash = "b3:579b420029b65d51", by = "agent:trust-fixer", note = "Step 2 now names [protected_tables] alongside suppression patterns; consistent with the edited pack-toml reference" }
@@ -547,7 +595,7 @@ stamp = { hash = "b3:579b420029b65d51", by = "agent:trust-fixer", note = "pack-t
 stamp = { hash = "b3:579b420029b65d51", by = "agent:trust-fixer", note = "Added the [protected_tables] key row and the config check of its globs and table names; checked against the Pack struct and check() in config.rs" }
 
 ["STACKS#pack-toml"."file:tools/repo/src/config.rs"]
-stamp = { hash = "b3:e0c281c9a5544de4", by = "agent:routing-fixer", note = "config.rs gained [template].commit only; the pack.toml keys and their checks in config check are unchanged" }
+stamp = { hash = "b3:5b018202fdcf7dfe", by = "agent:trust-batch", note = "config.rs gained the copies-of-repo.toml checks only; pack loading, unknown keys and glob checks described here are unchanged." }
 
 ["STACKS#pack-toml"."file:tools/repo/src/stack.rs"]
 stamp = { hash = "b3:2b7a710fbe937b2f", by = "agent:skeleton-lead", note = "Each key matches config.rs Pack, Suppressions and Backrefs, which use deny_unknown_fields, and stack.rs: skip: no <detect> when absent, commands run with sh from the repo root. reason_required checks the literal 'reason =' as in governance.rs" }

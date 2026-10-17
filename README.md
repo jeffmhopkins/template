@@ -34,7 +34,8 @@ doc, with what it is for, is listed in [docs/README.md](docs/README.md).
 <!-- @section
 -->
 
-AI agents write the code here, and GitHub checks every change before it is accepted. The repo
+AI agents write the code here, and GitHub runs the checks on every change before it is
+accepted. The repo
 is made of a few parts, each with one job.
 
 **The instructions.** Each kind of agent has a short brief in
@@ -61,13 +62,15 @@ programming language: how to check formatting, run the tests and audit dependenc
 included; other languages can be added.
 
 **The automatic checks.** [`.github/workflows/`](.github/workflows/) tells GitHub what to run
-on every proposed change: the tests, the docs check, and the review gate, which only turns
-green when the reviewer agent approves. Other jobs open an issue when `main` breaks, keep a
+on every proposed change: the tests, the docs check, and the review gate, which turns green
+on a passing verdict from the reviewer agent. Other jobs open an issue when `main` breaks, keep a
 progress issue up to date, and run a weekly sweep.
 
 **The one-time setup.** [`scripts/bootstrap.sh`](scripts/bootstrap.sh) switches on the GitHub
-settings that make the checks binding, so nothing can be merged without passing them
-([getting started](docs/GETTING-STARTED.md#setup)).
+settings that make the checks binding, so GitHub merges nothing until they pass
+([getting started](docs/GETTING-STARTED.md#setup)). The agents act under the maintainer's
+GitHub login, so some protections rest on the agents following their rules and are audited
+afterwards; [what keeps it safe](docs/GETTING-STARTED.md#safety) says which.
 
 A change goes through four steps:
 

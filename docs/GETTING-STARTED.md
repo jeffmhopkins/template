@@ -13,7 +13,8 @@ review_every = "90d"
 
 You don't need to know git or automated development to use this. You describe what you want
 built, answer a few questions, and approve the decisions only you can make. A team of AI
-agents does the building, and checks on GitHub stop anything unreviewed from getting in.
+agents does the building, and checks on GitHub hold every change until it passes the tests
+and a reviewer agent's verdict ([what keeps it safe](#safety)).
 
 <a id="idea"></a>
 ## The idea in one minute
@@ -40,7 +41,7 @@ agents does the building, and checks on GitHub stop anything unreviewed from get
 - **Bootstrap sets up GitHub for you.** A new repo starts with GitHub's default settings,
   which protect nothing. `scripts/bootstrap.sh` is a script you run once, or have Claude run
   on your computer for you. It switches on everything the template relies on: the rules that
-  block unreviewed merges, the required checks, labels, security alerts and secret scanning
+  hold a merge until the checks pass, the required checks, labels, security alerts and secret scanning
   ([what it sets](#setup)). The few GitHub tasks left to you are in
   [Things you'll do on GitHub](#github).
 - **You talk to one agent, the coordinator,** in the project chat. It asks you questions as
@@ -199,6 +200,7 @@ in the [bootstrap runbook](runbooks/bootstrap.md#settings).
 <a id="github"></a>
 ## Things you'll do on GitHub
 <!-- @section
+depends_on = ["ADR-0002", "REVIEW#tiers", "AGENT-COORDINATOR#stop", "AGENT-COORDINATOR#daily-digest", "AGENT-COORDINATOR#marker-audit"]
 -->
 
 Bootstrap does almost all the setup. These few things need you, on GitHub's website.
@@ -289,17 +291,48 @@ start.
 <a id="safety"></a>
 ## What keeps it safe
 <!-- @section
+depends_on = ["ADR-0002", "REVIEW#tiers", "AGENT-COORDINATOR#stop", "AGENT-COORDINATOR#daily-digest", "AGENT-COORDINATOR#marker-audit"]
 -->
 
-- **Nothing reaches `main` unreviewed.** GitHub refuses a merge until every required check is
-  green, and one of them is the reviewer's verdict on the exact version being merged.
-- **Agents can't weaken the checks quietly.** Any change to the checks, the rules or the
-  settings is flagged, needs a written reason, and appears in a weekly report.
-- **Your approval means your words.** An agent can act on a decision only when it quotes your
-  own message about that exact thing. A summary or a guess doesn't count
-  ([agent security](SECURITY-AGENTS.md)).
+Some protections are enforced by GitHub. Others hold only because the agents follow their
+rules, and are checked after the fact. This section says which is which.
+
+**Enforced by GitHub.**
+- **Every merge passes the required checks.** GitHub refuses a merge until each one is
+  green: the tests, the docs check, the governance check and the review gate. The gate turns
+  green only on a passing verdict marker for the exact version being merged.
+- **The governance check and the review gate judge a PR with code it can't change.** They
+  run from the branch the PR merges into, never from the PR itself.
 - **The docs stay true.** Each doc section is linked to the code it describes. When the code
-  changes, the doc must be re-read before the change can merge.
+  changes, the docs check fails until an agent re-reads the section.
+
+**Relies on the agents following their rules.**
+- **The agents use your GitHub login.** GitHub can't tell their comments and labels from
+  yours. "Only you apply this label" is a rule the agents follow, not something GitHub
+  checks.
+- **The review gate trusts that login too.** A builder could post a verdict marker the gate
+  counts. Reviewers record every marker they post, and the coordinator checks each day that
+  every marker behind a merge was one of theirs. It tells you about any that wasn't, after
+  the merge.
+- **A PR that edits a workflow can fake a check.** Its own edited workflow can post a
+  passing result under any check's name, and GitHub can't tell it from the real one. Every
+  workflow is a file only you may approve, so the real governance check fails and the
+  reviewer escalates, but a faked result could still let the PR merge.
+- **Governance changes land before anyone looks.** A change that loosens a check needs a
+  label and a written reason. On most files the agent applies the label itself, so the PR
+  can merge the same day. You see it afterwards, in the weekly sweep and the daily digest,
+  and decide whether to revert it. Files only you may approve wait for you.
+- **Your approval means your words.** An agent acts on a decision only when it cites your own
+  chat message about that exact thing, and the reviewer reads that message itself. A card
+  tap has no message of its own: the coordinator records who tapped it, and that record is
+  what the reviewer checks ([agent security](SECURITY-AGENTS.md)).
+- **"Stop" relies on the agents.** The coordinator pauses its routines and tells every
+  session to stop. PRs with auto-merge on can still merge.
+
+**What closes the gaps later.** Giving builders, reviewers and the gate their own GitHub
+identities ([ADR-0006](adr/0006-separate-agent-identities.md), proposed) makes your login
+mean you, stops a builder from posting a verdict the gate counts, and posts the gate from an
+identity no PR controls.
 
 <a id="problems"></a>
 ## When something looks wrong

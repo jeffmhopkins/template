@@ -27,7 +27,7 @@ project's content comes from an intake agent that questions the maintainer.
 - rules with permanent IDs;
 - decision records (ADRs) in two tiers: maintainer and agent;
 - a reviewer agent whose verdict is the merge gate;
-- a governance check that a PR can't weaken;
+- a governance check that a PR can't loosen for itself;
 - docs checked like code;
 - CI shaped for many parallel agent PRs.
 
