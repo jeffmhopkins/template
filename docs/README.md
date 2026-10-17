@@ -39,6 +39,7 @@ How these docs are checked is in [DOCS.md](DOCS.md). The project's own pitch is 
 | [adr/](adr/README.md) | Every decision record, with its tier and status |
 | [Rust stack rules](../stacks/rust/RULES.md) | The rules for Rust changes |
 | [SECURITY.md](../SECURITY.md) | How to report a vulnerability |
+| [SECURITY-AGENTS.md](SECURITY-AGENTS.md) | What agents act on, whose words count as approval, secrets |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Who may contribute, and how work lands |
 | [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) | The standard everyone taking part follows |
 
@@ -52,6 +53,7 @@ How these docs are checked is in [DOCS.md](DOCS.md). The project's own pitch is 
 | [bootstrap.md](runbooks/bootstrap.md) | The one-time GitHub setup, before intake |
 | [waves.md](runbooks/waves.md) | Opening, syncing, cutting and landing wave branches |
 | [serial-lanes.md](runbooks/serial-lanes.md) | How a PR gets the next value of a serial lane |
+| [template-upgrade.md](runbooks/template-upgrade.md) | Taking a newer template version into a project |
 
 <a id="agents"></a>
 ## Agents

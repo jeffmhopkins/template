@@ -2,7 +2,7 @@
 //! blocks, links and fact markers. Structure is scanned line by line, as the format is
 //! strict; links come from a CommonMark parser, so text in code is never a reference.
 
-use pulldown_cmark::{Event, Parser, Tag};
+use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
 /// A problem found in a doc, reported as `path:line: message`. Warnings never fail a check.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -447,8 +447,11 @@ fn parse_toml(body: &str, line: usize, err: &mut impl FnMut(usize, String)) -> O
 /// Collects links, fact markers and bare URLs, skipping code.
 fn scan_inline(text: &str, d: &mut Doc) {
     let line_of = |off: usize| text[..off].bytes().filter(|&b| b == b'\n').count() + 1;
+    let mut in_code_block = false;
     for (ev, range) in Parser::new(text).into_offset_iter() {
         match ev {
+            Event::Start(Tag::CodeBlock(_)) => in_code_block = true,
+            Event::End(TagEnd::CodeBlock) => in_code_block = false,
             Event::Start(Tag::Link { dest_url, .. }) => {
                 d.links.push(Link {
                     dest: dest_url.to_string(),
@@ -470,7 +473,7 @@ fn scan_inline(text: &str, d: &mut Doc) {
                     });
                 }
             }
-            Event::Text(t) => {
+            Event::Text(t) if !in_code_block => {
                 for word in t.split_whitespace() {
                     if word.starts_with("http://") || word.starts_with("https://") {
                         d.bare_urls.push((word.to_owned(), line_of(range.start)));
@@ -596,9 +599,9 @@ mod tests {
     #[test]
     fn bare_urls_are_found_outside_code() {
         let (d, _) = p(&format!(
-            "{HEAD}\nsee https://example.com now, not `https://code.example`\n"
+            "{HEAD}\nsee https://example.com now, not `https://code.example`\n\n```sh\ngit fetch https://fenced.example\n```\n\n1. A step:\n   ```sh\n   git ls-remote https://indented.example\n   ```\n"
         ));
-        assert_eq!(d.bare_urls.len(), 1);
+        assert_eq!(d.bare_urls.len(), 1, "{:?}", d.bare_urls);
     }
 
     #[test]

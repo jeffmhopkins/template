@@ -28,7 +28,29 @@ pub struct Config {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Template {
+    /// The template's GitHub repository, as `<owner>/<repo>`. In the template itself it names
+    /// the repository it is in. Optional when parsing, so an older revision's config still
+    /// reads; `config check` requires it.
+    #[serde(default)]
+    pub source: Option<String>,
     pub version: String,
+}
+
+/// Why `source` is not a GitHub `<owner>/<repo>` name, if it isn't.
+pub fn source_problem(source: &str) -> Option<String> {
+    let ok_part = |p: &str| {
+        !p.is_empty()
+            && p != "."
+            && p != ".."
+            && p.bytes()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
+    };
+    match source.split_once('/') {
+        Some((owner, repo)) if ok_part(owner) && ok_part(repo) => None,
+        _ => Some(format!(
+            "{FILE}: [template].source `{source}` is not a GitHub `<owner>/<repo>` name"
+        )),
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -303,6 +325,10 @@ pub fn check(root: &Path) -> Vec<String> {
             config.template.version
         ));
     }
+    match &config.template.source {
+        Some(source) => out.extend(source_problem(source)),
+        None => out.push(format!("{FILE}: [template].source is missing")),
+    }
     if config.docs.max_cover_files == 0 {
         out.push(format!("{FILE}: [docs].max_cover_files must be at least 1"));
     }
@@ -413,6 +439,7 @@ pub mod tests {
 
     pub const CONFIG: &str = r#"
 [template]
+source = "owner/template"
 version = "0.1.0"
 
 [stack]
@@ -472,6 +499,31 @@ prefix = "//! Docs:"
         let p = Pack::parse("p", PACK).unwrap();
         assert!(p.suppressions.reason_required);
         assert!(Pack::parse("p", &format!("{PACK}\nnope = 1")).is_err());
+    }
+
+    #[test]
+    fn template_source_is_checked() {
+        let c = Config::parse(CONFIG).unwrap();
+        assert_eq!(c.template.source.as_deref(), Some("owner/template"));
+        let missing = CONFIG.replace("source = \"owner/template\"\n", "");
+        assert_eq!(Config::parse(&missing).unwrap().template.source, None);
+        let unknown = CONFIG.replace("[template]", "[template]\nupstream = \"x/y\"");
+        assert!(Config::parse(&unknown).is_err());
+        for good in ["owner/template", "my-org/repo.name", "a_b/c-1"] {
+            assert_eq!(source_problem(good), None, "{good}");
+        }
+        for bad in [
+            "",
+            "template",
+            "/repo",
+            "owner/",
+            "a/b/c",
+            "owner/..",
+            "https://github.com/a/b",
+            "a b/c",
+        ] {
+            assert!(source_problem(bad).is_some(), "{bad}");
+        }
     }
 
     #[test]

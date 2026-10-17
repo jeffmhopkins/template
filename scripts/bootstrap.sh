@@ -356,7 +356,7 @@ variable() {
 variable REVIEWER_SESSIONS "$SESSIONS_PLACEHOLDER"
 variable REVIEWER_LOGIN "$(gh api user --jq .login)"
 
-# 6. Dependabot security alerts and fixes.
+# 6. Dependabot security alerts and fixes, secret scanning and push protection.
 echo "== security"
 # GET answers 204 when alerts are on and 404 when they are off.
 if gh api "repos/$repo/vulnerability-alerts" --silent 2>/dev/null; then
@@ -370,6 +370,22 @@ if [ "$got" = true ]; then
 else
   fix "automated security fixes are off" "" gh api -X PUT "repos/$repo/automated-security-fixes"
 fi
+# Secret scanning and push protection. GitHub shows security_and_analysis only to admins, and
+# offers it on private repositories only with GitHub Secret Protection.
+live=$(gh api "repos/$repo")
+for feature in secret_scanning secret_scanning_push_protection; do
+  got=$(py get "security_and_analysis.$feature.status" <<<"$live")
+  if [ "$got" = enabled ]; then
+    ok "$feature enabled"
+  elif [ -z "$got" ]; then
+    echo "skip: $feature is not visible for $repo (needs admin, or not offered on this plan)"
+  else
+    fix "$feature is '$got', want enabled" \
+      "{\"security_and_analysis\":{\"$feature\":{\"status\":\"enabled\"}}}" \
+      gh api -X PATCH "repos/$repo" --input - ||
+      echo "warn: GitHub refused to enable $feature for $repo"
+  fi
+done
 
 cat <<'EOF'
 

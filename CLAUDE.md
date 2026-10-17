@@ -14,6 +14,24 @@ review_every = "90d"
 It does **not** restate rules. It says where they are and how to find the ones that apply
 to your change. Your role's brief is in [docs/agents/](docs/agents/README.md).
 
+<a id="which-repo"></a>
+## First: which repo is this?
+<!-- @section
+depends_on = ["AGENT-INTAKE#outputs"]
+-->
+
+Compare `[template].source` in [`repo.toml`](repo.toml) with this repo's own `<owner>/<repo>`,
+from `git remote get-url origin`.
+
+- **They are equal: this is the template** (jeffmhopkins/template<!--fact:template-source-->).
+  You are improving the swarm itself: the tool, the checks, the rules, the runbooks and the
+  briefs. Never run intake, and never fill a `<from intake>` placeholder; each project fills
+  them.
+- **They differ: this is a project made from the template.** While `docs/PRODUCT.md` has
+  `status = "draft"`, intake hasn't run. Until its design PR merges, only the intake agent
+  edits the product docs ([intake brief](docs/agents/intake.md#outputs)). Template changes
+  reach the project through the [template-upgrade runbook](docs/runbooks/template-upgrade.md).
+
 <a id="orient"></a>
 ## Before you change anything
 <!-- @section

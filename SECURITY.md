@@ -36,3 +36,5 @@ supported versions are listed here.
 
 The rules are `R-SEC-*` in [docs/RULES.md](docs/RULES.md#security). The product's security
 and privacy posture is in [docs/PRODUCT.md](docs/PRODUCT.md#never), set by the maintainer.
+How the agents that build it treat untrusted text, approvals and secrets is in
+[docs/SECURITY-AGENTS.md](docs/SECURITY-AGENTS.md).

@@ -8,3 +8,9 @@ id = "template-version"
 value = "0.1.0"
 check = "file"
 source = { file = "repo.toml", key = "template.version" }
+
+[[fact]]
+id = "template-source"
+value = "jeffmhopkins/template"
+check = "file"
+source = { file = "repo.toml", key = "template.source" }
