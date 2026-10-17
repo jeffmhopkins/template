@@ -29,28 +29,47 @@ doc, with what it is for, is listed in [docs/README.md](docs/README.md).
 <!-- @section
 -->
 
-| Part | Where | What it is |
-|---|---|---|
-| Config | [`repo.toml`](repo.toml) | tracked and protected paths, required checks, serial lanes, labels, the review marker and the stack pack |
-| Docs | [docs/](docs/README.md) | Markdown with `<!-- @doc -->` and `<!-- @section -->` metadata. Each section lists the files it describes (`covers`) and the sections it relies on (`depends_on`) |
-| Ledger | [`docs/verified.toml`](docs/verified.toml) | a BLAKE3 stamp per section over its body and inputs. A changed input makes the section stale until an agent re-reads and restamps it ([DOCS.md](docs/DOCS.md)) |
-| Rules and decisions | [RULES.md](docs/RULES.md), [adr/](docs/adr/README.md) | rules with permanent IDs, each naming its enforcer; ADRs in an agent or a maintainer tier |
-| Repo tool | [`tools/repo`](tools/repo/README.md), run as `scripts/repo` | a Rust CLI: docs check, verify and generate, governance diff, PR titles, serial-lane guard, derived progress |
-| Stack pack | [`stacks/`](stacks/README.md) | the language's `fmt`, `lint`, `test` and `deps` commands and config; Rust ships |
-| CI | [`.github/workflows/`](.github/workflows/) | `ci.yml` runs the stack jobs, docs check and dependency review; `governance.yml` runs the governance, PR-title and lane checks from the base commit; `review-gate.yml` turns the reviewer's verdict marker into the `review-gate` check |
-| Main upkeep | `main-health.yml`, `progress.yml`, `sweep.yml` | a pinned "main is red" issue, the pinned progress issue, and a weekly sweep of advisories and docs due for review |
-| Agents | [CLAUDE.md](CLAUDE.md), [REVIEW.md](REVIEW.md), [docs/agents/](docs/agents/README.md) | one brief per role. Builders start at CLAUDE.md; reviewers judge under REVIEW.md |
-| GitHub setup | [`scripts/bootstrap.sh`](scripts/bootstrap.sh) | the rulesets, required checks, labels and security settings, applied once |
+AI agents write the code here, and GitHub checks every change before it is accepted. The repo
+is made of a few parts, each with one job.
 
-A change moves through it like this:
+**The instructions.** Each kind of agent has a short brief in
+[docs/agents/](docs/agents/README.md) saying what it does and what it must never do. Agents
+that write code start at [CLAUDE.md](CLAUDE.md). The agent that reviews code follows
+[REVIEW.md](REVIEW.md).
 
-1. A builder takes one roadmap item and opens a PR from its own branch.
-2. CI runs the required checks. A change to a protected path is a governance change and needs
-   the `governance-approved` label and a written justification.
-3. A reviewer agent posts a round under REVIEW.md, ending in a verdict marker for the head SHA.
-   `review-gate` goes green only on a pass from a listed reviewer session.
-4. GitHub auto-merges (squash). The PR body's `Completes:` or `Part-of:` trailer lands on
-   `main`, and progress is derived from it.
+**The docs.** Everything the project knows is written down in [docs/](docs/README.md): what
+the product is, the plan, the rules and the decisions made along the way. Each part of a doc
+names the code it describes. When that code changes, the doc is flagged as possibly out of
+date, and the change can't be accepted until an agent has re-read it and confirmed or fixed
+it. That is how the docs stay true without anyone remembering to update them.
+
+**The rules and decisions.** [docs/RULES.md](docs/RULES.md) lists every rule, each with a
+permanent ID such as `R-GOV-001`. [docs/adr/](docs/adr/README.md) holds the decisions, each
+on its own page with the reasons. Some decisions only you, the maintainer, can make.
+
+**The checking tool.** `scripts/repo` is a small program that does the checking: are the docs
+up to date, does a change touch something sensitive, is the change titled properly, what is
+finished on the plan. [`repo.toml`](repo.toml) is its settings file.
+
+**The language kit.** [stacks/](stacks/README.md) holds the commands for the project's
+programming language: how to check formatting, run the tests and audit dependencies. Rust is
+included; other languages can be added.
+
+**The automatic checks.** [`.github/workflows/`](.github/workflows/) tells GitHub what to run
+on every proposed change: the tests, the docs check, and the review gate, which only turns
+green when the reviewer agent approves. Other jobs open an issue when `main` breaks, keep a
+progress issue up to date, and run a weekly sweep.
+
+**The one-time setup.** [`scripts/bootstrap.sh`](scripts/bootstrap.sh) switches on the GitHub
+settings that make the checks binding, so nothing can be merged without passing them
+([getting started](docs/GETTING-STARTED.md#setup)).
+
+A change goes through four steps:
+
+1. An agent takes one item from the plan and proposes it as a pull request.
+2. GitHub runs the automatic checks on it.
+3. The reviewer agent reads it and approves it or asks for fixes.
+4. Once everything is green, GitHub merges it on its own, and the plan marks the item done.
 
 The full design is in [docs/design/template-design.md](docs/design/template-design.md).
 This repo uses template version 0.1.0<!--fact:template-version-->.
