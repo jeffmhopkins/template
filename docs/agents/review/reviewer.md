@@ -116,8 +116,17 @@ comment is the handoff to the author.
 -->
 
 `ops/review/state-<shard>.md`, in the format in [README › State](../README.md#state): your
-role, your session id, then one line per round, `| pr | shard | head | round | verdict | note |`.
-On a cold start or a replacement, rebuild it from the markers on the PRs.
+role, your session id, then one line per round,
+`| pr | shard | head | round | verdict | comment | note |`. `comment` is the id of the
+comment that carries the marker, from the URL your post returns
+(`#issuecomment-<id>`). Write the line right after posting. The coordinator's
+[marker audit](../coordinator.md#marker-audit) treats a counted marker whose id no state
+file lists as forged.
+
+On a cold start or a replacement, rebuild the round lines from the markers on the PRs, but
+take comment ids only from the old state file: a marker on a PR doesn't prove a reviewer
+posted it. Leave `comment` as `unknown` where the old file has none, and say so in your
+first report to the coordinator.
 
 <a id="never"></a>
 ## Never

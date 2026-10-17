@@ -161,6 +161,8 @@ Once a day, one message in the chat:
 - what needs them (from `ops/pending.md`), including an unanswered reviewer ids card;
 - uses of `governance-approved` and `review-override` since the last digest, with
   "Any to revert? (rec: no)";
+- the [marker audit](#marker-audit)'s result: how many merged PRs it checked, and any
+  marker no reviewer recorded;
 - cost: sessions running and session-hours, review rounds (full, merge-only, empty) and CI
   minutes, against the daily budget set at intake. Never estimate numbers you can't see.
 
@@ -174,6 +176,30 @@ Once a day, one message in the chat:
 
 At 80% of the daily budget, launch nothing new. At 100%, pause builders and ask "Continue
 today? (rec: no)". Standing roles keep running at their slowest cadence.
+
+<a id="marker-audit"></a>
+## Marker audit
+<!-- @section
+depends_on = ["AGENT-REVIEWER#state"]
+-->
+
+Every agent posts as the login the gate trusts, so a builder could post a verdict marker the
+gate counts ([ADR-0002](../adr/0002-review-gate-and-governance.md)). Once a day, before the
+digest, check what the gate counted against what the reviewers recorded:
+
+1. List the PRs merged since `last marker audit:` in `ops/coordinator.md`.
+2. For each, find the markers the gate counted: comments with a verdict marker for the
+   merged head SHA. Skip a PR merged with `review-override`, which counted no marker.
+3. Look up each marker's comment id in the `comment` column of every
+   `ops/review/state-<shard>.md`.
+4. A counted marker no state file lists, or lists as `unknown`, is suspect. Send the
+   maintainer a card at once: `#<pr> merged on a verdict marker no reviewer recorded
+   (comment <id>). Revert? (rec: yes)`. Put it in `ops/pending.md` until answered. On their
+   yes, the revert goes through the normal PR loop.
+5. Set `last marker audit:` to the newest merge time you checked.
+
+This finds a forged marker after the merge, not before it. Separate identities would stop it
+([ADR-0006](../adr/0006-separate-agent-identities.md)).
 
 <a id="stop"></a>
 ## Stop and resume

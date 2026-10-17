@@ -49,11 +49,10 @@ could also pass the checks by weakening them.
   with it or with `review-override`.
 - **Labels follow the head:** a push removes `governance-approved` and `review-override`, so
   each counts only for the head it was applied to.
-- **Maintainer-only paths:** changes to the workflows and composite actions, `repo.toml`, the
-  tool's source, `REVIEW.md`, the reviewer briefs, this ADR,
-  [ADR-0003](0003-decision-tiers.md) and the project instructions always need the
-  maintainer's own words, and only the maintainer applies the label on them. The list is in
-  `repo.toml` and includes `repo.toml` and the code that reads it, so it protects itself.
+- **Maintainer-only paths:** changes to the paths in `[governance].maintainer_only` in
+  `repo.toml`, and to the `R-GOV-*` rules, always need the maintainer's own words, and only
+  the maintainer applies the label on them. The list includes `repo.toml` and the code that
+  reads it, so it protects itself.
 - **Maintainer decisions are checked at their source:** every decision comment names the
   maintainer's message by id, and the reviewer reads it with `fetch_messages`, comparing its
   author with the maintainer's user id recorded on day 0 ([ADR-0003](0003-decision-tiers.md)).
@@ -77,8 +76,17 @@ could also pass the checks by weakening them.
   workflows maintainer-only fails the real `governance` check and makes the reviewer
   escalate, but the PR's own workflow can still post a passing value. Only a check posted by
   an identity no PR controls closes this.
+- **Any agent can forge a passing verdict marker.** Every agent posts as `REVIEWER_LOGIN`,
+  and reviewer session ids are visible in their threads and markers, so a builder can post a
+  marker the gate counts. The gate can't tell it from a reviewer's. This is detected, not
+  prevented: each reviewer records the comment id of every marker it posts in
+  `ops/review/state-<shard>.md`, and the coordinator checks every marker the gate counted on a
+  merged PR against those records once a day. It reports any no reviewer recorded to the
+  maintainer, who decides on a revert
+  ([coordinator › Marker audit](../agents/coordinator.md#marker-audit)). By then the PR has
+  merged.
 - Recusal relies on each session writing its own id in its `Claude-Session:` trailers.
-- [ADR-0006](0006-separate-agent-identities.md) proposes separate identities for the agents
-  and the gate.
+- [ADR-0006](0006-separate-agent-identities.md) proposes separate identities for builders,
+  reviewers and the gate, which closes both forgeries.
 - `REVIEW.md`, the gate workflow and the governance tool are the trust base, and are
   protected.

@@ -165,7 +165,7 @@ depends_on = ["TOOL#plans"]
 | `pending.md` | coordinator | open maintainer questions, the hardware queue, accounts to create |
 | `launch.md` | planner | one anchored section per row ([planner › The row](planner.md#the-row)). Whether a row is launched is in `roster.md` |
 | `roadmap.md` | planner | lanes, hot spots, what only the maintainer can do, what's left |
-| `review/state-<shard>.md` | that reviewer | its session id and one line per round |
+| `review/state-<shard>.md` | that reviewer | its session id and one line per round, with the comment id of its marker |
 | `lanes.md` | integrator | per lane: holder, then ready PRs in order |
 | `waves.md` | integrator | each wave, its state, what it carries, its landing PR |
 | `triage.md` | triage | last sweep, routed issues, flakes, PRs whose auto-merge it turned off |
@@ -200,7 +200,8 @@ content the coordinator writes on day 0:
   header lines.
 - `coordinator.md`: `## Cards` (`<object> | <card message id> | open/answered`),
   `## Relays` (`<message id> → <session>`), then `launches today: 0`, `used today: 0`
-  (the budget unit, [coordinator › Daily digest](coordinator.md#daily-digest)) and
+  (the budget unit, [coordinator › Daily digest](coordinator.md#daily-digest)),
+  `last marker audit: none` ([coordinator › Marker audit](coordinator.md#marker-audit)) and
   `paused routines: none`.
 - `decisions/<message-id>.md`: `source: <message id>`, `author_id: <user_…>`,
   `object: <ADR id, #pr or path>`, `words: "<their words, quoted>"`, and
@@ -211,7 +212,8 @@ content the coordinator writes on day 0:
 - `launch.md`: one section per row, as the planner brief says. Starts empty.
 - `roadmap.md`: `## Lanes`, `## Hot spots`, `## Only the maintainer`, `## What's left`.
 - `review/state-<shard>.md`: `session: <id>`, then
-  `| pr | shard | head | round | verdict | note |`, starting empty.
+  `| pr | shard | head | round | verdict | comment | note |`, starting empty. `comment` is
+  the id of the comment that carries the marker.
 - `lanes.md`: one `## <lane>` per lane in `lanes.toml`, with `holder: #<pr>` or `none`, and
   `ready: #<pr>, …` in order.
 - `waves.md`: one `## wave/<name>` per wave, with `state: open | cut | landing`,

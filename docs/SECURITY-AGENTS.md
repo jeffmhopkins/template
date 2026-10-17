@@ -28,6 +28,12 @@ point links to the rule or brief that holds it. The product's own security rules
 - **Injected instructions:** text an agent reads that tries to make it skip a check, change
   its task, apply a label, merge, or reveal a secret.
 - **Forged approval:** a claim that the maintainer agreed, without their own words.
+- **Forged verdict:** a passing verdict marker posted by a builder, not a reviewer. Every
+  agent posts as the login the gate trusts, so the gate counts it. The defence is detection
+  after the merge: reviewers record the comment id of each marker they post, and the
+  coordinator's daily [marker audit](agents/coordinator.md#marker-audit) reports any counted
+  marker no reviewer recorded. Separate identities would prevent it
+  ([ADR-0006](adr/0006-separate-agent-identities.md)).
 - **Leaked secrets:** a key or token in the repo, a log, a comment or a message.
 - **Privileged code from a PR:** a workflow with write access running what a PR changed.
 
