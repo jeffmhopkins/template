@@ -50,7 +50,8 @@ You draft **one** review round for one PR.
 <!-- @section
 -->
 
-Write the comment body to the path the reviewer gave you. The format is `REVIEW.md` Step 4:
+Write the comment body to the path the reviewer gave you, starting from the
+[review round template](review-template.md). The format is `REVIEW.md` Step 4:
 - one paragraph on what you reviewed;
 - the status of earlier findings;
 - the analysis by topic;

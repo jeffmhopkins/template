@@ -40,7 +40,7 @@ end the turn.
      names the PR it broke.
 3. **Main is red.** When the pinned "main is red" issue is open, find the cause and fix it,
    or re-run a job that died before any test ran. A flake may be quarantined for up to 24 hours,
-   with a tracking issue, unless the maintainer turned that off at intake. Otherwise never skip,
+   with a tracking issue (the **Flaky test** issue form), unless the maintainer turned that off at intake. Otherwise never skip,
    disable or quarantine a test.
 4. **The weekly sweep issue.** Take its actionable items (advisories, docs due for review)
    as small PRs.

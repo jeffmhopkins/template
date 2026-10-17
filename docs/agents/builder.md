@@ -91,7 +91,7 @@ failure that issue already covers.
 
 List what wasn't run in the PR's "Not run" section. If a run is needed, write
 `ops/hw/<item>.md` and send `HW <item> #<pr>: ops/hw/<item>.md`. A PR may merge at risk if it
-links a `hardware` tracking issue.
+links a `hardware` tracking issue, opened with the **Hardware run** issue form.
 
 <a id="never"></a>
 ## Never

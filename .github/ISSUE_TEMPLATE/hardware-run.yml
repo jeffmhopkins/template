@@ -1,0 +1,47 @@
+name: Hardware run
+description: Tracks a check that only runs on the maintainer's hardware, for a PR that merged at risk.
+title: "Hardware: <item id>"
+labels: ["hardware"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The device session records the result here. A pass closes this issue. The next PR that touches the item carries `Verified-on-hardware: <item id>` (docs/DOCS.md, Progress).
+  - type: input
+    id: item
+    attributes:
+      label: Roadmap item
+      description: The item id from docs/progress.toml.
+    validations:
+      required: true
+  - type: input
+    id: pr
+    attributes:
+      label: PR
+      description: The PR that merged at risk.
+    validations:
+      required: true
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Checklist
+      description: The steps from ops/hw/<item>.md, with what a pass looks like for each.
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Not run yet
+        - Passed
+        - Failed (logs below)
+        - Not run (reason below)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output and logs
+      description: Captured output. Remove tokens, keys and other secrets first.
+      render: text

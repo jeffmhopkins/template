@@ -1,0 +1,46 @@
+name: Flaky test
+description: A test that passes and fails on the same code. Tracks a quarantine, if one is used.
+title: "Flaky: <test name>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A quarantine lasts at most 24 hours and only where the maintainer allowed it at intake. Fix the test or restore it before then.
+  - type: input
+    id: test
+    attributes:
+      label: Test
+      description: The test's full name and file.
+    validations:
+      required: true
+  - type: textarea
+    id: runs
+    attributes:
+      label: Failing runs
+      description: Links to at least two CI runs on the same commit, one passing and one failing.
+    validations:
+      required: true
+  - type: textarea
+    id: cause
+    attributes:
+      label: Suspected cause
+      description: Timing, ordering, shared state, network, or unknown.
+  - type: dropdown
+    id: quarantine
+    attributes:
+      label: Quarantined?
+      options:
+        - "No"
+        - "Yes: skipped in CI until the deadline below"
+    validations:
+      required: true
+  - type: input
+    id: deadline
+    attributes:
+      label: Fix or restore by
+      description: Within 24 hours of the quarantine, as a UTC date and time.
+  - type: input
+    id: fix
+    attributes:
+      label: Fix PR
+      description: The PR that fixes or restores the test, once it exists.

@@ -204,6 +204,15 @@ stamp = { hash = "b3:f5a2a5866b2b5c68", by = "agent:style-pass", note = "ADR-000
 ["REVIEW#tiers"."dep:RULES#R-GOV-005"]
 stamp = { hash = "b3:748df28e389eb0ab", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
 
+["REVIEW-TEMPLATE#template"."body"]
+stamp = { hash = "b3:1538f1145cd5aae0", by = "agent:skeleton-lead", note = "Parts and order match REVIEW#output's seven items, the B and N finding format with Problem, Path and Fix, the marker line, the four verdicts with their human lines, and the footer. Earlier-finding statuses and new round numbers match REVIEW#rounds. The caution about edited comments matches the gate's unedited-only rule" }
+
+["REVIEW-TEMPLATE#template"."dep:REVIEW#output"]
+stamp = { hash = "b3:e5b3f3114b2e27a7", by = "agent:skeleton-lead", note = "Parts and order match REVIEW#output's seven items, the B and N finding format with Problem, Path and Fix, the marker line, the four verdicts with their human lines, and the footer. Earlier-finding statuses and new round numbers match REVIEW#rounds. The caution about edited comments matches the gate's unedited-only rule" }
+
+["REVIEW-TEMPLATE#template"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:d8bd0cf6fe14dee7", by = "agent:skeleton-lead", note = "Parts and order match REVIEW#output's seven items, the B and N finding format with Problem, Path and Fix, the marker line, the four verdicts with their human lines, and the footer. Earlier-finding statuses and new round numbers match REVIEW#rounds. The caution about edited comments matches the gate's unedited-only rule" }
+
 ["RULES#documentation"."body"]
 stamp = { hash = "b3:b68fd9129988a34a", by = "agent:skeleton-verifier", note = "Checked R-DOC-001..011 against DOCS#gate's eight failure classes: metadata blocks, references, stale ledger, covers bounds (draft warning), enforced_by, generated drift, file facts, back-references; R-DOC-008 matches governance.rs ADR exceptions" }
 
