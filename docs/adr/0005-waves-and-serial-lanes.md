@@ -2,14 +2,15 @@
 id = "ADR-0005"
 title = "Wave branches and serial lanes"
 kind = "adr"
-status = "accepted"
+status = "superseded"
 tier = "agent"
+superseded_by = "ADR-0007"
 -->
 
 # ADR-0005: Wave branches and serial lanes
 
 <!-- @generated begin adr-status -->
-> **Status:** accepted
+> **Status:** superseded by [ADR-0007](0007-swarm-operating-model.md)
 <!-- @generated end adr-status -->
 
 > Serial lanes let one PR at a time change a sequenced value, and wave branches batch PRs so

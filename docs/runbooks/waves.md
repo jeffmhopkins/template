@@ -12,7 +12,7 @@ review_every = "90d"
 > synced with `main`, cut and landed.
 
 Who does what with wave branches, in what order. The decision is
-[ADR-0005](../adr/0005-waves-and-serial-lanes.md). The integrator owns every wave
+[ADR-0007](../adr/0007-swarm-operating-model.md). The integrator owns every wave
 ([integrator brief](../agents/integrator.md)). Whether waves are on, and which wave is
 current, is in `ops/mode.md`.
 
@@ -34,7 +34,7 @@ flowchart TD
 <a id="when"></a>
 ## When waves are on
 <!-- @section
-depends_on = ["ADR-0005"]
+depends_on = ["ADR-0007"]
 -->
 
 Waves are off by default. The integrator turns them on when more than about 15 PRs are
@@ -51,7 +51,7 @@ off. PRs then target `main` again.
 <a id="which-wave"></a>
 ## Which branch a PR targets
 <!-- @section
-depends_on = ["ADR-0005"]
+depends_on = ["ADR-0007"]
 -->
 
 While waves are on:
@@ -116,7 +116,7 @@ cut wave lands.
 <a id="landing"></a>
 ## Cutting and landing a wave
 <!-- @section
-depends_on = ["ADR-0005", "REVIEW#gather"]
+depends_on = ["ADR-0007", "REVIEW#gather"]
 -->
 
 Cut a wave when every PR still targeting it is merged, draft, or blocked on the maintainer,

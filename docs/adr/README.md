@@ -16,7 +16,7 @@ by `scripts/repo docs generate` ([DOCS › Generated blocks](../DOCS.md#generate
 start from [`TEMPLATE.md`](TEMPLATE.md) and take the next free number on the PR's base.
 That is the only numbering rule. Two open PRs can pick the same number: the PR that merges
 the base after the other landed sees `scripts/repo docs check` fail on the duplicate id, and
-takes the next free number again. The template's own ADRs are 0001 to 0006. The tier rules
+takes the next free number again. The template's own ADRs are 0001 to 0007. The tier rules
 are in [ADR-0003](0003-decision-tiers.md).
 
 <!-- @generated begin adr-index -->
@@ -26,6 +26,7 @@ are in [ADR-0003](0003-decision-tiers.md).
 | [ADR-0002](0002-review-gate-and-governance.md) | Review gate and governance | maintainer | accepted |
 | [ADR-0003](0003-decision-tiers.md) | Decision tiers | maintainer | accepted |
 | [ADR-0004](0004-ci-drafts-platform-pins.md) | CI: drafts skip, platform jobs after review, SHA pins | agent | accepted |
-| [ADR-0005](0005-waves-and-serial-lanes.md) | Wave branches and serial lanes | agent | accepted |
+| [ADR-0005](0005-waves-and-serial-lanes.md) | Wave branches and serial lanes | agent | superseded by ADR-0007 |
 | [ADR-0006](0006-separate-agent-identities.md) | Separate GitHub identities for agents and the gate | maintainer | proposed |
+| [ADR-0007](0007-swarm-operating-model.md) | Swarm operating model at scale | agent | accepted |
 <!-- @generated end adr-index -->

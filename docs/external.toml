@@ -74,3 +74,15 @@ id = "github-notification-settings"
 url = "https://github.com/settings/notifications"
 relied_on = "A user's notification settings, with an Actions section that can limit notifications to failed workflows"
 recheck_every = "180d"
+
+[[external]]
+id = "github-merge-queue"
+url = "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue"
+relied_on = "Merge queues are offered on organization-owned repositories only (public, or private on GitHub Enterprise Cloud), and every required check must report on the queue's merge_group commit"
+recheck_every = "180d"
+
+[[external]]
+id = "github-actions-billing"
+url = "https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions"
+relied_on = "Standard GitHub-hosted runners are free on public repositories; private repositories draw on a monthly allowance of minutes that depends on the plan, and then pay"
+recheck_every = "180d"

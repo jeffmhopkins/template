@@ -12,7 +12,7 @@ review_every = "90d"
 > serial lane.
 
 How a PR gets the next value of a serial lane. The decision is
-[ADR-0005](../adr/0005-waves-and-serial-lanes.md); the file format and the check are in
+[ADR-0007](../adr/0007-swarm-operating-model.md); the file format and the check are in
 [DOCS › Serial lanes](../DOCS.md#lanes). The integrator owns the queue
 ([integrator brief](../agents/integrator.md)), in `ops/lanes.md`.
 
@@ -77,7 +77,7 @@ depends_on = ["DOCS#lanes"]
 <a id="waves"></a>
 ## Lanes and waves
 <!-- @section
-depends_on = ["ADR-0005"]
+depends_on = ["ADR-0007"]
 -->
 
 While waves are on, lane PRs go into the current wave, and the integrator grants slots
