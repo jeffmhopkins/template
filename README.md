@@ -29,21 +29,30 @@ doc, with what it is for, is listed in [docs/README.md](docs/README.md).
 <!-- @section
 -->
 
-This repo is built by a swarm of AI agents and governed by checks that a PR can't weaken.
+| Part | Where | What it is |
+|---|---|---|
+| Config | [`repo.toml`](repo.toml) | tracked and protected paths, required checks, serial lanes, labels, the review marker and the stack pack |
+| Docs | [docs/](docs/README.md) | Markdown with `<!-- @doc -->` and `<!-- @section -->` metadata. Each section lists the files it describes (`covers`) and the sections it relies on (`depends_on`) |
+| Ledger | [`docs/verified.toml`](docs/verified.toml) | a BLAKE3 stamp per section over its body and inputs. A changed input makes the section stale until an agent re-reads and restamps it ([DOCS.md](docs/DOCS.md)) |
+| Rules and decisions | [RULES.md](docs/RULES.md), [adr/](docs/adr/README.md) | rules with permanent IDs, each naming its enforcer; ADRs in an agent or a maintainer tier |
+| Repo tool | [`tools/repo`](tools/repo/README.md), run as `scripts/repo` | a Rust CLI: docs check, verify and generate, governance diff, PR titles, serial-lane guard, derived progress |
+| Stack pack | [`stacks/`](stacks/README.md) | the language's `fmt`, `lint`, `test` and `deps` commands and config; Rust ships |
+| CI | [`.github/workflows/`](.github/workflows/) | `ci.yml` runs the stack jobs, docs check and dependency review; `governance.yml` runs the governance, PR-title and lane checks from the base commit; `review-gate.yml` turns the reviewer's verdict marker into the `review-gate` check |
+| Main upkeep | `main-health.yml`, `progress.yml`, `sweep.yml` | a pinned "main is red" issue, the pinned progress issue, and a weekly sweep of advisories and docs due for review |
+| Agents | [CLAUDE.md](CLAUDE.md), [REVIEW.md](REVIEW.md), [docs/agents/](docs/agents/README.md) | one brief per role. Builders start at CLAUDE.md; reviewers judge under REVIEW.md |
+| GitHub setup | [`scripts/bootstrap.sh`](scripts/bootstrap.sh) | the rulesets, required checks, labels and security settings, applied once |
 
-- **Builders** take one roadmap item each and deliver it as one PR. Their entry point is
-  [CLAUDE.md](CLAUDE.md).
-- **A reviewer agent** judges every PR under [REVIEW.md](REVIEW.md). Its verdict is the
-  merge gate; GitHub auto-merges once every required check is green.
-- **Rules** have permanent IDs in [docs/RULES.md](docs/RULES.md). **Decisions** are ADRs in
-  [docs/adr/](docs/adr/README.md), each in an agent or a maintainer tier.
-- **Docs are checked like code** ([docs/DOCS.md](docs/DOCS.md)): a change that makes a
-  section stale can't merge until an agent re-reads it.
-- **One tool**, `scripts/repo`, does the checking, configured by [`repo.toml`](repo.toml).
-- **The agent roles** (intake, coordinator, planner, builders, reviewers, integrator,
-  triage, board) have one brief each in [docs/agents/](docs/agents/README.md).
+A change moves through it like this:
 
-The template's design is in [docs/design/template-design.md](docs/design/template-design.md).
+1. A builder takes one roadmap item and opens a PR from its own branch.
+2. CI runs the required checks. A change to a protected path is a governance change and needs
+   the `governance-approved` label and a written justification.
+3. A reviewer agent posts a round under REVIEW.md, ending in a verdict marker for the head SHA.
+   `review-gate` goes green only on a pass from a listed reviewer session.
+4. GitHub auto-merges (squash). The PR body's `Completes:` or `Part-of:` trailer lands on
+   `main`, and progress is derived from it.
+
+The full design is in [docs/design/template-design.md](docs/design/template-design.md).
 This repo uses template version 0.1.0<!--fact:template-version-->.
 
 <a id="progress"></a>
