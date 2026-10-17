@@ -106,7 +106,7 @@ stamp = { hash = "b3:d92d274f38a43615", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:d6ec7fbf2b3b29fc", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/main.rs"]
-stamp = { hash = "b3:e6bec51f0bc721a1", by = "agent:skeleton-lead", note = "main.rs change is the USAGE line for lane-guard gaining [--wave]; the section's command table already lists lane-guard with [--wave], matching lanes.rs" }
+stamp = { hash = "b3:647164a5182f032c", by = "agent:skeleton-lead", note = "The main.rs change is only its crate-root Docs line, which now also lists STACKS#pack-toml because that section covers config.rs and stack.rs. The command table, flags and exit codes are unchanged" }
 
 ["DOCS#tool"."file:tools/repo/src/plan.rs"]
 stamp = { hash = "b3:d89f26bac6bb03e1", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -482,4 +482,25 @@ stamp = { hash = "b3:2e8a2e79bc55d1ed", by = "agent:skeleton-verifier", note = "
 
 ["STACK-RUST#setup"."file:stacks/rust/rustfmt.toml"]
 stamp = { hash = "b3:0d42bdb64178a8be", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
+
+["STACKS#adding"."body"]
+stamp = { hash = "b3:206f0d348e5ec0e1", by = "agent:skeleton-lead", note = "Steps match the pack-toml keys, protected paths in repo.toml (stacks/**, .github/**), the rust-setup action every ci.yml stack job uses, R-DEP-001 licences and the template-upgrade runbook for reaching projects" }
+
+["STACKS#adding"."dep:STACKS#pack-toml"]
+stamp = { hash = "b3:da9b1e3ed1034496", by = "agent:skeleton-lead", note = "Steps match the pack-toml keys, protected paths in repo.toml (stacks/**, .github/**), the rust-setup action every ci.yml stack job uses, R-DEP-001 licences and the template-upgrade runbook for reaching projects" }
+
+["STACKS#examples"."body"]
+stamp = { hash = "b3:3ccadc1b34545016", by = "agent:skeleton-lead", note = "Both examples use only the keys in STACKS#pack-toml, with reason_required false per that section's note, and roots and prefix in each language's comment syntax" }
+
+["STACKS#examples"."dep:STACKS#pack-toml"]
+stamp = { hash = "b3:da9b1e3ed1034496", by = "agent:skeleton-lead", note = "Both examples use only the keys in STACKS#pack-toml, with reason_required false per that section's note, and roots and prefix in each language's comment syntax" }
+
+["STACKS#pack-toml"."body"]
+stamp = { hash = "b3:da9b1e3ed1034496", by = "agent:skeleton-lead", note = "Each key matches config.rs Pack, Suppressions and Backrefs, which use deny_unknown_fields, and stack.rs: skip: no <detect> when absent, commands run with sh from the repo root. reason_required checks the literal 'reason =' as in governance.rs" }
+
+["STACKS#pack-toml"."file:tools/repo/src/config.rs"]
+stamp = { hash = "b3:1d1699c969d3bead", by = "agent:skeleton-lead", note = "Each key matches config.rs Pack, Suppressions and Backrefs, which use deny_unknown_fields, and stack.rs: skip: no <detect> when absent, commands run with sh from the repo root. reason_required checks the literal 'reason =' as in governance.rs" }
+
+["STACKS#pack-toml"."file:tools/repo/src/stack.rs"]
+stamp = { hash = "b3:2b7a710fbe937b2f", by = "agent:skeleton-lead", note = "Each key matches config.rs Pack, Suppressions and Backrefs, which use deny_unknown_fields, and stack.rs: skip: no <detect> when absent, commands run with sh from the repo root. reason_required checks the literal 'reason =' as in governance.rs" }
 

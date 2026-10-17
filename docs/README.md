@@ -77,4 +77,5 @@ How these docs are checked is in [DOCS.md](DOCS.md). The project's own pitch is 
 |---|---|
 | [template-design.md](design/template-design.md) | How the template works, and the plan for building it |
 | [The repo tool](../tools/repo/README.md) | The command reference for `scripts/repo` |
+| [Stack packs](../stacks/README.md) | How a language plugs in, and the steps to add a new one |
 | [Rust stack pack](../stacks/rust/README.md) | The Rust commands, lint and licence config the tool reads |
