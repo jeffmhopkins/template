@@ -75,6 +75,14 @@ From the repo root:
 3. Run `scripts/bootstrap.sh --check` again. It ends with `All settings match.` and exits 0.
 4. Do the [by-hand steps](#by-hand).
 
+**When a PR changes `[checks].required`**, the rulesets change in two steps, so no PR waits
+on a check nothing reports:
+1. Before it merges, once the PR reports each new check: from a clone of the PR's branch,
+   `scripts/bootstrap.sh --also-require origin/main`. The rulesets then require both lists.
+2. Right after it merges: `scripts/bootstrap.sh` from `main`, which drops the checks the PR
+   removed. A check the PR removes never reports on the PR itself, so when it removes one,
+   this step comes just before the merge instead, once the PR is otherwise green.
+
 The script is idempotent. It reads each setting first and writes only those that differ,
 printing `ok:` for a match, `set:` for a write, and `skip:` for what this login or plan
 doesn't offer. Running it again changes nothing.
@@ -88,14 +96,22 @@ depends_on = ["DESIGN#setup"]
 
 | Area | Desired state |
 |---|---|
-| Merging | squash merges and merge commits on, rebase merges off; auto-merge on; delete branch on merge; squash commit title from the PR title and message from the PR body |
+| Merging | squash merges and merge commits on, rebase merges off; auto-merge on; delete branch on merge; squash commit title from the PR title and message from the PR body, so the body's trailers (`Completes:`, `Claude-Session:`) reach `main` |
 | Template | with `--template` only: marked as a template repository |
 | Ruleset `main` | on `refs/heads/main`: no deletion, no force push, PR required with 0 approvals, squash only; every check in `[checks].required` required and pinned to GitHub Actions (app id 15368); not strict |
-| Ruleset `wave/*` | on `refs/heads/wave/*`: the same, with merge commits allowed as well as squash, and required checks not enforced when the branch is created |
+| Ruleset `wave/*` | on `refs/heads/wave/*`: the same, with merge commits allowed as well as squash, required checks not enforced when the branch is created, and no deletion rule, so GitHub deletes a wave once its landing PR merges |
 | Actions | workflow token read-only and unable to approve PRs; actions must be pinned to a full commit SHA; fork PRs from every outside collaborator wait for approval |
 | Labels | the four names in `[labels]` (governance, override, human, hardware), each with a fixed colour and description |
 | Variables | `REVIEWER_SESSIONS` created with the placeholder `none` and `REVIEWER_LOGIN` with the `gh` user's login, each only when it does not exist yet; an existing value is never overwritten. `MAINTAINER_LOGIN` always set to the `gh` user's login: the person whose labels the `governance` and `review-gate` checks trust. Without it they fall back to the repo's owner, which for an organization's repo is the organization |
 | Security | Dependabot vulnerability alerts and automated security fixes on; private vulnerability reporting on (public repos); secret scanning and secret scanning push protection enabled |
+
+The required checks are exactly `[checks].required`. Jobs outside it, such as `governance`'s
+`head-labels` and `ci`'s `base-tool`, run but are never required.
+
+**The squash message.** A PR's body becomes its squash commit's message. That is how
+`Completes:` and `Part-of:` reach `main` for [progress](../DOCS.md#progress), and how the
+`Claude-Session:` trailer the `review-gate` check reads reaches a wave's commits. Changing
+the default message to anything else breaks both.
 
 Rulesets are matched by name among the repo's own rulesets. A missing one is created; one
 that differs is replaced as a whole with the desired body. Bypass actors are not part of the

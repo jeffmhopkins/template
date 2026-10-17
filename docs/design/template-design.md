@@ -359,8 +359,8 @@ prints the commands to fix any difference; any agent may run it read-only.
 2. **Rulesets:**
    - `main`: no deletion, no force push, PR required with 0 approvals; required checks from
      `repo.toml`, each pinned to GitHub Actions; not strict.
-   - `wave/*`: the same, with merge commits allowed and checks not enforced on branch
-     creation.
+   - `wave/*`: the same, with merge commits allowed, checks not enforced on branch
+     creation, and no deletion rule, so a landed wave is deleted.
 3. **Actions:** default token read-only; SHA-pinned actions required; fork PRs need approval.
 4. **Labels:** `governance-approved`, `review-override`, `needs-human`, `hardware`.
 5. **Repo variables:** `REVIEWER_SESSIONS`, `REVIEWER_LOGIN` and `MAINTAINER_LOGIN`.

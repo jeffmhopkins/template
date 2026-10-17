@@ -2,12 +2,14 @@
 # One-time GitHub setup for a repo made from this template. Idempotent.
 # Runbook: docs/runbooks/bootstrap.md
 #
-#   scripts/bootstrap.sh [--check] [--repo <owner>/<repo>] [--template]
+#   scripts/bootstrap.sh [--check] [--repo <owner>/<repo>] [--template] [--also-require <rev>]
 #
-#   --check     make no writes: compare live settings with the desired ones, print the
-#               gh command that fixes each difference, exit 1 if any differ
-#   --repo      the repository (default: the one `gh repo view` resolves here)
-#   --template  also mark the repository as a template repository
+#   --check         make no writes: compare live settings with the desired ones, print the
+#                   gh command that fixes each difference, exit 1 if any differ
+#   --repo          the repository (default: the one `gh repo view` resolves here)
+#   --template      also mark the repository as a template repository
+#   --also-require  also require the checks in <rev>'s repo.toml, so a PR that changes the
+#                   required checks can add its new ones before it merges
 set -euo pipefail
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -20,9 +22,10 @@ SESSIONS_PLACEHOLDER="none"
 check=0
 template=0
 repo=""
+also_require=""
 
 usage() {
-  sed -n '5,10s/^# \{0,1\}//p' "${BASH_SOURCE[0]}"
+  sed -n '5,13s/^# \{0,1\}//p' "${BASH_SOURCE[0]}"
 }
 
 die() {
@@ -40,6 +43,12 @@ while (($#)); do
       shift
       ;;
     --repo=*) repo=${1#--repo=} ;;
+    --also-require)
+      [ $# -ge 2 ] || die "--also-require needs a git revision"
+      also_require=$2
+      shift
+      ;;
+    --also-require=*) also_require=${1#--also-require=} ;;
     -h | --help)
       usage
       exit 0
@@ -72,7 +81,7 @@ fi
 # JSON and TOML helpers. Subcommands:
 #   config <repo.toml>                        -> "check <name>" and "label <key> <name>" lines
 #   get <key> (JSON on stdin)                 -> the value; booleans as true/false, null as ""
-#   ruleset <name> <include> <methods> <dnec> <checks>  -> desired ruleset JSON
+#   ruleset <name> <include> <methods> <dnec> <deletion> <checks>  -> desired ruleset JSON
 #   ruleset-diff <desired> (live JSON on stdin)          -> one line per difference
 #   label <name> (label list JSON on stdin)   -> "<color>\t<description>", nothing if absent
 # Read with `read`, not $(cat <<...): bash 3.2 can misparse a heredoc inside $(...).
@@ -101,15 +110,15 @@ elif cmd == "get":
         d = d.get(part) if isinstance(d, dict) else None
     print(show(d))
 elif cmd == "ruleset":
-    name, include, methods, dnec, checks = args
+    name, include, methods, dnec, deletion, checks = args
+    rules = [{"type": "deletion"}] if deletion == "1" else []
     print(json.dumps({
         "name": name,
         "target": "branch",
         "enforcement": "active",
         "bypass_actors": [],
         "conditions": {"ref_name": {"include": [include], "exclude": []}},
-        "rules": [
-            {"type": "deletion"},
+        "rules": rules + [
             {"type": "non_fast_forward"},
             {"type": "pull_request", "parameters": {
                 "required_approving_review_count": 0,
@@ -224,6 +233,21 @@ while read -r kind a b; do
   esac
 done < <(py config "$root/repo.toml")
 ((${#checks[@]})) || die "repo.toml has no [checks].required"
+# --also-require: add the required checks of another revision's repo.toml, keeping order.
+if [ -n "$also_require" ]; then
+  other=$(mktemp)
+  git -C "$root" show "$also_require:repo.toml" >"$other" 2>/dev/null ||
+    die "--also-require: no repo.toml at '$also_require'"
+  while read -r kind a _; do
+    [ "$kind" = check ] || continue
+    found=0
+    for c in "${checks[@]}"; do
+      if [ "$c" = "$a" ]; then found=1; fi
+    done
+    ((found)) || checks+=("$a")
+  done < <(py config "$other")
+  rm -f "$other"
+fi
 checks_csv=$(
   IFS=,
   printf '%s' "${checks[*]}"
@@ -313,7 +337,9 @@ message=$(py get squash_merge_commit_message <<<"$live")
 if [ "$title" = PR_TITLE ] && [ "$message" = PR_BODY ]; then
   ok "squash commit = PR title + PR body"
 else
-  # GitHub validates the title and message as a pair, so both are always sent together.
+  # The squash commit's message is the PR body, so the body's trailers (Completes:,
+  # Claude-Session:) reach main. GitHub validates the title and message as a pair, so both
+  # are always sent together.
   fix "squash commit is $title + $message, want PR_TITLE + PR_BODY" "" \
     gh api -X PATCH "repos/$repo" -f squash_merge_commit_title=PR_TITLE \
     -f squash_merge_commit_message=PR_BODY
@@ -322,8 +348,8 @@ fi
 # 2. Rulesets, matched by name among the repository's own rulesets.
 echo "== rulesets"
 ruleset() {
-  local name=$1 include=$2 methods=$3 dnec=$4 want id have problems
-  want=$(py ruleset "$name" "$include" "$methods" "$dnec" "$checks_csv")
+  local name=$1 include=$2 methods=$3 dnec=$4 deletion=$5 want id have problems
+  want=$(py ruleset "$name" "$include" "$methods" "$dnec" "$deletion" "$checks_csv")
   id=$(gh api "repos/$repo/rulesets?includes_parents=false" --paginate \
     --jq ".[] | select(.name == \"$name\" and .source_type == \"Repository\") | .id" | head -n1)
   if [ -z "$id" ]; then
@@ -341,8 +367,10 @@ ruleset() {
   fi
 }
 if ((rulesets_offered)); then
-  ruleset main refs/heads/main squash 0
-  ruleset 'wave/*' 'refs/heads/wave/*' squash,merge 1
+  # A wave branch has no deletion rule, so GitHub deletes it once its landing PR merges
+  # (delete_branch_on_merge); nothing can merge into a landed wave.
+  ruleset main refs/heads/main squash 0 1
+  ruleset 'wave/*' 'refs/heads/wave/*' squash,merge 1 0
 else
   echo "skip: rulesets 'main' and 'wave/*' (not offered for a private repo on this plan)"
 fi
