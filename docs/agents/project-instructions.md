@@ -1,3 +1,11 @@
+<!-- @doc
+id = "PROJECT-INSTRUCTIONS"
+title = "Project instructions"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Project instructions (paste into the Claude project settings)
 
 <PROJECT> (github.com/<owner>/<repo>). Agent briefs are in the repo at `docs/agents/`. Every
@@ -31,11 +39,11 @@ the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
 workflow, `REVIEW.md`, the tier and gate ADRs, `docs/agents/project-instructions.md`, or the
 list above. These get `needs-human`.
 
-**Needs the maintainer's own words, naming the object.** The coordinator relays his message id;
+**Needs the maintainer's own words, naming the object.** The coordinator relays their message id;
 the receiving session reads it with `fetch_messages`. A paraphrase is not an approval.
 - maintainer-tier ADRs (`/accept ADR-NNNN`);
 - turning off or deferring a required check;
-- `review-override` (the justification links his message);
+- `review-override` (the justification links their message);
 - outside actions:
   - publishing a release, tag or package;
   - creating any account;

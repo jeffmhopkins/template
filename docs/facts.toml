@@ -1,0 +1,10 @@
+# Pinned facts (docs/DOCS.md#facts). In prose, write the value right before its marker:
+# 0.1.0<!--fact:template-version-->
+# check = "file"   → checked on every PR against `source.file` / `source.key`
+# check = "manual" → listed by `scripts/repo docs due` when its external resource is due
+
+[[fact]]
+id = "template-version"
+value = "0.1.0"
+check = "file"
+source = { file = "repo.toml", key = "template.version" }

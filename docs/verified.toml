@@ -1,0 +1,398 @@
+# Verification stamps: one entry per section input. Written by `repo docs verify`; never edit by hand.
+
+["CLAUDE#commands"."body"]
+stamp = { hash = "b3:899ff35bb8f5b065", by = "agent:skeleton-verifier", note = "Each row checked against the DOCS#tool table and main.rs: docs check/for/verify/generate/merge-main --from/log, governance --base, pr-title, progress, stack run <job>; all exist with the stated arguments" }
+
+["CLAUDE#commands"."dep:DOCS#tool"]
+stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "Each row checked against the DOCS#tool table and main.rs: docs check/for/verify/generate/merge-main --from/log, governance --base, pr-title, progress, stack run <job>; all exist with the stated arguments" }
+
+["CLAUDE#docs-duty"."body"]
+stamp = { hash = "b3:60f470f0b966d94b", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
+
+["CLAUDE#docs-duty"."dep:DOCS#ledger"]
+stamp = { hash = "b3:dc8f4545b1af3663", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
+
+["CLAUDE#docs-duty"."dep:DOCS#merge"]
+stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
+
+["CLAUDE#docs-duty"."dep:DOCS#notes"]
+stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
+
+["CLAUDE#pr-loop"."body"]
+stamp = { hash = "b3:d81271668dce9d22", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
+
+["CLAUDE#pr-loop"."dep:REVIEW#output"]
+stamp = { hash = "b3:e5b3f3114b2e27a7", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
+
+["CLAUDE#pr-loop"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:d8bd0cf6fe14dee7", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
+
+["CLAUDE#pr-loop"."dep:RULES#R-GOV-005"]
+stamp = { hash = "b3:748df28e389eb0ab", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
+
+["CLAUDE#pr-loop"."dep:RULES#R-GOV-006"]
+stamp = { hash = "b3:32ed4d1b07ec4bf3", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
+
+["DOCS#governance"."body"]
+stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
+
+["DOCS#governance"."dep:ADR-0002"]
+stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
+
+["DOCS#governance"."file:.github/workflows/governance.yml"]
+stamp = { hash = "b3:688aca89b9f23ef9", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
+
+["DOCS#tool"."body"]
+stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/args.rs"]
+stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/config.rs"]
+stamp = { hash = "b3:c144bec611f1dd5e", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/backrefs.rs"]
+stamp = { hash = "b3:530e42b902d67075", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/check.rs"]
+stamp = { hash = "b3:d48357d6fd217c90", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/due.rs"]
+stamp = { hash = "b3:e15df2271331bec8", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/generate.rs"]
+stamp = { hash = "b3:85e5cf3f39efa929", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/govern.rs"]
+stamp = { hash = "b3:e2204a69436a431a", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/hash.rs"]
+stamp = { hash = "b3:1f0db29723fcdc13", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/history.rs"]
+stamp = { hash = "b3:9a324483e317f8f0", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/ledger.rs"]
+stamp = { hash = "b3:bba9a8bef669df57", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/merge.rs"]
+stamp = { hash = "b3:ace5182c1b0c7ed9", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/mod.rs"]
+stamp = { hash = "b3:2e6475bfeb188cf4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/docs/parse.rs"]
+stamp = { hash = "b3:d5c2242a45402782", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/git.rs"]
+stamp = { hash = "b3:54cc5e73f0f5d6e4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/glob.rs"]
+stamp = { hash = "b3:ddc6d36f0bffe580", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/governance.rs"]
+stamp = { hash = "b3:c165a3fe91011d5b", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/heads.rs"]
+stamp = { hash = "b3:d92d274f38a43615", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/lanes.rs"]
+stamp = { hash = "b3:d6ec7fbf2b3b29fc", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/main.rs"]
+stamp = { hash = "b3:054ae4b4243f3dec", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/plan.rs"]
+stamp = { hash = "b3:d89f26bac6bb03e1", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/pr_title.rs"]
+stamp = { hash = "b3:44eca1529fc85545", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/progress.rs"]
+stamp = { hash = "b3:f8ecedcefb222893", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#tool"."file:tools/repo/src/stack.rs"]
+stamp = { hash = "b3:2b7a710fbe937b2f", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+
+["DOCS#ttl"."body"]
+stamp = { hash = "b3:97273a679623e954", by = "agent:skeleton-verifier", note = "Checked sweep.yml: cron weekly, docs due step, advisories, updates, 7-day label audit, lane holders >24h, churn step, pinned issue; due.rs clock (body or reviewed change) and refusals; said the audit covers the past week" }
+
+["DOCS#ttl"."file:.github/workflows/sweep.yml"]
+stamp = { hash = "b3:6d9dce2aef1a66e9", by = "agent:skeleton-verifier", note = "Checked sweep.yml: cron weekly, docs due step, advisories, updates, 7-day label audit, lane holders >24h, churn step, pinned issue; due.rs clock (body or reviewed change) and refusals; said the audit covers the past week" }
+
+["REVIEW#checks"."body"]
+stamp = { hash = "b3:a44461568994e466", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
+
+["REVIEW#checks"."dep:RULES#R-DOC-004"]
+stamp = { hash = "b3:1bf330d30ad3605f", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
+
+["REVIEW#checks"."dep:RULES#R-GOV-001"]
+stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
+
+["REVIEW#docs-notes"."body"]
+stamp = { hash = "b3:719c860cc28f8ec9", by = "agent:skeleton-verifier", note = "Checked against DOCS#notes: false verification and notes not engaging with the change are blocking, merge notes need earlier note plus merge change, one note copied across sections fails" }
+
+["REVIEW#docs-notes"."dep:DOCS#notes"]
+stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#notes: false verification and notes not engaging with the change are blocking, merge notes need earlier note plus merge change, one note copied across sections fails" }
+
+["REVIEW#gather"."body"]
+stamp = { hash = "b3:7f391b4b504eb3b6", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#tool: docs for returns rules, covering sections and ADRs; governance --base prints changes and maintainer-only lines; fixed step 3, docs check prints only findings, so re-verified notes come from the ledger diff" }
+
+["REVIEW#gather"."dep:DOCS#tool"]
+stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#tool: docs for returns rules, covering sections and ADRs; governance --base prints changes and maintainer-only lines; fixed step 3, docs check prints only findings, so re-verified notes come from the ledger diff" }
+
+["REVIEW#governance"."body"]
+stamp = { hash = "b3:ace417aa7482053d", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
+
+["REVIEW#governance"."dep:DOCS#governance"]
+stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
+
+["REVIEW#governance"."dep:RULES#R-GOV-002"]
+stamp = { hash = "b3:48046577581e5de4", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
+
+["REVIEW#governance"."dep:RULES#R-GOV-007"]
+stamp = { hash = "b3:f20fb3eec5516d16", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
+
+["REVIEW#ground-rules"."body"]
+stamp = { hash = "b3:c488f6b2642a2d85", by = "agent:skeleton-verifier", note = "Checked against ADR-0002: instructions read from the base branch, verdict per head SHA, recusal via Claude-Session trailers, comment-only reviewer whose sole label is needs-human; consistent with the gate's session and edit rules" }
+
+["REVIEW#ground-rules"."dep:ADR-0002"]
+stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "Checked against ADR-0002: instructions read from the base branch, verdict per head SHA, recusal via Claude-Session trailers, comment-only reviewer whose sole label is needs-human; consistent with the gate's session and edit rules" }
+
+["REVIEW#output"."body"]
+stamp = { hash = "b3:e5b3f3114b2e27a7", by = "agent:skeleton-verifier", note = "Compared the marker format and gate rules with review-gate.yml decide(): head SHA, REVIEWER_LOGIN, REVIEWER_SESSIONS, unedited comments, highest round, trailer recusal, dependabot exception; fixed: fail or escalate beats pass, recuse never counts" }
+
+["REVIEW#output"."file:.github/workflows/review-gate.yml"]
+stamp = { hash = "b3:888760d87186d89c", by = "agent:skeleton-verifier", note = "Compared the marker format and gate rules with review-gate.yml decide(): head SHA, REVIEWER_LOGIN, REVIEWER_SESSIONS, unedited comments, highest round, trailer recusal, dependabot exception; fixed: fail or escalate beats pass, recuse never counts" }
+
+["REVIEW#tiers"."body"]
+stamp = { hash = "b3:3669073337c93a81", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
+
+["REVIEW#tiers"."dep:ADR-0003"]
+stamp = { hash = "b3:ebb89a33e45b8749", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
+
+["REVIEW#tiers"."dep:RULES#R-GOV-005"]
+stamp = { hash = "b3:748df28e389eb0ab", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
+
+["RULES#documentation"."body"]
+stamp = { hash = "b3:b68fd9129988a34a", by = "agent:skeleton-verifier", note = "Checked R-DOC-001..011 against DOCS#gate's eight failure classes: metadata blocks, references, stale ledger, covers bounds (draft warning), enforced_by, generated drift, file facts, back-references; R-DOC-008 matches governance.rs ADR exceptions" }
+
+["RULES#documentation"."dep:DOCS#gate"]
+stamp = { hash = "b3:a2da6e7fc4cb2041", by = "agent:skeleton-verifier", note = "Checked R-DOC-001..011 against DOCS#gate's eight failure classes: metadata blocks, references, stale ledger, covers bounds (draft warning), enforced_by, generated drift, file facts, back-references; R-DOC-008 matches governance.rs ADR exceptions" }
+
+["RULES#governance"."body"]
+stamp = { hash = "b3:54ae6e94f258620b", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
+
+["RULES#governance"."dep:ADR-0002"]
+stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
+
+["RULES#governance"."dep:ADR-0003"]
+stamp = { hash = "b3:ebb89a33e45b8749", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
+
+["RUNBOOK-BOOTSTRAP#before"."body"]
+stamp = { hash = "b3:7302643aa24139de", by = "agent:skeleton-verifier", note = "Checked prerequisites against bootstrap.sh: gh and python3 presence checks, gh auth status, repo.toml read for [checks].required and [labels] via tomllib (so Python 3.11+), admin-only ruleset and Actions endpoints" }
+
+["RUNBOOK-BOOTSTRAP#before"."file:scripts/bootstrap.sh"]
+stamp = { hash = "b3:b73f41082b8112bb", by = "agent:skeleton-verifier", note = "Checked prerequisites against bootstrap.sh: gh and python3 presence checks, gh auth status, repo.toml read for [checks].required and [labels] via tomllib (so Python 3.11+), admin-only ruleset and Actions endpoints" }
+
+["RUNBOOK-BOOTSTRAP#by-hand"."body"]
+stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
+
+["RUNBOOK-BOOTSTRAP#by-hand"."dep:AGENTS#day-0-order"]
+stamp = { hash = "b3:6f4c72c42105c91b", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
+
+["RUNBOOK-BOOTSTRAP#by-hand"."file:scripts/bootstrap.sh"]
+stamp = { hash = "b3:b73f41082b8112bb", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
+
+["RUNBOOK-BOOTSTRAP#check"."body"]
+stamp = { hash = "b3:5fe57aaeafa70def", by = "agent:skeleton-verifier", note = "Checked --check output format (differs: plus printf %q command and JSON heredoc), exit 1 on differences, and die() exit 2 cases; added python3 and unresolvable repo to the exit 2 list" }
+
+["RUNBOOK-BOOTSTRAP#check"."file:scripts/bootstrap.sh"]
+stamp = { hash = "b3:b73f41082b8112bb", by = "agent:skeleton-verifier", note = "Checked --check output format (differs: plus printf %q command and JSON heredoc), exit 1 on differences, and die() exit 2 cases; added python3 and unresolvable repo to the exit 2 list" }
+
+["RUNBOOK-BOOTSTRAP#run"."body"]
+stamp = { hash = "b3:8669c7aca4dfab98", by = "agent:skeleton-verifier", note = "Checked flags --check, --repo, --template and the gh repo view default in bootstrap.sh, the ok:/set: output of fix(), and the final 'All settings match.' line with exit 0 in check mode" }
+
+["RUNBOOK-BOOTSTRAP#run"."file:scripts/bootstrap.sh"]
+stamp = { hash = "b3:b73f41082b8112bb", by = "agent:skeleton-verifier", note = "Checked flags --check, --repo, --template and the gh repo view default in bootstrap.sh, the ok:/set: output of fix(), and the final 'All settings match.' line with exit 0 in check mode" }
+
+["RUNBOOK-BOOTSTRAP#settings"."body"]
+stamp = { hash = "b3:b76c75ba032834d8", by = "agent:skeleton-verifier", note = "Compared each table row with bootstrap.sh (repo booleans, PR_TITLE/PR_BODY, both ruleset bodies incl. app id 15368 and do_not_enforce_on_create, Actions token and SHA pinning, fork policy skip, labels, variables, security) and with DESIGN#setup" }
+
+["RUNBOOK-BOOTSTRAP#settings"."dep:DESIGN#setup"]
+stamp = { hash = "b3:2102226345642dca", by = "agent:skeleton-verifier", note = "Compared each table row with bootstrap.sh (repo booleans, PR_TITLE/PR_BODY, both ruleset bodies incl. app id 15368 and do_not_enforce_on_create, Actions token and SHA pinning, fork policy skip, labels, variables, security) and with DESIGN#setup" }
+
+["RUNBOOK-BOOTSTRAP#settings"."file:scripts/bootstrap.sh"]
+stamp = { hash = "b3:b73f41082b8112bb", by = "agent:skeleton-verifier", note = "Compared each table row with bootstrap.sh (repo booleans, PR_TITLE/PR_BODY, both ruleset bodies incl. app id 15368 and do_not_enforce_on_create, Actions token and SHA pinning, fork policy skip, labels, variables, security) and with DESIGN#setup" }
+
+["RUNBOOK-LANES#builder"."body"]
+stamp = { hash = "b3:8f9386c3da1f35e2", by = "agent:skeleton-verifier", note = "Checked against R-GIT-006: lane line set to base+1 with the PR as holder only after LANE-HOLD, auto-merge off until the slot is granted; LANE-READY/LANE-HOLD/MERGE-MAIN formats match AGENTS#messages" }
+
+["RUNBOOK-LANES#builder"."dep:RULES#R-GIT-006"]
+stamp = { hash = "b3:0267af6ae2e89d72", by = "agent:skeleton-verifier", note = "Checked against R-GIT-006: lane line set to base+1 with the PR as holder only after LANE-HOLD, auto-merge off until the slot is granted; LANE-READY/LANE-HOLD/MERGE-MAIN formats match AGENTS#messages" }
+
+["RUNBOOK-LANES#declare"."body"]
+stamp = { hash = "b3:5b0ef6132a04b0f1", by = "agent:skeleton-verifier", note = "Checked against DOCS#lanes line format and lanes.rs guard(): a new lane passes with the PR as holder whatever its starting value, so adding a lane at its current value in its own PR holds" }
+
+["RUNBOOK-LANES#declare"."dep:DOCS#lanes"]
+stamp = { hash = "b3:0daecde7938a7293", by = "agent:skeleton-verifier", note = "Checked against DOCS#lanes line format and lanes.rs guard(): a new lane passes with the PR as holder whatever its starting value, so adding a lane at its current value in its own PR holds" }
+
+["RUNBOOK-LANES#integrator"."body"]
+stamp = { hash = "b3:11233c7eebb93fb3", by = "agent:skeleton-verifier", note = "Checked against DOCS#lanes: one holder per lane, LANE-HOLD value is base+1 as lane-guard requires without --wave; two claims on the same lane conflict in git, so slots are granted one at a time" }
+
+["RUNBOOK-LANES#integrator"."dep:DOCS#lanes"]
+stamp = { hash = "b3:0daecde7938a7293", by = "agent:skeleton-verifier", note = "Checked against DOCS#lanes: one holder per lane, LANE-HOLD value is base+1 as lane-guard requires without --wave; two claims on the same lane conflict in git, so slots are granted one at a time" }
+
+["RUNBOOK-LANES#waves"."body"]
+stamp = { hash = "b3:feeae5fe103bd9f7", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (lane PRs into the wave, landing PR may advance a lane by more than one) and governance.yml, which passes --wave to lane-guard when the head ref is wave/*" }
+
+["RUNBOOK-LANES#waves"."dep:ADR-0005"]
+stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (lane PRs into the wave, landing PR may advance a lane by more than one) and governance.yml, which passes --wave to lane-guard when the head ref is wave/*" }
+
+["RUNBOOK-WAVES#current"."body"]
+stamp = { hash = "b3:8aa60d15758aa947", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main --from wave/<name> merges origin/wave/<name>, resolves ledger and generated-block conflicts, lists stale sections; merge never rebase" }
+
+["RUNBOOK-WAVES#current"."dep:DOCS#merge"]
+stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main --from wave/<name> merges origin/wave/<name>, resolves ledger and generated-block conflicts, lists stale sections; merge never rebase" }
+
+["RUNBOOK-WAVES#landing"."body"]
+stamp = { hash = "b3:40dfcbe01dd47c5b", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (one landing PR running every check, carrying trailers and Governance change sections) and REVIEW#gather step 6 (head wave/*, base main, remerge-diff of sync merges); bootstrap sets delete_branch_on_merge" }
+
+["RUNBOOK-WAVES#landing"."dep:ADR-0005"]
+stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (one landing PR running every check, carrying trailers and Governance change sections) and REVIEW#gather step 6 (head wave/*, base main, remerge-diff of sync merges); bootstrap sets delete_branch_on_merge" }
+
+["RUNBOOK-WAVES#landing"."dep:REVIEW#gather"]
+stamp = { hash = "b3:7f391b4b504eb3b6", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (one landing PR running every check, carrying trailers and Governance change sections) and REVIEW#gather step 6 (head wave/*, base main, remerge-diff of sync merges); bootstrap sets delete_branch_on_merge" }
+
+["RUNBOOK-WAVES#sync"."body"]
+stamp = { hash = "b3:b3312ff454f0d239", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: the sync runs plain merge-main (origin/main) on a branch off the wave, then lands as a merge commit; matches ADR-0005's never-squashed sync PRs" }
+
+["RUNBOOK-WAVES#sync"."dep:DOCS#merge"]
+stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: the sync runs plain merge-main (origin/main) on a branch off the wave, then lands as a merge commit; matches ADR-0005's never-squashed sync PRs" }
+
+["RUNBOOK-WAVES#when"."body"]
+stamp = { hash = "b3:46da0e131e4f6b74", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 waves decision: off by default, turned on at about 15 open PRs or queued runners, wave/<name> cut from main; turning off by landing the last wave" }
+
+["RUNBOOK-WAVES#when"."dep:ADR-0005"]
+stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 waves decision: off by default, turned on at about 15 open PRs or queued runners, wave/<name> cut from main; turning off by landing the last wave" }
+
+["RUNBOOK-WAVES#which-wave"."body"]
+stamp = { hash = "b3:1148fafdf17884ae", by = "agent:skeleton-verifier", note = "Checked the target table against ADR-0005 (CI, gate and governance changes go to main); 'changing the base alone does not re-run CI' matches ci.yml pull_request types, which omit edited" }
+
+["RUNBOOK-WAVES#which-wave"."dep:ADR-0005"]
+stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked the target table against ADR-0005 (CI, gate and governance changes go to main); 'changing the base alone does not re-run CI' matches ci.yml pull_request types, which omit edited" }
+
+["SKILL-STEWARD#ci"."body"]
+stamp = { hash = "b3:8c9f6729c694b095", by = "agent:skeleton-verifier", note = "Checked against R-GIT-003's check table and ci.yml/review-gate.yml: added config check and the gate-test node command; fixed review-gate as pending until a marker, failing on fail/escalate; R-GIT-003 now says review-gate also runs on drafts" }
+
+["SKILL-STEWARD#ci"."dep:RULES#R-GIT-003"]
+stamp = { hash = "b3:eb1cd61d4d70afb4", by = "agent:skeleton-verifier", note = "Checked against R-GIT-003's check table and ci.yml/review-gate.yml: added config check and the gate-test node command; fixed review-gate as pending until a marker, failing on fail/escalate; R-GIT-003 now says review-gate also runs on drafts" }
+
+["SKILL-STEWARD#every-event"."body"]
+stamp = { hash = "b3:14f226c6f67353a1", by = "agent:skeleton-verifier", note = "Checked against AGENT-BUILDER#on-every-wake (ops/STOP, ops/mode.md, pinned main-is-red issue from main-health.yml) and the builder loop's pre-push checks: stack run fmt/lint/test, docs check, governance --base origin/main" }
+
+["SKILL-STEWARD#every-event"."dep:AGENT-BUILDER#on-every-wake"]
+stamp = { hash = "b3:96b25b4e339937c8", by = "agent:skeleton-verifier", note = "Checked against AGENT-BUILDER#on-every-wake (ops/STOP, ops/mode.md, pinned main-is-red issue from main-health.yml) and the builder loop's pre-push checks: stack run fmt/lint/test, docs check, governance --base origin/main" }
+
+["SKILL-STEWARD#findings"."body"]
+stamp = { hash = "b3:c66dc8e4002b3e41", by = "agent:skeleton-verifier", note = "Checked against R-GOV-004 (fix commit or concrete rebuttal per B<n>, round-3 needs-human); fixed the marker position, REVIEW#output puts the human line and footer after the marker" }
+
+["SKILL-STEWARD#findings"."dep:RULES#R-GOV-004"]
+stamp = { hash = "b3:82e6176a889d392c", by = "agent:skeleton-verifier", note = "Checked against R-GOV-004 (fix commit or concrete rebuttal per B<n>, round-3 needs-human); fixed the marker position, REVIEW#output puts the human line and footer after the marker" }
+
+["SKILL-STEWARD#merge-main"."body"]
+stamp = { hash = "b3:c1e209fb60661830", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge (merge-main and --from wave, ledger and generated conflicts auto-resolved, others by hand, stale list with this branch's notes) and DOCS#notes (fresh note: earlier note plus merge change)" }
+
+["SKILL-STEWARD#merge-main"."dep:DOCS#merge"]
+stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge (merge-main and --from wave, ledger and generated conflicts auto-resolved, others by hand, stale list with this branch's notes) and DOCS#notes (fresh note: earlier note plus merge change)" }
+
+["SKILL-STEWARD#merge-main"."dep:DOCS#notes"]
+stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge (merge-main and --from wave, ledger and generated conflicts auto-resolved, others by hand, stale list with this branch's notes) and DOCS#notes (fresh note: earlier note plus merge change)" }
+
+["SKILL-STEWARD#merge-only"."body"]
+stamp = { hash = "b3:9648ee47a852539b", by = "agent:skeleton-verifier", note = "Checked against REVIEW#rounds: a merge-only round reviews the merge resolution and restamp notes and carries findings forward, so the merge push carries nothing else and real changes get a full round" }
+
+["SKILL-STEWARD#merge-only"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:d8bd0cf6fe14dee7", by = "agent:skeleton-verifier", note = "Checked against REVIEW#rounds: a merge-only round reviews the merge resolution and restamp notes and carries findings forward, so the merge push carries nothing else and real changes get a full round" }
+
+["SKILL-STEWARD#merging"."body"]
+stamp = { hash = "b3:a42e150b4b73c0e2", by = "agent:skeleton-verifier", note = "Checked against CLAUDE#pr-loop step 2: enable_pr_auto_merge with SQUASH or gh pr merge --auto --squash, say so if it fails, lane PRs keep it off until they hold the slot, merges once every required check is green" }
+
+["SKILL-STEWARD#merging"."dep:CLAUDE#pr-loop"]
+stamp = { hash = "b3:d81271668dce9d22", by = "agent:skeleton-verifier", note = "Checked against CLAUDE#pr-loop step 2: enable_pr_auto_merge with SQUASH or gh pr merge --auto --squash, say so if it fails, lane PRs keep it off until they hold the slot, merges once every required check is green" }
+
+["SKILL-STEWARD#never"."body"]
+stamp = { hash = "b3:5bd4736753d0b7ea", by = "agent:skeleton-verifier", note = "Checked each item against CLAUDE#limits: no verdicts or hand merges, no labels without the justification section and examination, no settings or branch protection changes, no hand-edited ledger or unread verification" }
+
+["SKILL-STEWARD#never"."dep:CLAUDE#limits"]
+stamp = { hash = "b3:bbc1647679f71521", by = "agent:skeleton-verifier", note = "Checked each item against CLAUDE#limits: no verdicts or hand merges, no labels without the justification section and examination, no settings or branch protection changes, no hand-edited ledger or unread verification" }
+
+["SKILL-VERIFY-DOCS#find"."body"]
+stamp = { hash = "b3:f4cc6535b88dd74a", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger: the three input kinds body, file:<path> (added, removed, renamed or edited) and dep:<DOC#anchor>, and that docs check names each stale section by DOC#anchor" }
+
+["SKILL-VERIFY-DOCS#find"."dep:DOCS#ledger"]
+stamp = { hash = "b3:dc8f4545b1af3663", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger: the three input kinds body, file:<path> (added, removed, renamed or edited) and dep:<DOC#anchor>, and that docs check names each stale section by DOC#anchor" }
+
+["SKILL-VERIFY-DOCS#merges"."body"]
+stamp = { hash = "b3:13683f9a7c6df592", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main prints each stale section with the notes this branch wrote since the merge base; the two-part fresh note matches the merge rules there and in DOCS#notes" }
+
+["SKILL-VERIFY-DOCS#merges"."dep:DOCS#merge"]
+stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main prints each stale section with the notes this branch wrote since the merge base; the two-part fresh note matches the merge rules there and in DOCS#notes" }
+
+["SKILL-VERIFY-DOCS#notes"."body"]
+stamp = { hash = "b3:b8007b9ba947e689", by = "agent:skeleton-verifier", note = "Checked the tool's rejection list against DOCS#notes and mod.rs check_stamp: under 20 chars or a stock phrase; every extra stock phrase in STOCK_NOTES is under 20 chars, so the stated rule holds" }
+
+["SKILL-VERIFY-DOCS#notes"."dep:DOCS#notes"]
+stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked the tool's rejection list against DOCS#notes and mod.rs check_stamp: under 20 chars or a stock phrase; every extra stock phrase in STOCK_NOTES is under 20 chars, so the stated rule holds" }
+
+["SKILL-VERIFY-DOCS#reread"."body"]
+stamp = { hash = "b3:0d4e3aef7b680512", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#notes (edit a wrong section, never verify it) and the docs verify CLI in docs/mod.rs (--by agent:<name>, --note required); no hand edits to the ledger or generated blocks" }
+
+["SKILL-VERIFY-DOCS#reread"."dep:DOCS#notes"]
+stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#notes (edit a wrong section, never verify it) and the docs verify CLI in docs/mod.rs (--by agent:<name>, --note required); no hand edits to the ledger or generated blocks" }
+
+["SKILL-VERIFY-DOCS#review"."body"]
+stamp = { hash = "b3:ad390f0d50c6b24a", by = "agent:skeleton-verifier", note = "Checked against DOCS#ttl: due docs go to the weekly sweep issue and never fail a PR; docs review <DOC> --by --note takes the same note standard and refuses ADRs and docs without review_every" }
+
+["SKILL-VERIFY-DOCS#review"."dep:DOCS#ttl"]
+stamp = { hash = "b3:97273a679623e954", by = "agent:skeleton-verifier", note = "Checked against DOCS#ttl: due docs go to the weekly sweep issue and never fail a PR; docs review <DOC> --by --note takes the same note standard and refuses ADRs and docs without review_every" }
+
+["STACK-RUST#lints"."body"]
+stamp = { hash = "b3:3dfee8931df79371", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-003"]
+stamp = { hash = "b3:212dc826d71206fa", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-004"]
+stamp = { hash = "b3:973ef8f18607358f", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-005"]
+stamp = { hash = "b3:48731ed25d58cfcf", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-006"]
+stamp = { hash = "b3:0ff6cff420310a4e", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-009"]
+stamp = { hash = "b3:fd02f988ca24e827", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-011"]
+stamp = { hash = "b3:1dd78826543f9da8", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+
+["STACK-RUST#plugging-in"."body"]
+stamp = { hash = "b3:91c4543be6e420b6", by = "agent:skeleton-verifier", note = "Checked each pack.toml key against config.rs Pack, stack.rs (skip: no <detect>), ci.yml job names, governance.rs suppression and reason checks; fixed the [backrefs] row to match backrefs.rs (only covered packages, exactly the covering sections)" }
+
+["STACK-RUST#plugging-in"."file:stacks/rust/pack.toml"]
+stamp = { hash = "b3:638a78adb8015c7b", by = "agent:skeleton-verifier", note = "Checked each pack.toml key against config.rs Pack, stack.rs (skip: no <detect>), ci.yml job names, governance.rs suppression and reason checks; fixed the [backrefs] row to match backrefs.rs (only covered packages, exactly the covering sections)" }
+
+["STACK-RUST#setup"."body"]
+stamp = { hash = "b3:c59f4160c6aaaf64", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
+
+["STACK-RUST#setup"."file:stacks/rust/clippy.toml"]
+stamp = { hash = "b3:b73b054d1d4f0bc7", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
+
+["STACK-RUST#setup"."file:stacks/rust/deny.toml"]
+stamp = { hash = "b3:2e8a2e79bc55d1ed", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
+
+["STACK-RUST#setup"."file:stacks/rust/rustfmt.toml"]
+stamp = { hash = "b3:0d42bdb64178a8be", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
+

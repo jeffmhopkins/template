@@ -1,0 +1,133 @@
+# governance: the checks that read the PR as data and run code from its base only.
+#   governance  `repo governance`: governance changes carry the label and the justification
+#               section; maintainer-only paths also need the label applied by the maintainer.
+#   pr-title    `repo pr-title`: the title is a Conventional Commit.
+#   lane-guard  `repo lane-guard`: a serial-lane claim is base + 1 and held by this PR.
+#
+# Runs on pull_request_target, so GitHub takes this file from the PR's base branch. Each job
+# checks out the BASE commit, builds the tool from it, and fetches the PR head as git objects
+# only. Nothing from the head is checked out, built or run. The build cache is restored here
+# and never saved (ci.yml saves it on pushes to main).
+# Editing this file is a governance change.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+
+name: governance
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read   # the label events of the PR
+
+concurrency:
+  group: governance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  PR: ${{ github.event.pull_request.number }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  # [labels].governance in repo.toml.
+  GOVERNANCE_LABEL: governance-approved
+  # The account whose label application counts as the maintainer's.
+  MAINTAINER: ${{ vars.MAINTAINER_LOGIN || github.repository_owner }}
+
+jobs:
+  governance:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - id: tool
+        uses: ./.github/actions/repo-tool
+        with:
+          cache-name: base-tool
+      - name: Fetch the PR head as git objects
+        run: |
+          git fetch --no-tags origin "$HEAD_SHA"
+          git cat-file -e "$HEAD_SHA^{commit}"
+      - name: PR body and labels from the event
+        run: |
+          jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/pr-body.md"
+          echo "LABELS=$(jq -r '[.pull_request.labels[].name] | join(",")' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+      - name: Governance changes are labeled and justified
+        env:
+          REPO: ${{ steps.tool.outputs.path }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          "$REPO" governance --base "$BASE_SHA" --head "$HEAD_SHA" \
+            --pr-body "$RUNNER_TEMP/pr-body.md" --labels "$LABELS" | tee "$RUNNER_TEMP/governance.txt"
+          status=${PIPESTATUS[0]}
+          set -e
+
+          only=$(sed -n 's/^maintainer-only: //p' "$RUNNER_TEMP/governance.txt")
+          if [ -n "$only" ]; then
+            echo "Maintainer-only paths changed:"
+            printf '%s\n' "$only" | sed 's/^/  /'
+            case ",$LABELS," in
+              *",$GOVERNANCE_LABEL,"*) ;;
+              *)
+                echo "::error::maintainer-only paths changed: the $GOVERNANCE_LABEL label is missing"
+                exit 1 ;;
+            esac
+            actor=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR/events" \
+              --jq ".[] | select(.event == \"labeled\" and .label.name == \"$GOVERNANCE_LABEL\") | .actor.login" | tail -n 1)
+            if [ "$actor" != "$MAINTAINER" ]; then
+              echo "::error::maintainer-only paths changed: $GOVERNANCE_LABEL was last applied by '${actor:-nobody}', not by $MAINTAINER"
+              exit 1
+            fi
+            echo "$GOVERNANCE_LABEL applied by $MAINTAINER."
+          fi
+          exit "$status"
+
+  pr-title:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - id: tool
+        uses: ./.github/actions/repo-tool
+        with:
+          cache-name: base-tool
+      - name: Conventional Commit title
+        env:
+          REPO: ${{ steps.tool.outputs.path }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: '"$REPO" pr-title "$TITLE"'
+
+  lane-guard:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - id: tool
+        uses: ./.github/actions/repo-tool
+        with:
+          cache-name: base-tool
+      - name: Fetch the PR head as git objects
+        run: |
+          git fetch --no-tags origin "$HEAD_SHA"
+          git cat-file -e "$HEAD_SHA^{commit}"
+      - name: Serial-lane claims
+        env:
+          REPO: ${{ steps.tool.outputs.path }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          wave=()
+          case "$HEAD_REF" in wave/*) wave=(--wave) ;; esac
+          "$REPO" lane-guard --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" "${wave[@]}"

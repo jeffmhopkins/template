@@ -1,13 +1,29 @@
+<!-- @doc
+id = "AGENT-INTEGRATOR"
+title = "Integrator"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Integrator
 
 **Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
 `INTAKE-DONE`.
 
+<a id="purpose"></a>
 ## Purpose
+<!-- @section
+-->
+
 Gets reviewed PRs into `main` without collisions. It owns the serial lanes, mergeability,
 main's health in `ops/mode.md`, and the wave branches once they're on.
 
+<a id="serial-lanes"></a>
 ## Serial lanes ([serial-lanes runbook](../runbooks/serial-lanes.md))
+<!-- @section
+-->
+
 A lane is a value only one PR at a time may change, such as a protocol or schema version or a
 migration number. An ADR takes its PR's number.
 
@@ -28,7 +44,11 @@ a lane by more than one.
 6. **A holder that hasn't moved for 2 rechecks** loses the slot. Send `STALLED #<pr>` to the
    coordinator for adoption, and give the slot to the next ready PR.
 
+<a id="mergeability"></a>
 ## Mergeability and main's health
+<!-- @section
+-->
+
 - **Every 30 minutes** (`send_later` after each check), list open PRs that passed review but
   are `dirty`, and send each builder `MERGE-MAIN #<pr>`.
 - **Idle builders.** A builder that passed review but didn't merge after two nudges goes to
@@ -37,7 +57,11 @@ a lane by more than one.
   required check fails on main. Mirror it in `ops/mode.md`.
   Triage fixes the cause.
 
+<a id="waves"></a>
 ## Waves ([waves runbook](../runbooks/waves.md))
+<!-- @section
+-->
+
 - **Turn them on when** more than about 15 PRs are open, or runners queue for more than about
   10 minutes:
   - create the wave branch and set `ops/mode.md` to waves on;
@@ -53,11 +77,19 @@ a lane by more than one.
   in that wave (a standing permission). Turn it back on once it lands.
 - Subscribe to the wave PRs you open; you're their author session.
 
+<a id="state"></a>
 ## State
+<!-- @section
+-->
+
 `ops/lanes.md`, `ops/waves.md`, `ops/mode.md`. On a cold start, rebuild them from open PRs and
 `lanes.toml` on main.
 
+<a id="never"></a>
 ## Never
+<!-- @section
+-->
+
 - Change repo settings. The wave rulesets come from bootstrap.
 - Rewrite history on someone else's branch.
 - Squash a sync PR.

@@ -1,0 +1,34 @@
+# External resources the docs rely on (docs/DOCS.md#facts). Every external URL linked
+# from a tracked doc is registered here, by exact URL. `relied_on` is what the docs rely
+# on from the page; `scripts/repo docs due` lists an entry once `recheck_every` has passed
+# since the last commit that changed it.
+
+[[external]]
+id = "conventional-commits"
+url = "https://www.conventionalcommits.org/en/v1.0.0/"
+relied_on = "PR title format: type, optional scope in parentheses, optional !, colon, summary"
+recheck_every = "365d"
+
+[[external]]
+id = "contributor-covenant"
+url = "https://www.contributor-covenant.org/version/2/1/code_of_conduct/"
+relied_on = "The Contributor Covenant 2.1 text the code of conduct adopts by reference"
+recheck_every = "365d"
+
+[[external]]
+id = "adr-practice"
+url = "https://adr.github.io/"
+relied_on = "Architecture decision records: one decision per record, with context, decision and consequences"
+recheck_every = "365d"
+
+[[external]]
+id = "github-private-vulnerability-reporting"
+url = "https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability"
+relied_on = "Reporters open a private advisory from the repository's Security tab"
+recheck_every = "180d"
+
+[[external]]
+id = "claude-github-app"
+url = "https://github.com/apps/claude"
+relied_on = "The Claude GitHub App's install page, used once at bootstrap"
+recheck_every = "180d"

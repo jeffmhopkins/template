@@ -1,0 +1,61 @@
+# progress: rewrites the pinned "Progress" issue from `scripts/repo progress`, which derives
+# each roadmap item's status from the `Completes:` / `Part-of:` / `Verified-on-hardware:`
+# trailers on main (docs/DOCS.md#progress). Runs on every push to main.
+# Editing this file is a governance change.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+
+name: progress
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write   # create, edit, pin the progress issue
+
+concurrency:
+  group: progress
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: never
+  ISSUE_TITLE: Progress
+
+jobs:
+  progress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # trailers come from the whole history of main
+          persist-credentials: false
+      - id: rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: progress
+      - name: Derive progress
+        run: |
+          {
+            echo "Rewritten on every push to \`main\` by the [progress]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) workflow, at \`$(git rev-parse --short HEAD)\`."
+            echo "Status is derived from PR trailers (\`Completes:\`, \`Part-of:\`, \`Verified-on-hardware:\`); never edit it here."
+            echo
+            scripts/repo progress --format markdown
+          } > "$RUNNER_TEMP/progress.md"
+          cat "$RUNNER_TEMP/progress.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Update the progress issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/pinned-issue.sh "$ISSUE_TITLE" "$RUNNER_TEMP/progress.md"
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/

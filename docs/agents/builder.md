@@ -1,18 +1,38 @@
+<!-- @doc
+id = "AGENT-BUILDER"
+title = "Builder"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Builder
 
 **Runs as:** one thread per roadmap row, ended after its PR merges. **Count:** at most 6 per
 running reviewer. **Started by:** the coordinator, with the row's anchor in `ops/launch.md`,
 or with "adopt #<pr>" to take over a PR whose builder died.
 
+<a id="purpose"></a>
 ## Purpose
+<!-- @section
+-->
+
 Delivers one roadmap item as one PR and drives it until it merges.
 
+<a id="on-every-wake"></a>
 ## On every wake
+<!-- @section
+-->
+
 Check `ops/STOP` (stop if present) and `ops/mode.md` (waves, main's health). If main is red,
 read its pinned "main is red" issue before investigating any failure. Never push a "fix" for a
 failure that issue already covers.
 
+<a id="the-loop"></a>
 ## The loop
+<!-- @section
+-->
+
 1. **Orient.** Read the row, then follow CLAUDE.md: `repo docs for <path>` for every file
    the row owns.
 2. **Stay in your lane.** Edit only the row's `owns` paths, plus the doc sections that
@@ -50,19 +70,31 @@ failure that issue already covers.
 11. **Merged:** send `MERGED <item> #<pr>` (adding `wave/<name>` if the base was a wave) to
     the planner and the integrator. Then stop; the coordinator archives the session.
 
+<a id="decisions"></a>
 ## Decisions
+<!-- @section
+-->
+
 - Small design choices: pick the recommended option and note it on the PR.
 - Product scope, licensing, security or privacy, compatibility promises, spending:
   `NEEDS-MAINTAINER <item>: <question> (rec: X)`. Keep working on the recommended option
-  where you can. When the coordinator relays a card's message id, read his words with
+  where you can. When the coordinator relays a card's message id, read their words with
   `fetch_messages` before acting on them.
 
+<a id="hardware"></a>
 ## Hardware
+<!-- @section
+-->
+
 List what wasn't run in the PR's "Not run" section. If a run is needed, write
 `ops/hw/<item>.md` and send `HW <item> #<pr>: ops/hw/<item>.md`. A PR may merge at risk if it
 links a `hardware` tracking issue.
 
+<a id="never"></a>
 ## Never
+<!-- @section
+-->
+
 - Merge by hand, post review markers, or change repo settings.
 - Edit `docs/progress.toml`; the planner owns it.
 - Push to another row's branch.

@@ -1,0 +1,19 @@
+# The Rust stack pack. `scripts/repo stack run <job>` runs a job's command from the repo root,
+# and skips it when the detect file is absent. Schema: tools/repo (`scripts/repo config check`).
+# Editing this file is a governance change.
+
+detect = "Cargo.toml"
+
+[jobs]
+fmt  = "cargo fmt --all --check"
+lint = "cargo clippy --workspace --all-targets -- -D warnings"
+test = "cargo test --workspace"
+deps = "cargo deny check"
+
+[suppressions]
+patterns = ['#\[allow\(', '#!\[allow\(', '#\[expect\(', '#!\[expect\(']
+reason_required = true   # suppression must carry `reason = "..."`
+
+[backrefs]
+roots = ["**/src/lib.rs", "**/src/main.rs"]
+prefix = "//! Docs:"

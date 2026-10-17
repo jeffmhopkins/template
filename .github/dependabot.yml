@@ -1,0 +1,31 @@
+# Dependabot: weekly grouped update PRs. Titles are Conventional Commits, for the pr-title check.
+# New releases wait 5 days before Dependabot proposes them.
+# A project with a root Cargo.toml adds an entry for directory "/".
+# Editing this file is a governance change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ["/", "/.github/actions/*"]
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+      include: scope
+
+  - package-ecosystem: cargo
+    directory: /tools/repo
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    groups:
+      cargo:
+        patterns: ["*"]
+    commit-message:
+      prefix: build
+      include: scope

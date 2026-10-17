@@ -1,0 +1,7 @@
+# clippy configuration for the Rust stack. Lives at the repo root next to the root Cargo.toml.
+# Which lints are on is set in the root Cargo.toml's [workspace.lints] (stacks/rust/RULES.md).
+# Editing this file is a governance change.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-dbg-in-tests = true
+allow-print-in-tests = true

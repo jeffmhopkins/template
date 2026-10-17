@@ -1,0 +1,7 @@
+# Blank issues stay enabled for the maintainer's notes and agent follow-ups.
+blank_issues_enabled: true
+# Intake adds the private security report link:
+# contact_links:
+#   - name: Report a security vulnerability
+#     url: https://github.com/<owner>/<repo>/security/advisories/new
+#     about: Report privately, never in a public issue.

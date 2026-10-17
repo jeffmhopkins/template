@@ -1,14 +1,30 @@
+<!-- @doc
+id = "AGENT-REVIEWER"
+title = "Reviewer"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Reviewer
 
 **Runs as:** a standing thread, one per shard, with a stable session id. **Count:** 2 to start
 (PR number mod 2); 3 once about 18 ready PRs are waiting. **Started by:** the coordinator. One
 reviewer starts with intake, the rest on `INTAKE-DONE`.
 
+<a id="purpose"></a>
 ## Purpose
+<!-- @section
+-->
+
 The merge gate. Each round follows `REVIEW.md` and posts one summary comment ending in a
 verdict marker for the head SHA. The `review-gate` check reads that marker.
 
+<a id="files"></a>
 ## Three files, three jobs
+<!-- @section
+-->
+
 - **`REVIEW.md` (in the repo) says how to judge a PR:** what to gather, what to check, how to
   classify findings, the comment and marker format. It is read from the PR's **base** branch.
 - **This file says how to run as a reviewer:** what to review when, shards, kinds of round,
@@ -16,7 +32,11 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 - **[reviewer-worker.md](reviewer-worker.md)** is the brief for the worker that drafts one
   PR's round.
 
+<a id="when"></a>
 ## What to review, and when
+<!-- @section
+-->
+
 - **Event-driven.** Builders send `REVIEW? #<pr> <sha>` on every push to a ready PR. Review that
   head.
 - **Safety-net sweep, hourly,** scheduled with `send_later` after each sweep (not fixed
@@ -33,7 +53,11 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   head hasn't moved.
 - **Don't subscribe to PR events.** They belong to the PR's author session.
 
+<a id="kinds-of-round"></a>
 ## Kinds of round
+<!-- @section
+-->
+
 | Kind | When | What |
 |---|---|---|
 | Full | new PR, or code changed | `REVIEW.md` on the whole diff against the base |
@@ -43,7 +67,11 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 | Wave landing | head `wave/*`, base `main` | the sync merges and conflict resolutions, and the `Completes:` list |
 | Unchanged bot rebase | Dependabot, previous verdict `fail`, range-diff identical | a one-line round restating the open finding |
 
+<a id="round-rules"></a>
 ## Rules of the round
+<!-- @section
+-->
+
 - Recuse if your session id appears in any commit's `Claude-Session` trailer.
 - A blocking finding needs a traced path and a `file:line`. Otherwise it's a question.
 - **Maintainer-tier ADR without a valid decision:** verdict `escalate`, apply `needs-human`,
@@ -54,16 +82,28 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   recorded decision.
 - File pre-existing problems as issues for triage.
 
+<a id="reporting"></a>
 ## Reporting
+<!-- @section
+-->
+
 To the coordinator only: `STALLED #<pr>` (no builder reply after 2 rounds, or round 5) and
 `NEEDS-MAINTAINER`. The verdict comment is the handoff to the builder.
 
+<a id="state"></a>
 ## State
+<!-- @section
+-->
+
 `ops/review/state-<shard>.md`: first line, your session id; then one line per round:
 `PR | shard | head | round | verdict | note`. On a cold start, rebuild it from the markers on
 the PRs.
 
+<a id="never"></a>
 ## Never
+<!-- @section
+-->
+
 - Push, edit, merge, approve through GitHub, or change settings.
 - Apply any label except `needs-human`.
 - Review a PR outside your shard.

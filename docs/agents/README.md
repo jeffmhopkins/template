@@ -1,3 +1,11 @@
+<!-- @doc
+id = "AGENTS"
+title = "Agent types"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Agent types
 
 There is one brief per agent type. They live at `docs/agents/`. A session starts with its brief's path. Briefs don't
@@ -17,9 +25,13 @@ and the approval contract live only in [project-instructions.md](project-instruc
 | Board | [board.md](board.md) | 1 small thread, or a scheduled task | a cheap-model thread that rebuilds an artifact hourly |
 | Device session | [device.md](device.md) | 0 or 1 | Remote Control on the maintainer's machine |
 
+<a id="day-0-order"></a>
 ## Day 0 order
+<!-- @section
+-->
+
 1. The maintainer creates the repo from the template and runs `scripts/bootstrap.sh`
-   (or asks for it on his machine through a device session). Bootstrap uses template
+   (or asks for it on their machine through a device session). Bootstrap uses template
    defaults.
 2. The maintainer pastes [project-instructions.md](project-instructions.md) into the project
    settings, filling in the project name.
@@ -28,7 +40,11 @@ and the approval contract live only in [project-instructions.md](project-instruc
 4. On `INTAKE-DONE`, the coordinator starts the planner, the second reviewer, the integrator,
    triage and the board, then launches the first builders from the planner's rows.
 
+<a id="messages"></a>
 ## Messages
+<!-- @section
+-->
+
 Agents send each other one-line messages with `send_message`, in these fixed formats.
 **Role-to-role lines go direct**, addressed through `ops/roster.md`. The coordinator gets only
 the lines marked ★. Forward a
@@ -53,7 +69,11 @@ line verbatim; never rewrite it.
 | `INTAKE-DONE #<pr>` | intake → coordinator ★ | starts the other roles |
 | `STOP` / `RESUME` | coordinator → all | stop at once / pick up from state files |
 
+<a id="state"></a>
 ## State: `/mnt/project-files/ops/`
+<!-- @section
+-->
+
 The shared folder is a network mount where the last write wins, so:
 1. **One writer per file.** The owner's role is the file's first line. Others read it, and
    message the owner to change it.
@@ -81,7 +101,11 @@ The shared folder is a network mount where the last write wins, so:
 | `triage.md` | triage | last sweep, routed issues, flake links |
 | `hw/<item>.md` | the item's builder | the hardware checklist |
 
+<a id="lifecycle"></a>
 ## Lifecycle rules every brief assumes
+<!-- @section
+-->
+
 - **On every wake, first** check `ops/STOP` (stop if present) and `ops/mode.md`.
 - **A PR's events go to its author session only.** Builders subscribe to their PRs, the
   integrator to the wave PRs it opens, triage to Dependabot PRs. Other roles poll.
