@@ -22,6 +22,8 @@ root README.
 -->
 
 The repo is created from the template, bootstrap has run, and the checks pass on `main`.
+Intake's design PR completes it, with `Completes: M0-1`
+([intake › Outputs](agents/intake.md#outputs)).
 
 **Demo:** a PR that changes one doc section is reviewed, restamped and auto-merged.
 

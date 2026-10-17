@@ -1,7 +1,9 @@
-# Changelog
+# Template changelog
 
-Changes to the template itself, by template version. The version is `[template].version`
-in `repo.toml`.
+This is the template's own changelog: changes to the template, by template version. The
+version is `[template].version` in `repo.toml`. In a project made from the template, intake
+replaces this file with the project's own changelog, and template upgrades read this one at
+the template's tag.
 
 ## 0.1.0
 

@@ -8,6 +8,7 @@ id = "M0"
 title = "Template in place"
 demo = "A PR that changes one doc section is reviewed, restamped and auto-merged."
 
+# Intake's design PR carries `Completes: M0-1` (docs/agents/intake.md#outputs).
 [[item]]
 id = "M0-1"
 milestone = "M0"

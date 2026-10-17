@@ -8,6 +8,11 @@ review_every = "90d"
 
 # `<PROJECT>`
 
+> [!NOTE]
+> **This is the template itself,** not a project. To start your own project from it, follow
+> [Getting started](docs/GETTING-STARTED.md#start). In a project, intake replaces the title
+> and removes this note.
+
 [![CI](https://github.com/jeffmhopkins/template/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 [![Licence: MIT OR Apache-2.0](https://img.shields.io/badge/licence-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 

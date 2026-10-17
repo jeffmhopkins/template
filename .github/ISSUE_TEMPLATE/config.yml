@@ -1,7 +1,8 @@
 # Blank issues stay enabled for the maintainer's notes and agent follow-ups.
 blank_issues_enabled: true
-# Intake adds the private security report link:
+# On a public repo, intake's design PR uncomments this link with the project's OWNER/REPO.
+# It opens private vulnerability reporting, which bootstrap turns on. A private repo leaves it out.
 # contact_links:
 #   - name: Report a security vulnerability
-#     url: https://github.com/<owner>/<repo>/security/advisories/new
+#     url: https://github.com/OWNER/REPO/security/advisories/new
 #     about: Report privately, never in a public issue.
