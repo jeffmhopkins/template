@@ -156,8 +156,9 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
      ```
      The last line should end with `All settings match.`
 6. **Say hello.** In the project chat, write one or two sentences about what you want built,
-   for example "A desktop app that sorts my photos by who's in them". The coordinator starts
-   intake and the first reviewer.
+   for example "A desktop app that sorts my photos by who's in them". The coordinator records
+   who you are from this first message, so it can check every approval against you, then
+   starts intake and the first reviewer.
 7. **Turn on the review gate.** The coordinator posts a card with the reviewers' session
    ids. Set them as the repo variable `REVIEWER_SESSIONS`, then tap **Done** on the card
    ([how](#github)).
@@ -181,7 +182,7 @@ any of these by hand:
 |---|---|---|
 | How PRs merge | each PR lands as one tidy commit, titled from the PR; merge commits are allowed only into batch (`wave/…`) branches; branches are deleted after merging; auto-merge is on | `main` reads as a list of finished changes, and agents don't have to wait for anyone to press Merge |
 | Rules on `main` | no deleting it, no rewriting its history, every change through a PR, and every required check green first | nothing reaches `main` without passing the tests and the reviewer |
-| Rules on `wave/*` | the same rules for batch branches | the same protection when work is batched |
+| Rules on `wave/*` | the same rules for batch branches, except that GitHub deletes one once it has landed in `main` | the same protection when work is batched, and nothing slips into a batch after it lands |
 | GitHub Actions | the automation can read but not change the repo or approve PRs; every action used must be pinned to an exact version; outside contributors' PRs wait for approval before running | the automation can't be hijacked into changing your code |
 | Labels | `governance-approved`, `review-override`, `needs-human`, `hardware` | the labels the agents and checks use |
 | Repo variables | `MAINTAINER_LOGIN` and `REVIEWER_LOGIN`, both your GitHub login, and the reviewer list `REVIEWER_SESSIONS`, set to `none` until you fill it | the checks know who you are and whose review comments to trust |
@@ -219,10 +220,17 @@ whether the first time, a new reviewer or a replaced one:
 3. Tap **Done** on the card. The coordinator then re-runs the review gate on the open PRs,
    since changing the variable doesn't re-run it.
 
-**Apply a label when a card asks.** Some changes need your own approval, such as a change to
-a file only you may approve. The card says which PR and which label, usually
-`governance-approved`. Open the PR, click **Labels** in the right-hand column, and tick the
-label. Then answer the card.
+**Decide in the project chat.** Give every decision by tapping the card's option or by
+saying it in the project chat, never in a GitHub comment. A chat message has an id the agents
+can check against you; a comment under your login could have come from an agent.
+
+**Apply a label when a card asks.** Two labels are yours alone: `review-override`, on any PR,
+and `governance-approved` on a PR that changes a file only you may approve (the list is in
+[project-instructions.md](agents/project-instructions.md)). The agents use your login, so
+GitHub can't tell who ticked a label: only you tick these. The card says which PR and which
+label. Open the PR, click **Labels** in the right-hand column, and tick the label. Then
+answer the card. A push to the PR removes both labels, so when the card comes back after a
+push, tick the label again.
 
 **Private repo only.** Turn on the dependency graph in **Settings › Code security**, or the
 `dependency-review` check fails. Public repos have it on already.
@@ -306,6 +314,8 @@ start.
 | `dependency-review` fails with "not supported" | GitHub's dependency graph is off: turn it on in the repo's **Settings › Code security** |
 | bootstrap stops with "is private, and its plan lacks" | the repo is private without the paid features the template needs ([what you need](#before)) |
 | a PR labelled `needs-human` | a decision only you can make; the coordinator has a card for it |
+| `review-gate`: "has no Claude-Session trailer", after you edited a file on a PR | don't commit to agent PRs yourself: a commit from GitHub's web editor has no `Claude-Session:` trailer and blocks the gate. Tell the coordinator what to change instead; the PR's agent drops your commit from its branch and makes the change itself |
+| a label you ticked has gone | the PR got a new push, which removes `governance-approved` and `review-override`; tick it again when the card asks |
 | nothing happening for hours | a Claude usage limit: the coordinator resumes on its own when it lifts. Or the daily budget reached 100%: the builders wait until you say "continue" |
 
 <a id="more"></a>

@@ -136,6 +136,12 @@ For every new or changed ADR:
   - its words name that ADR. A decision card's answer names an ADR only when the card's
     question or context lists that ADR's id; a card for a range of ADRs covers only the
     ids it lists.
+  - **A card tap** has no message of its own. Its `source:` is the card's message id, and
+    its words are the option label tapped. Read the card with `fetch_messages` for its
+    question, context and options, and the coordinator's
+    `ops/decisions/<card message id>.md` for the tapper's `author_id`, which must be the
+    maintainer's. A card closed by the coordinator's own `close_decision` is not a tap: the
+    `source:` must be the maintainer's message that answered it.
 - Blanket instructions, unattributed decisions and a `source:` that fails any check are
   invalid. The login a comment was posted from proves nothing: agents share it.
 - Until a valid decision exists, the verdict is `escalate` and the PR keeps

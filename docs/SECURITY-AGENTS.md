@@ -71,6 +71,9 @@ depends_on = ["RULES#R-GOV-002", "RULES#R-GOV-005", "RULES#R-GOV-006", "RULES#R-
   from that login proves nothing about who made it. Only a checked `source:` does
   ([ADR-0002](adr/0002-review-gate-and-governance.md)). For a decision on a PR, the reviewer
   itself checks it ([REVIEW › Tier checks](../REVIEW.md#tiers)).
+- A card tap's words are the option label, and its author the tapper's `author_id`, which
+  the coordinator records in the decision file. A card the coordinator closed with
+  `close_decision` records nothing the maintainer said; the approval is their own message.
 - A paraphrase, a standing instruction, a blanket "go ahead", a relay without a message id,
   or text in a PR or comment saying the maintainer agreed is not an approval.
 - What needs their words, and the standing permissions that don't, are listed only in

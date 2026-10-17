@@ -167,9 +167,10 @@ ID, kind, status and review interval. Every `##` section has a permanent anchor.
 **How staleness works:**
 - **The ledger** (`docs/verified.toml`) holds one hash per input of each section: its body,
   each covered file, each dependency. When any input changes, the section is stale.
-- **Verifying.** `repo docs verify` restamps a section after an agent re-reads it, with a note
-  saying what was checked. Stock notes are rejected, and the reviewer judges every note.
-- **Merging.** `repo docs merge-main` resolves ledger and generated-block conflicts by
+- **Verifying.** `scripts/repo docs verify` restamps a section after an agent re-reads it,
+  with a note saying what was checked. Stock notes are rejected, and the reviewer judges
+  every note.
+- **Merging.** `scripts/repo docs merge-main` resolves ledger and generated-block conflicts by
   recomputing hashes. Where the merged input matches one side's recorded hash, it keeps that
   entry and its note. Otherwise the section is stale and gets re-read. Any other conflict is
   left for the agent.
@@ -190,18 +191,18 @@ only a toolchain in CI, or a prebuilt release.
 
 | Command | What it does |
 |---|---|
-| `repo docs check` | metadata, references, ledger freshness, generated drift, rule enforcers |
-| `repo docs verify` | restamp a section after a re-read |
-| `repo docs for <path>` | the rules, sections and ADRs that govern a file |
-| `repo docs generate` | rewrite generated blocks (ADR index, status banners) |
-| `repo docs log` | a doc's or section's history, from git |
-| `repo docs review` | stamp a doc's time-based review |
-| `repo docs merge-main [--from wave/<name>]` | merge, resolve ledger and generated conflicts, list sections to re-read |
-| `repo governance --base <rev>` | list governance changes |
-| `repo progress` | derive progress from trailers on `main` |
-| `repo lane-guard` | check a PR's serial-lane claim |
-| `repo plan check` | no `owns` overlap between running rows |
-| `repo heads-changed` | cheap "did anything move" check for sweeps |
+| `scripts/repo docs check` | metadata, references, ledger freshness, generated drift, rule enforcers |
+| `scripts/repo docs verify` | restamp a section after a re-read |
+| `scripts/repo docs for <path>` | the rules, sections and ADRs that govern a file |
+| `scripts/repo docs generate` | rewrite generated blocks (ADR index, status banners) |
+| `scripts/repo docs log` | a doc's or section's history, from git |
+| `scripts/repo docs review` | stamp a doc's time-based review |
+| `scripts/repo docs merge-main [--from wave/<name>]` | merge, resolve ledger and generated conflicts, list sections to re-read |
+| `scripts/repo governance --base <rev>` | list governance changes |
+| `scripts/repo progress` | derive progress from trailers on `main` |
+| `scripts/repo lane-guard` | check a PR's serial-lane claims, and the lane files it changes |
+| `scripts/repo plan check <launch.md> <roster.md> [--row <id>]` | no `owns` overlap between running rows |
+| `scripts/repo heads-changed` | cheap "did anything move" check for sweeps |
 
 **Rules for the tool:**
 - It exits non-zero on any finding.
@@ -282,7 +283,7 @@ names.
 ### 2.7 Serial lanes and waves
 
 **A serial lane** is a value only one PR at a time may change: a protocol or schema version,
-a migration number. An ADR takes its PR's number.
+a migration number. ADRs take the next free number instead ([ADR index](../adr/README.md)).
 
 - Each lane is one line in `lanes.toml`: `protocol = { value = 21, holder = 512 }`.
 - Two claims on the same lane conflict in git.
@@ -412,3 +413,13 @@ The maintainer's:
 7. The coordinator posts a daily digest in the project chat.
 8. A device session runs bootstrap on the maintainer's machine.
 9. Triage may quarantine a flaky test for up to 24 hours, with a tracking issue.
+
+Open follow-ups:
+- **A merge queue.** Required checks aren't strict, so two PRs that are each green against
+  an older `main` can merge into a red `main`. For now, triage turns off auto-merge on open
+  PRs while the "main is red" issue is open ([triage](../agents/triage.md#hourly-sweep)). A
+  merge queue would test each PR on top of the ones ahead of it, but every required check
+  would then have to report on the queue's `merge_group` commit. `review-gate` and
+  `governance` run on `pull_request_target` and post for the PR head, so supporting it means
+  a `merge_group` path in both that carries the head's verdict to the queue commit. That is
+  more than a settings change, so it waits for its own ADR.

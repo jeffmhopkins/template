@@ -24,7 +24,8 @@ depends_on = ["DOCS#lanes"]
 
 A lane is added to `lanes.toml` by its own PR, at intake or when the planner names one,
 with its current value and that PR as holder. The planner lists in each row the lanes it
-changes. An ADR's number is a lane too: it takes its PR's number.
+changes. ADR numbers are not a lane: an ADR takes the next free number
+([ADR index](../adr/README.md)).
 
 <a id="builder"></a>
 ## The builder's side

@@ -22,12 +22,12 @@ flowchart TD
     create --> live["PRs are reviewed and squash-merge into the wave"]
     live -->|"main moves and conflicts"| sync["Sync PR: main merged into the wave as a merge commit"]
     sync --> live
-    live -->|"every PR merged, draft or blocked on the maintainer, and at least one merged"| cut["Cut: next wave from main, open PRs moved onto it"]
+    live -->|"every PR merged, draft or blocked on the maintainer, and at least one merged"| cut["Cut: next wave from the cut wave's tip, open PRs moved onto it"]
     cut -->|"the next wave"| live
     cut --> land["Landing PR into main, synced first if it conflicts: every check runs, the reviewer reviews the sync merges"]
-    land -->|"the full run finds a failure"| fix["Fix PRs into the wave"]
+    land -->|"the full run finds a failure"| fix["Fix PRs into the cut wave, listed in the landing PR"]
     fix --> land
-    land -->|"merges"| gone["GitHub deletes the wave branch"]
+    land -->|"merges"| gone["GitHub deletes the wave branch; main is synced into the next wave"]
     gone -->|"last wave, ops/mode.md set to off"| off
 ```
 
@@ -42,8 +42,8 @@ open, or runners queue for more than about 10 minutes:
 
 1. Create `wave/<name>` from `main` with the GitHub MCP tool `create_branch`.
 2. Set `ops/mode.md` to waves on, naming the current wave.
-3. Move the open PRs onto it ([Which branch a PR targets](#which-wave)), and send each
-   affected builder one line naming its new base.
+3. Move the open PRs onto it ([Which branch a PR targets](#which-wave)), and send each moved
+   PR's author `BASE #<pr> wave/<name>`.
 
 The integrator turns them off by landing the last wave and setting `ops/mode.md` to waves
 off. PRs then target `main` again.
@@ -61,11 +61,16 @@ While waves are on:
 | Delivers or advances a roadmap item | the current wave |
 | A fix, docs or tests with no roadmap item | the current wave |
 | Changes a serial lane | the current wave, unless the integrator says otherwise |
-| Changes CI, the review gate, the repo tool, governance or the rules themselves | `main` |
+| Changes a protected or maintainer-only path (`[governance]` in `repo.toml`): CI, the review gate, the repo tool, governance, the briefs or the rules themselves | `main` |
 | Opened by Dependabot | `main` |
 | An urgent fix the maintainer asks to land now | `main` |
 
 A stacked PR keeps the PR below it as its base; only the bottom of a stack targets a wave.
+
+The `governance` check enforces the protected-path row: a PR into `wave/*` that changes a
+protected path fails, label or not, because the wave's own workflows judge the PRs into it.
+Files whose head version is the one on `main` are skipped, so a sync PR passes
+([DOCS › Governance changes](../DOCS.md#governance)).
 
 To move an open PR, change its base with the GitHub MCP tool `update_pull_request`, then
 merge the new base in ([Keeping a PR current](#current)) and push. Changing the base alone
@@ -100,8 +105,13 @@ A `wave/*` branch only takes PRs. To bring `main` in, the integrator:
 2. Re-reads and verifies the stale sections, each with its own note.
 3. Opens a **sync PR** into the wave titled `chore(wave): merge main into wave/<name>`, and
    turns on auto-merge with `mergeMethod: MERGE`. A sync PR is never squashed.
+4. Once it merges, sends every open PR into the wave `BASE #<pr> wave/<name>`, so each merges
+   the synced wave.
 
-It syncs whenever `main` moves in a way that conflicts with the wave, and before cutting.
+`governance` skips every file the sync brings in unchanged from `main`, so a sync PR carries
+no governance change unless its conflict resolutions made one. It syncs whenever `main`
+moves in a way that conflicts with the wave, before cutting, and into the next wave once a
+cut wave lands.
 
 <a id="landing"></a>
 ## Cutting and landing a wave
@@ -112,9 +122,10 @@ depends_on = ["ADR-0005", "REVIEW#gather"]
 Cut a wave when every PR still targeting it is merged, draft, or blocked on the maintainer,
 and at least one PR has merged into it. Then:
 
-1. Create the next wave from `main`, and move every open PR that targets the cut wave onto
-   it, drafts included, messaging each moved PR's builder. Nothing merges into a wave after
-   it is cut.
+1. Create the next wave from the cut wave's tip, so the PRs moved onto it carry nothing new.
+   Move every open PR that targets the cut wave onto it, drafts included, and send each
+   moved PR's author `BASE #<pr> wave/<next>`. Set `ops/waves.md` to `state: cut` for the
+   cut wave.
 2. Sync the cut wave with `main` if it conflicts ([Syncing](#sync)).
 3. Open the landing PR from the wave into `main`, titled `chore(wave): land wave/<name>`.
    Its body lists each carried PR with its number and title, and the "Governance change"
@@ -124,9 +135,17 @@ and at least one PR has merged into it. Then:
    otherwise ask the maintainer. Turn on auto-merge (squash).
 4. The reviewer reviews the sync merges and conflict resolutions
    ([REVIEW.md](../../REVIEW.md#gather)). Every check runs.
-5. Fix what the full run finds with fix PRs into the wave. The builder that wrote the
-   failing change helps if it is still running.
-6. While the landing PR merges, other PRs in the wave may have auto-merge turned off (a
+5. Fix what the full run finds with fix PRs into the cut wave, each listed in the landing PR's
+   body under "Fixes" and in `ops/waves.md`. The builder that wrote the failing change helps
+   if it is still running.
+6. While the landing PR merges, other PRs in the next wave may have auto-merge turned off (a
    freeze). Turn it back on once it lands.
 
-GitHub deletes the wave branch when it merges.
+**A cut wave takes nothing else.** Once its landing PR is open, the reviewer fails any PR
+into the wave that the landing PR doesn't list as a fix ([reviewer › Rules of the
+round](../agents/review/reviewer.md#round-rules)); its author moves it to the current wave.
+
+**After landing.** The `wave/*` ruleset has no deletion rule, so GitHub deletes the wave
+branch when its landing PR merges, and nothing can merge into it after that. The integrator
+then syncs `main` into the next wave. A PR GitHub retargets to `main` because its wave was
+deleted is moved to the current wave.
