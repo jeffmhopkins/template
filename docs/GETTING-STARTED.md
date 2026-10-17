@@ -84,8 +84,11 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
 2. **Create a Claude project** for it, and add the new repo to the project in its settings.
 3. **Install the Claude GitHub App** on the new repo from the [Claude app page](https://github.com/apps/claude). It lets
    the agents open PRs and comment.
-4. **Run the one-time setup.** It switches on the repo's protections: which checks must pass
-   before a merge, labels, and security alerts. Either:
+4. **Run the one-time setup** (`scripts/bootstrap.sh`, called "bootstrap"). A new repo starts
+   with GitHub's defaults, which let anyone with access merge anything. Bootstrap changes
+   those settings to the ones the template relies on, so you don't have to click through
+   GitHub's settings pages yourself. [What the setup does for you](#setup) lists every
+   change. Either:
    - **ask Claude to do it:** in the project chat, say "Run the bootstrap on my computer".
      You'll be asked to allow Claude to work in a folder on your machine; or
    - **run it yourself** in a terminal:
@@ -110,11 +113,35 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
    in **Settings › Secrets and variables › Actions › Variables**, or with
    `gh variable set REVIEWER_SESSIONS --body "<ids>"`. Until then no PR can merge.
 
-> [!NOTE]
-> Step 4 sets every repo setting the template needs; [the bootstrap
-> runbook](runbooks/bootstrap.md#settings) lists each one. On a **private** repo, also turn
-> on the dependency graph in **Settings › Code security**, or the `dependency-review` check
-> fails.
+<a id="setup"></a>
+## What the setup does for you
+<!-- @section
+depends_on = ["RUNBOOK-BOOTSTRAP#settings", "RUNBOOK-BOOTSTRAP#by-hand"]
+-->
+
+Bootstrap changes your repo's GitHub settings in one run. You never need to find or change
+any of these by hand:
+
+| Setting | What bootstrap sets | What it means for you |
+|---|---|---|
+| How PRs merge | each PR lands as one tidy commit, titled from the PR; branches are deleted after merging; auto-merge is on | `main` reads as a list of finished changes, and agents don't have to wait for anyone to press Merge |
+| Rules on `main` | no deleting it, no rewriting its history, every change through a PR, and every required check green first | nothing reaches `main` without passing the tests and the reviewer |
+| Rules on `wave/*` | the same rules for batch branches | the same protection when work is batched |
+| GitHub Actions | the automation can read but not change the repo or approve PRs; every action used must be pinned to an exact version; outside contributors' PRs wait for approval before running | the automation can't be hijacked into changing your code |
+| Labels | `governance-approved`, `review-override`, `needs-human`, `hardware` | the labels the agents and checks use |
+| Repo variables | `REVIEWER_LOGIN` (your GitHub login) and an empty reviewer list | the review gate knows whose comments to trust |
+| Security | Dependabot alerts and fixes, secret scanning, and blocking pushes that contain a password or key | you hear about vulnerable dependencies, and secrets can't be committed by accident |
+
+Run it again at any time: it only changes what differs, and `scripts/bootstrap.sh --check`
+shows what would change without changing anything. The full list, with the exact values, is
+in the [bootstrap runbook](runbooks/bootstrap.md#settings).
+
+**What bootstrap can't do**, because it needs your own accounts:
+- install the Claude GitHub App (step 3);
+- paste the project instructions into the Claude project (step 5);
+- fill in the reviewer list once the reviewers start (step 7);
+- on a **private** repo, turn on the dependency graph in **Settings › Code security**, or the
+  `dependency-review` check fails. Public repos have it on already.
 
 <a id="intake"></a>
 ## The first conversation
