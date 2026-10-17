@@ -115,16 +115,17 @@ flowchart LR
 <!-- @section
 -->
 
-The shared folder is a network mount where the last write wins, so:
-1. **One writer per file.** The owner's role is the file's first line. Others read it, and
-   message the owner to change it.
-2. **Several producers means one file per event** (`decisions/<message-id>.md`), never a
-   shared file edited by many.
-3. **Write a temp file, then rename.** Readers ignore `*.tmp`.
-4. **GitHub is the source of truth where it can be.** Review state, lanes and progress can be
-   rebuilt from PRs, markers and `main`. A file is a cache; on a cold start, rebuild it.
-5. **Sub-workers never write `ops/`.** They return results; the session that started them
-   writes.
+> [!WARNING]
+> The shared folder is a network mount where the last write wins, so:
+> 1. **One writer per file.** The owner's role is the file's first line. Others read it, and
+>    message the owner to change it.
+> 2. **Several producers means one file per event** (`decisions/<message-id>.md`), never a
+>    shared file edited by many.
+> 3. **Write a temp file, then rename.** Readers ignore `*.tmp`.
+> 4. **GitHub is the source of truth where it can be.** Review state, lanes and progress can be
+>    rebuilt from PRs, markers and `main`. A file is a cache; on a cold start, rebuild it.
+> 5. **Sub-workers never write `ops/`.** They return results; the session that started them
+>    writes.
 
 | File | Owner | Holds |
 |---|---|---|

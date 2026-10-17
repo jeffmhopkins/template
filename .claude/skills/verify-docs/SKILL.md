@@ -55,8 +55,11 @@ For each stale section, one at a time:
    ```
    `<name>` is your thread's name.
 
-Re-run `scripts/repo docs check` until it is clean. Never edit `docs/verified.toml` by hand,
-and never hand-edit an `@generated` block; run `scripts/repo docs generate`.
+Re-run `scripts/repo docs check` until it is clean.
+
+> [!CAUTION]
+> Never edit `docs/verified.toml` by hand, and never hand-edit an `@generated` block; run
+> `scripts/repo docs generate`.
 
 <a id="notes"></a>
 ## Writing the note

@@ -69,7 +69,10 @@ A stacked PR keeps the PR below it as its base; only the bottom of a stack targe
 
 To move an open PR, change its base with the GitHub MCP tool `update_pull_request`, then
 merge the new base in ([Keeping a PR current](#current)) and push. Changing the base alone
-doesn't re-run CI. Never close and reopen a PR to move it.
+doesn't re-run CI.
+
+> [!CAUTION]
+> Never close and reopen a PR to move it.
 
 <a id="current"></a>
 ## Keeping a PR current

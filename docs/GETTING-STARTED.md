@@ -117,7 +117,10 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
 7. **Turn on the review gate.** Once the coordinator says the reviewers are running, it gives
    you their session ids. Set them as the repo variable `REVIEWER_SESSIONS` (comma-separated),
    in **Settings › Secrets and variables › Actions › Variables**, or with
-   `gh variable set REVIEWER_SESSIONS --body "<ids>"`. Until then no PR can merge.
+   `gh variable set REVIEWER_SESSIONS --body "<ids>"`.
+
+> [!WARNING]
+> Until the reviewer session ids are set (step 7), no PR can merge.
 
 <a id="setup"></a>
 ## What the setup does for you

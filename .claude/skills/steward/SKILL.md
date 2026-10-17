@@ -50,8 +50,10 @@ depends_on = ["RULES#R-GIT-003"]
   change.
 - A failure that isn't yours (main is red, a flake, an outage): say so on the PR in one line
   with the link, and push nothing for it.
-- `review-gate` stays pending until the reviewer posts a marker for the current head, and
-  fails on a `fail` or `escalate` verdict. Pending is waiting, not broken.
+
+> [!NOTE]
+> `review-gate` stays pending until the reviewer posts a marker for the current head, and
+> fails on a `fail` or `escalate` verdict. Pending is waiting, not broken.
 
 <a id="merge-main"></a>
 ## Bringing main in

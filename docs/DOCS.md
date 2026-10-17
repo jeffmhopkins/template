@@ -205,7 +205,9 @@ A verification claims the section was **re-read against the change and still hol
 note says what was checked: `"Added the --json flag; the command table and exit codes
 still match main.rs"`.
 
-- If the section is wrong, edit it. Never verify a section you know is wrong.
+> [!CAUTION]
+> If the section is wrong, edit it. Never verify a section you know is wrong.
+
 - The reviewer re-reads each verified section against the diff and judges each note
   ([REVIEW › Notes](../REVIEW.md#docs-notes)). A note that doesn't engage with what changed
   is a blocking finding.
@@ -284,7 +286,10 @@ from that page) and `recheck_every`. A link check proves the page loads, not tha
 covers = [".github/workflows/sweep.yml"]
 -->
 
-Docs also go stale when nothing in the repo changes. **Time-based review never fails a PR.**
+Docs also go stale when nothing in the repo changes.
+
+> [!NOTE]
+> Time-based review never fails a PR.
 
 - A doc's clock restarts at the last commit that changed its content, or at its last
   review. Once `review_every` has passed, it is due.
@@ -371,8 +376,11 @@ non-empty `## Governance change` section saying what is loosened or tightened, a
 
 `scripts/repo governance --base <rev>` lists the changes between the merge base and `HEAD`.
 With `--pr-body` and `--labels` it also fails when the label or the section is missing. It
-prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`;
-those always need the maintainer's own words ([R-GOV-007](RULES.md#R-GOV-007)).
+prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`.
+
+> [!IMPORTANT]
+> Paths in `[governance].maintainer_only` always need the maintainer's own words
+> ([R-GOV-007](RULES.md#R-GOV-007)).
 
 The workflow runs on `pull_request_target`. It builds the tool from the base commit and
 reads the head only as git objects: a PR's edits to the tool never change how its own

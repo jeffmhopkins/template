@@ -18,8 +18,10 @@ review_every = "180d"
 Report a vulnerability privately, through the repository's **Security** tab ("Report a
 vulnerability"), following GitHub's
 [private reporting guide](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability).
-Never open a public issue for one. Include the affected version or commit, the steps to
-reproduce, and the impact you see.
+Include the affected version or commit, the steps to reproduce, and the impact you see.
+
+> [!CAUTION]
+> Never open a public issue for a vulnerability.
 
 <a id="supported"></a>
 ## Supported versions

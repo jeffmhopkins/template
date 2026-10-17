@@ -52,7 +52,8 @@ The first PR that adds the root `Cargo.toml`:
    every crate;
 4. adds a Dependabot `cargo` entry for directory `/` in `.github/dependabot.yml`.
 
-Every one of these is a governance change. Until that PR lands, the stack jobs skip.
+> [!IMPORTANT]
+> Every one of these is a governance change. Until that PR lands, the stack jobs skip.
 
 <a id="lints"></a>
 ## The workspace lint table
@@ -72,8 +73,11 @@ undocumented_unsafe_blocks = "deny"        # R-RUST-006
 unwrap_used = "deny"                       # R-RUST-009
 ```
 
-CI runs clippy with `-D warnings`, so a `warn` here fails the `lint` job too. The `//! Docs:`
-line ([R-RUST-012](RULES.md#R-RUST-012)) is the crate-level doc comment `missing_docs` asks for.
+> [!WARNING]
+> CI runs clippy with `-D warnings`, so a `warn` here fails the `lint` job too.
+
+The `//! Docs:` line ([R-RUST-012](RULES.md#R-RUST-012)) is the crate-level doc comment
+`missing_docs` asks for.
 
 <a id="other-stacks"></a>
 ## Adding another stack

@@ -13,9 +13,11 @@ review_every = "90d"
 
 How a project made from the template takes a later template version without being reset.
 The project records where it came from in [`repo.toml`](../../repo.toml): `[template].source`
-is the template's GitHub repo and `[template].version` the version the project is on. In the
-template itself, `source` names the template's own repo, and this runbook doesn't apply
-([CLAUDE › Which repo](../../CLAUDE.md#which-repo)).
+is the template's GitHub repo and `[template].version` the version the project is on.
+
+> [!NOTE]
+> In the template itself, `source` names the template's own repo, and this runbook doesn't
+> apply ([CLAUDE › Which repo](../../CLAUDE.md#which-repo)).
 
 <a id="when"></a>
 ## When and who

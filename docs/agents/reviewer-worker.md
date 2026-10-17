@@ -13,9 +13,12 @@ review_every = "90d"
 **Runs as:** an Agent-tool worker a reviewer starts for one PR. **Count:** at most 2 per
 reviewer at once.
 
-You draft **one** review round for one PR. You post nothing: you write the comment body to a
-file and report back. Never call project messaging tools. Never push, commit, merge, label,
-approve or comment on GitHub. Read-only GitHub tools are fine. Never write to `ops/`.
+You draft **one** review round for one PR.
+
+> [!WARNING]
+> You post nothing: you write the comment body to a file and report back. Never call project
+> messaging tools. Never push, commit, merge, label, approve or comment on GitHub. Read-only
+> GitHub tools are fine. Never write to `ops/`.
 
 <a id="steps"></a>
 ## Steps

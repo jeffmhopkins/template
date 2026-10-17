@@ -18,8 +18,10 @@ and `wave/*` with their required checks, what GitHub Actions may do, the labels,
 variables the review gate reads, and the security features. Nobody sets these by hand.
 
 It runs once, before intake, and is safe to run again. This runbook covers who runs it, how,
-exactly what it sets, and the few steps it can't do. Agents never change repo settings; any
-agent may run the read-only `--check`.
+exactly what it sets, and the few steps it can't do.
+
+> [!IMPORTANT]
+> Agents never change repo settings; any agent may run the read-only `--check`.
 
 <a id="before"></a>
 ## Before you start
@@ -120,5 +122,8 @@ These need the maintainer's own accounts. The script prints the first two at the
    project's instructions, with the project name filled in.
 3. **List the reviewer sessions.** Once the reviewers are running, the maintainer sets
    `REVIEWER_SESSIONS` to their session ids, comma-separated, as the `review-gate` workflow
-   reads them: `gh variable set REVIEWER_SESSIONS --body "<ids>"`. Until then the gate counts no marker.
-   The same applies when a reviewer is added or replaced.
+   reads them: `gh variable set REVIEWER_SESSIONS --body "<ids>"`. The same applies when a
+   reviewer is added or replaced.
+
+> [!WARNING]
+> Until `REVIEWER_SESSIONS` lists the reviewers, the gate counts no marker.

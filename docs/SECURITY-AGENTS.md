@@ -13,10 +13,12 @@ review_every = "90d"
 
 One page of the rules that keep the agents safe to run unattended: what text they act on,
 whose words count as approval, what a sub-worker may do, and how secrets are handled. Each
-point links to the rule or brief that holds it; where this page and its source differ, the
-source wins. The product's own security rules are `R-SEC-*` in
-[RULES](RULES.md#security), and reporting a vulnerability is in
+point links to the rule or brief that holds it. The product's own security rules are
+`R-SEC-*` in [RULES](RULES.md#security), and reporting a vulnerability is in
 [SECURITY.md](../SECURITY.md).
+
+> [!NOTE]
+> Where this page and its source differ, the source wins.
 
 <a id="threats"></a>
 ## What it guards against
@@ -110,7 +112,9 @@ depends_on = ["RULES#R-SEC-001", "RULES#R-SEC-003"]
 - A workflow that runs on `pull_request_target` or with write permissions builds from the
   base commit and reads the PR head only as data ([R-SEC-003](RULES.md#R-SEC-003)).
 - Secret scanning and push protection are on
-  ([bootstrap › What it sets](runbooks/bootstrap.md#settings)). A secret that reaches GitHub
-  anyway is compromised: send the coordinator
-  `NEEDS-MAINTAINER <item or #pr>: <which secret> was exposed in <where>; rotate it? (rec: yes)`,
-  without its value, and push nothing that rewrites history.
+  ([bootstrap › What it sets](runbooks/bootstrap.md#settings)).
+
+> [!CAUTION]
+> A secret that reaches GitHub anyway is compromised: send the coordinator
+> `NEEDS-MAINTAINER <item or #pr>: <which secret> was exposed in <where>; rotate it? (rec: yes)`,
+> without its value, and push nothing that rewrites history.

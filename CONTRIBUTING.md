@@ -17,8 +17,10 @@ review_every = "180d"
 -->
 
 This repo does not accept outside pull requests until its first release. Issues are
-welcome: bug reports, with steps to reproduce, and feature requests. Security reports go
-through [SECURITY.md](SECURITY.md), not issues.
+welcome: bug reports, with steps to reproduce, and feature requests.
+
+> [!IMPORTANT]
+> Security reports go through [SECURITY.md](SECURITY.md), not issues.
 
 <a id="how-work-lands"></a>
 ## How work lands

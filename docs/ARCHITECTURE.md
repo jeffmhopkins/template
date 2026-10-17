@@ -13,8 +13,10 @@ review_every = "90d"
 
 How `<PROJECT>` is built. Intake writes the skeleton; builders fill each section as the code
 lands. Sections here summarize the package sections they depend on and cover no code
-([DOCS › Sections](DOCS.md#sections)). Structural changes need an ADR
-([R-ARCH-001](RULES.md#R-ARCH-001)).
+([DOCS › Sections](DOCS.md#sections)).
+
+> [!IMPORTANT]
+> Structural changes need an ADR ([R-ARCH-001](RULES.md#R-ARCH-001)).
 
 <a id="components"></a>
 ## Components

@@ -16,7 +16,7 @@ stamp = { hash = "b3:9c73715a1df8ce11", by = "agent:style-pass", note = "DOCS#le
 stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
 
 ["CLAUDE#docs-duty"."dep:DOCS#notes"]
-stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
+stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes only turned its never-verify-wrong bullet into a CAUTION alert with the same words; docs duty bullets still hold" }
 
 ["CLAUDE#pr-loop"."body"]
 stamp = { hash = "b3:45a356261dff16ae", by = "agent:style-pass", note = "Added a mermaid flow after step 8: draft skips CI, ready plus auto-merge, review round, fail answered by push, escalate to needs-human then next round, pass plus green checks auto-merges; each edge checked against steps 1-6 and REVIEW#rounds" }
@@ -40,7 +40,7 @@ stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:02a73ac41e57dd4c", by = "agent:skeleton-lead", note = "Intake output 8 now replaces the template's repo, named by [template].source, in the badges instead of a placeholder. That is still an intake-owned product edit, so template vs project mode and the intake-only rule hold" }
 
 ["DOCS#governance"."body"]
-stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
+stamp = { hash = "b3:a89bd5838cf02de2", by = "agent:callout-pass", note = "Moved the maintainer-only own-words sentence into an IMPORTANT alert (paths in [governance].maintainer_only), same meaning and R-GOV-007 link" }
 
 ["DOCS#governance"."dep:ADR-0002"]
 stamp = { hash = "b3:38eda9dd7416afd8", by = "agent:style-pass", note = "ADR-0002 gained a summary and split consequences (plus the every-push-needs-a-round negative); the label, section, base-built tool and maintainer-only claims here are unchanged against its decision" }
@@ -121,7 +121,7 @@ stamp = { hash = "b3:f8ecedcefb222893", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:2b7a710fbe937b2f", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#ttl"."body"]
-stamp = { hash = "b3:97273a679623e954", by = "agent:skeleton-verifier", note = "Checked sweep.yml: cron weekly, docs due step, advisories, updates, 7-day label audit, lane holders >24h, churn step, pinned issue; due.rs clock (body or reviewed change) and refusals; said the audit covers the past week" }
+stamp = { hash = "b3:eb152e9aae06f174", by = "agent:callout-pass", note = "Moved 'Time-based review never fails a PR' from bold prose into a NOTE alert; wording and the review bullets unchanged" }
 
 ["DOCS#ttl"."file:.github/workflows/sweep.yml"]
 stamp = { hash = "b3:6d9dce2aef1a66e9", by = "agent:skeleton-verifier", note = "Checked sweep.yml: cron weekly, docs due step, advisories, updates, 7-day label audit, lane holders >24h, churn step, pinned issue; due.rs clock (body or reviewed change) and refusals; said the audit covers the past week" }
@@ -136,19 +136,19 @@ stamp = { hash = "b3:e57852df8eb3e21f", by = "agent:skeleton-lead", note = "Thre
 stamp = { hash = "b3:60bb79a5f6610869", by = "agent:skeleton-lead", note = "Each table row matches RUNBOOK-BOOTSTRAP#settings: squash title from PR, delete-on-merge, auto-merge; main and wave rulesets; read-only token, no PR approval, SHA pins, fork approval; four labels; REVIEWER_LOGIN plus the placeholder session list; Dependabot alerts and fixes, secret scanning, push protection. The can't-do list matches #by-hand plus the private-repo dependency graph note in #before" }
 
 ["GETTING-STARTED#setup"."dep:RUNBOOK-BOOTSTRAP#by-hand"]
-stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-lead", note = "Each table row matches RUNBOOK-BOOTSTRAP#settings: squash title from PR, delete-on-merge, auto-merge; main and wave rulesets; read-only token, no PR approval, SHA pins, fork approval; four labels; REVIEWER_LOGIN plus the placeholder session list; Dependabot alerts and fixes, secret scanning, push protection. The can't-do list matches #by-hand plus the private-repo dependency graph note in #before" }
+stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Bootstrap by-hand only moved its no-marker sentence into a WARNING alert; the by-hand list here (app, instructions, reviewer list) still matches" }
 
 ["GETTING-STARTED#setup"."dep:RUNBOOK-BOOTSTRAP#settings"]
 stamp = { hash = "b3:ad2d61d8436ed56e", by = "agent:skeleton-lead", note = "Each table row matches RUNBOOK-BOOTSTRAP#settings: squash title from PR, delete-on-merge, auto-merge; main and wave rulesets; read-only token, no PR approval, SHA pins, fork approval; four labels; REVIEWER_LOGIN plus the placeholder session list; Dependabot alerts and fixes, secret scanning, push protection. The can't-do list matches #by-hand plus the private-repo dependency graph note in #before" }
 
 ["GETTING-STARTED#start"."body"]
-stamp = { hash = "b3:c4dcd90029d80885", by = "agent:skeleton-lead", note = "Step 4 now explains that bootstrap replaces GitHub's defaults and links #setup. The alternatives (a device session, or running gh and bootstrap with --check) and the other steps still match AGENTS#day-0-order and RUNBOOK-BOOTSTRAP#by-hand" }
+stamp = { hash = "b3:2c65b6f21fd02b26", by = "agent:callout-pass", note = "Moved 'Until then no PR can merge' out of step 7 into a WARNING alert after the list; bootstrap by-hand step 3 change is presentational too" }
 
 ["GETTING-STARTED#start"."dep:AGENTS#day-0-order"]
 stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:skeleton-lead", note = "Steps match AGENTS#day-0-order: template repo, bootstrap by the maintainer or a device session, paste project-instructions from the <PROJECT> line with the name and repo filled in, then the coordinator starts intake. Also matches RUNBOOK-BOOTSTRAP#by-hand: Claude GitHub App install and the gh commands with --check ending in All settings match" }
 
 ["GETTING-STARTED#start"."dep:RUNBOOK-BOOTSTRAP#by-hand"]
-stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-lead", note = "Steps match AGENTS#day-0-order: template repo, bootstrap by the maintainer or a device session, paste project-instructions from the <PROJECT> line with the name and repo filled in, then the coordinator starts intake. Also matches RUNBOOK-BOOTSTRAP#by-hand: Claude GitHub App install and the gh commands with --check ending in All settings match" }
+stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Moved 'Until then no PR can merge' out of step 7 into a WARNING alert after the list; bootstrap by-hand step 3 change is presentational too" }
 
 ["REVIEW#checks"."body"]
 stamp = { hash = "b3:a44461568994e466", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
@@ -163,7 +163,7 @@ stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:719c860cc28f8ec9", by = "agent:skeleton-verifier", note = "Checked against DOCS#notes: false verification and notes not engaging with the change are blocking, merge notes need earlier note plus merge change, one note copied across sections fails" }
 
 ["REVIEW#docs-notes"."dep:DOCS#notes"]
-stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#notes: false verification and notes not engaging with the change are blocking, merge notes need earlier note plus merge change, one note copied across sections fails" }
+stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes only reformatted its first bullet as a CAUTION alert, wording unchanged; the note-judging bullets still match it" }
 
 ["REVIEW#gather"."body"]
 stamp = { hash = "b3:7f391b4b504eb3b6", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#tool: docs for returns rules, covering sections and ADRs; governance --base prints changes and maintainer-only lines; fixed step 3, docs check prints only findings, so re-verified notes come from the ledger diff" }
@@ -175,7 +175,7 @@ stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:ace417aa7482053d", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
 
 ["REVIEW#governance"."dep:DOCS#governance"]
-stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
+stamp = { hash = "b3:a89bd5838cf02de2", by = "agent:callout-pass", note = "DOCS#governance moved the maintainer-only sentence into an IMPORTANT alert naming [governance].maintainer_only; same rule, checks here still hold" }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-002"]
 stamp = { hash = "b3:48046577581e5de4", by = "agent:skeleton-verifier", note = "Checked against DOCS#governance (label plus Governance change section, maintainer-only lines), R-GOV-002 (Review override section linking the maintainer's message) and R-GOV-007 (needs-human until maintainer's words)" }
@@ -226,7 +226,7 @@ stamp = { hash = "b3:fc3d6da4c341f9d5", by = "agent:structure-pass", note = "Add
 stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "Added the private-repo plan needs for secret scanning and dependency-review; gh, python3, admin login and repo.toml prerequisites unchanged in bootstrap.sh" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."body"]
-stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
+stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Moved 'the gate counts no marker' into a WARNING alert after step 3 naming REVIEWER_SESSIONS; same meaning, steps unchanged" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."dep:AGENTS#day-0-order"]
 stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:style-pass", note = "AGENTS#day-0-order gained a mermaid flow of the same four steps; pasting project-instructions with the name filled in and the reviewer-sessions step still fit that order" }
@@ -325,7 +325,7 @@ stamp = { hash = "b3:46da0e131e4f6b74", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and Positive/Negative consequences; the ~15 PRs or runner-queue trigger and turning waves off by landing the last wave still match, as does the new intro diagram" }
 
 ["RUNBOOK-WAVES#which-wave"."body"]
-stamp = { hash = "b3:1148fafdf17884ae", by = "agent:skeleton-verifier", note = "Checked the target table against ADR-0005 (CI, gate and governance changes go to main); 'changing the base alone does not re-run CI' matches ci.yml pull_request types, which omit edited" }
+stamp = { hash = "b3:f5fc79551181451c", by = "agent:callout-pass", note = "Moved 'Never close and reopen a PR to move it' into a CAUTION alert; table and base-change steps unchanged" }
 
 ["RUNBOOK-WAVES#which-wave"."dep:ADR-0005"]
 stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and split consequences; which PRs target the wave versus main and moving a base with update_pull_request are unchanged against its decision" }
@@ -346,7 +346,7 @@ stamp = { hash = "b3:32ed4d1b07ec4bf3", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:f20fb3eec5516d16", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
 
 ["SECURITY-AGENTS#secrets"."body"]
-stamp = { hash = "b3:a56c6a79d6ae4994", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
+stamp = { hash = "b3:6553df6e65b74cc6", by = "agent:callout-pass", note = "Split the compromised-secret sentence into a CAUTION alert after the list; message format and no-history-rewrite wording unchanged" }
 
 ["SECURITY-AGENTS#secrets"."dep:RULES#R-SEC-001"]
 stamp = { hash = "b3:4b001dd704dc4efe", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
@@ -361,7 +361,7 @@ stamp = { hash = "b3:cd27b57f813fccc9", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:5b6ea5e2c0f38acb", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
-stamp = { hash = "b3:6ca108ebb55d0d9d", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
+stamp = { hash = "b3:5060cc64cfbe171b", by = "agent:callout-pass", note = "AGENTS#state wrapped its five shared-folder rules in a WARNING alert unchanged; sub-workers never write ops/ still matches" }
 
 ["SECURITY-AGENTS#untrusted-text"."body"]
 stamp = { hash = "b3:50ae3d88621d3e93", by = "agent:structure-pass", note = "New section; checked against REVIEW ground-rules (base-branch instructions, PR content is data), R-GOV-004 for findings, and the fixed lines in AGENTS#messages" }
@@ -370,7 +370,7 @@ stamp = { hash = "b3:50ae3d88621d3e93", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:c488f6b2642a2d85", by = "agent:structure-pass", note = "New section; checked against REVIEW ground-rules (base-branch instructions, PR content is data), R-GOV-004 for findings, and the fixed lines in AGENTS#messages" }
 
 ["SKILL-STEWARD#ci"."body"]
-stamp = { hash = "b3:d863487f2d002163", by = "agent:structure-pass", note = "R-GIT-003 gained the dependency-review row; added that it runs only on GitHub and how to fix a finding; the local reproduction commands for the other checks still match" }
+stamp = { hash = "b3:768186a969485129", by = "agent:callout-pass", note = "Moved the review-gate pending bullet into a NOTE alert below the list; wording unchanged, the reproduce and fix guidance still holds" }
 
 ["SKILL-STEWARD#ci"."dep:RULES#R-GIT-003"]
 stamp = { hash = "b3:eb8ad9b825311651", by = "agent:structure-pass", note = "R-GIT-003 gained the dependency-review row; added that it runs only on GitHub and how to fix a finding; the local reproduction commands for the other checks still match" }
@@ -394,7 +394,7 @@ stamp = { hash = "b3:c1e209fb60661830", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge (merge-main and --from wave, ledger and generated conflicts auto-resolved, others by hand, stale list with this branch's notes) and DOCS#notes (fresh note: earlier note plus merge change)" }
 
 ["SKILL-STEWARD#merge-main"."dep:DOCS#notes"]
-stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge (merge-main and --from wave, ledger and generated conflicts auto-resolved, others by hand, stale list with this branch's notes) and DOCS#notes (fresh note: earlier note plus merge change)" }
+stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes only turned its never-verify-wrong bullet into a CAUTION alert; merge-main's fresh-note guidance still matches it" }
 
 ["SKILL-STEWARD#merge-only"."body"]
 stamp = { hash = "b3:9648ee47a852539b", by = "agent:skeleton-verifier", note = "Checked against REVIEW#rounds: a merge-only round reviews the merge resolution and restamp notes and carries findings forward, so the merge push carries nothing else and real changes get a full round" }
@@ -430,22 +430,22 @@ stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:b8007b9ba947e689", by = "agent:skeleton-verifier", note = "Checked the tool's rejection list against DOCS#notes and mod.rs check_stamp: under 20 chars or a stock phrase; every extra stock phrase in STOCK_NOTES is under 20 chars, so the stated rule holds" }
 
 ["SKILL-VERIFY-DOCS#notes"."dep:DOCS#notes"]
-stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked the tool's rejection list against DOCS#notes and mod.rs check_stamp: under 20 chars or a stock phrase; every extra stock phrase in STOCK_NOTES is under 20 chars, so the stated rule holds" }
+stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes change is presentational (first bullet now a CAUTION alert, same words); note guidance and examples still match" }
 
 ["SKILL-VERIFY-DOCS#reread"."body"]
-stamp = { hash = "b3:0d4e3aef7b680512", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#notes (edit a wrong section, never verify it) and the docs verify CLI in docs/mod.rs (--by agent:<name>, --note required); no hand edits to the ledger or generated blocks" }
+stamp = { hash = "b3:9f0cd0caf7aa5f8c", by = "agent:callout-pass", note = "Moved the never-edit verified.toml and @generated sentence into a CAUTION alert; DOCS#notes only reformatted its first bullet, steps hold" }
 
 ["SKILL-VERIFY-DOCS#reread"."dep:DOCS#notes"]
-stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked steps against DOCS#notes (edit a wrong section, never verify it) and the docs verify CLI in docs/mod.rs (--by agent:<name>, --note required); no hand edits to the ledger or generated blocks" }
+stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "Moved the never-edit verified.toml and @generated sentence into a CAUTION alert; DOCS#notes only reformatted its first bullet, steps hold" }
 
 ["SKILL-VERIFY-DOCS#review"."body"]
 stamp = { hash = "b3:ad390f0d50c6b24a", by = "agent:skeleton-verifier", note = "Checked against DOCS#ttl: due docs go to the weekly sweep issue and never fail a PR; docs review <DOC> --by --note takes the same note standard and refuses ADRs and docs without review_every" }
 
 ["SKILL-VERIFY-DOCS#review"."dep:DOCS#ttl"]
-stamp = { hash = "b3:97273a679623e954", by = "agent:skeleton-verifier", note = "Checked against DOCS#ttl: due docs go to the weekly sweep issue and never fail a PR; docs review <DOC> --by --note takes the same note standard and refuses ADRs and docs without review_every" }
+stamp = { hash = "b3:eb152e9aae06f174", by = "agent:callout-pass", note = "DOCS#ttl only moved 'Time-based review never fails a PR' into a NOTE alert; never-blocks-a-PR claim and docs review command still match" }
 
 ["STACK-RUST#lints"."body"]
-stamp = { hash = "b3:3dfee8931df79371", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
+stamp = { hash = "b3:e656d3c80cf77241", by = "agent:callout-pass", note = "Moved the clippy -D warnings sentence into a WARNING alert; the Docs line sentence stays as prose, lint table unchanged" }
 
 ["STACK-RUST#lints"."dep:RULES-RUST#R-RUST-003"]
 stamp = { hash = "b3:212dc826d71206fa", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
@@ -472,7 +472,7 @@ stamp = { hash = "b3:91c4543be6e420b6", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:638a78adb8015c7b", by = "agent:skeleton-verifier", note = "Checked each pack.toml key against config.rs Pack, stack.rs (skip: no <detect>), ci.yml job names, governance.rs suppression and reason checks; fixed the [backrefs] row to match backrefs.rs (only covered packages, exactly the covering sections)" }
 
 ["STACK-RUST#setup"."body"]
-stamp = { hash = "b3:c59f4160c6aaaf64", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
+stamp = { hash = "b3:eba1e4560a341ea6", by = "agent:callout-pass", note = "Turned 'Every one of these is a governance change; stack jobs skip until it lands' into an IMPORTANT alert, wording unchanged" }
 
 ["STACK-RUST#setup"."file:stacks/rust/clippy.toml"]
 stamp = { hash = "b3:b73b054d1d4f0bc7", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
