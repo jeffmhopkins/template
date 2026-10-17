@@ -43,11 +43,14 @@ commands:
                                             stamp a doc's time-based review
   docs merge-main [--from <branch>]         merge origin/<branch> (default main), resolve ledger and @generated conflicts
   docs due                                  docs past review_every, external URLs past recheck_every
-  governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]
-                                            list governance changes; enforce label and section
+  governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]
+             [--into <branch>] [--main <rev>]
+                                            list governance changes; enforce label and section;
+                                            into a wave/* branch, skip files as on main and
+                                            fail on protected paths
   pr-title <title>                          Conventional Commit check
-  lane-guard --base <rev> --head <rev> --pr <n> [--wave]
-                                            check a PR's serial-lane claims
+  lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]
+                                            check a PR's serial-lane claims and lane files
   progress [--format markdown|json]         status derived from trailers on HEAD's history
   plan check <launch.md> <roster.md> [--row <id>]
                                             no `owns` overlap between running rows

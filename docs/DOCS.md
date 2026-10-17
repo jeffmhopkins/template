@@ -360,9 +360,14 @@ protocol = { value = 21, holder = 512 }
 
 - A PR that changes a lane sets `value` to the base's value plus one and `holder` to its own
   PR number. Two claims on the same lane conflict in git.
+- A lane may name the files that hold its value, and the lines in them:
+  `protocol = { value = 21, holder = 512, files = ["src/proto.rs"], pattern = 'PROTOCOL_VERSION' }`.
+  A PR that changes those lines without a claim fails. The base's `lanes.toml` decides which
+  files belong to a lane.
 - `scripts/repo lane-guard --base <rev> --head <rev> --pr <n>` (CI check `lane-guard`)
-  passes only when every changed lane has exactly that shape. A wave landing PR may advance
-  a lane by more than one.
+  passes only when every changed lane has exactly that shape and no lane's files change
+  unclaimed. A wave's landing PR, head `wave/*` and base `main`, may advance a lane by more
+  than one (`--wave`).
 - Who holds a slot, and when, is in the [serial-lanes runbook](runbooks/serial-lanes.md).
 
 <a id="governance"></a>
@@ -393,7 +398,11 @@ With `--pr-body` and `--labels` it also fails when the label or the section is m
 prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`.
 With `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
 of the same action to a new full commit SHA, with its release in a trailing comment, is
-exempt ([ADR-0004](adr/0004-ci-drafts-platform-pins.md)).
+exempt ([ADR-0004](adr/0004-ci-drafts-platform-pins.md)). With `--into wave/<name>`, a file
+whose head version is the one on `main` is skipped, since it was judged there, and any other
+change to a protected or maintainer-only path fails whatever the labels: a wave's own
+workflows judge the PRs into it, so those changes target `main`
+([waves runbook](runbooks/waves.md#which-wave)).
 
 > [!IMPORTANT]
 > Paths in `[governance].maintainer_only` always need the maintainer's own words
@@ -498,9 +507,9 @@ check another, as the reviewer checks a PR head with the base's tool
 | `docs review <DOC> --by … --note …` | record a doc's time-based review ([Time-based review](#ttl)) |
 | `docs merge-main [--from <branch>]` | [Merging main](#merge) |
 | `docs due` | docs and external URLs due for review; exits 0 |
-| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]` | [Governance changes](#governance) |
+| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>] [--into <branch>] [--main <rev>]` | [Governance changes](#governance) |
 | `pr-title "<title>"` | check a Conventional Commit title |
-| `lane-guard --base <rev> --head <rev> --pr <n> [--wave]` | [Serial lanes](#lanes); `--wave` for a wave's landing PR |
+| `lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]` | [Serial lanes](#lanes); `--wave` for a wave's landing PR |
 | `progress [--format markdown\|json]` | [Progress](#progress) |
 | `plan check <launch.md> <roster.md> [--row <id>]` | no `owns` overlap between running rows |
 | `heads-changed --state <file>` | print `changed` or `unchanged` for a sweep, and update the state file |

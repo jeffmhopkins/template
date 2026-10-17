@@ -54,9 +54,9 @@ review_every = "180d"
 | `docs review <DOC> --by <who> --note "<text>"` | writes `reviewed = { by, note }` into the `@doc` block | 2 for ADRs and docs without `review_every` |
 | `docs merge-main [--from <branch>]` | merges `origin/<branch>` (default `main`), resolves ledger and generated-block conflicts, lists stale sections with this branch's previous notes | 1 when conflicts remain or sections are stale |
 | `docs due` | docs past `review_every` and external URLs past `recheck_every` | always 0 |
-| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]` | lists governance changes between the merge base and the head, and a `maintainer-only: <path>` line per changed maintainer-only path; with `--author dependabot[bot]`, a diff of action re-pins only is exempt and lists nothing | listing: 0; with `--pr-body` or `--labels`: 1 when changes exist and the label or the `## Governance change` section is missing |
+| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>] [--into <branch>] [--main <rev>]` | lists governance changes between the merge base and the head, and a `maintainer-only: <path>` line per changed maintainer-only path; with `--author dependabot[bot]`, a diff of action re-pins only is exempt and lists nothing; with `--into wave/<name>`, skips each file whose head version is the one on `--main` (default `origin/main`) and lists every other protected or maintainer-only path as a problem | listing: 0; with `--pr-body` or `--labels`: 1 when changes exist and the label or the `## Governance change` section is missing, or a PR into a wave changes a protected path |
 | `pr-title "<title>"` | Conventional Commit header check, or `Revert "<title>"` | 1 when it doesn't parse |
-| `lane-guard --base <rev> --head <rev> --pr <n> [--wave]` | checks the lanes this PR changed | 1 on a bad claim |
+| `lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]` | checks the lanes this PR changed, and changes to a lane's `files` without a claim | 1 on a bad or missing claim; 2 when `--wave` is given for anything but a `wave/*` branch on `origin` into `main` |
 | `progress [--format markdown\|json]` | status of each `progress.toml` item from commit trailers | 0; a trailer naming an unknown item is a warning |
 | `plan check <launch.md> <roster.md> [--row <id>]` | no two running rows own overlapping paths | 1 on an overlap, or a running row without `owns` |
 | `heads-changed --state <file>` | prints `changed` or `unchanged` for `git ls-remote origin`, and stores the listing | always 0 |
@@ -109,8 +109,15 @@ Verified-on-hardware counts only after the item's latest Completes. Status: `don
 
 A lane counts as changed by the PR when its line at the head differs from the merge base.
 Each changed lane needs `value` equal to the base tip's value plus one and `holder` equal to
-`--pr`. A new lane passes when its holder is the PR. Removing a lane fails. With `--wave`,
-for a wave's landing PR, a changed lane only has to exceed the base's value.
+`--pr`. A new lane passes when its holder is the PR. Removing a lane fails.
+
+A lane the base declares with `files` also fails when the PR changes one of those files
+without changing the lane's line. With a `pattern`, only an added or removed line that
+matches it counts. The lanes come from the base tip, so a PR can't drop its own files.
+
+`--wave`, for a wave's landing PR, needs `--head-ref` naming a `wave/*` branch that exists
+as `origin/<branch>` and `--base-ref main`. A changed lane then only has to exceed the base's
+value.
 
 <a id="plans"></a>
 ## Plan files
@@ -124,8 +131,9 @@ comma-separated words when none are backticked.
 
 `roster.md`: any table with a `row` column (or a column whose header contains `row`) and a
 `state` (or `status`) column. Lines whose id has no `launch.md` section, such as roles, are
-skipped. A row is running unless its state is `done`, `merged`, `closed`, `archived`,
-`abandoned`, `cancelled`, `canceled`, `dropped`, `retired` or `planned`.
+skipped. A row is running unless its state is `done`, `merged`, `ended`, `closed`, `archived`,
+`abandoned`, `cancelled`, `canceled`, `dropped`, `retired` or `planned`. The format agents
+write is in [AGENTS › State](../../docs/agents/README.md#state).
 
 Two globs overlap when one matches the other's text, a tracked file matches both, or one is
 a `dir/**` tree containing where the other starts.
@@ -162,7 +170,12 @@ re-check clock restarts at the last commit that changed it.
 `check = "file" | "manual"`, and `source = { file, key }` (a TOML file and a dotted key that
 must hold the value; required with `check = "file"`).
 
-**Lanes** (`[lanes].file`): top-level `name = { value = <int>, holder = <PR> }`.
+**Lanes** (`[lanes].file`): top-level `name = { value = <int>, holder = <PR> }`, with
+optional `files = ["<glob>", …]` and `pattern = '<regex>'`.
+
+**Template** (`repo.toml` `[template]`): `source` (`<owner>/<repo>`), `version`
+(`MAJOR.MINOR.PATCH`) and, in a project, `commit`: the full SHA of the template commit its
+files match.
 
 **Progress** (`[docs].progress`): `[[milestone]]` with `id`, `title`, `demo`; `[[item]]`
 with `id`, `milestone`, `title`, optional `deps` and `hardware`. Ids are unique, `deps` name

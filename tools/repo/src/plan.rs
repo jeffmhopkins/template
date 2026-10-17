@@ -7,8 +7,10 @@
 //! comma-separated words when none are backticked.
 //!
 //! `roster.md` holds Markdown tables; a table with a `row` column and a `state` column
-//! lists rows. A row is running unless its state is one of [`FINISHED`]. `--row <id>`
-//! adds a row about to launch to the running set.
+//! lists rows (docs/agents/README.md#state: `| row | session | pr | shard | state |`). A row
+//! is running unless its state is one of [`FINISHED`]. A table without a `row` column, such
+//! as the roles table, is skipped. `--row <id>` adds a row about to launch to the running
+//! set.
 
 use std::collections::BTreeMap;
 
@@ -21,6 +23,7 @@ use crate::args::Args;
 pub const FINISHED: &[&str] = &[
     "done",
     "merged",
+    "ended",
     "closed",
     "archived",
     "abandoned",
@@ -232,7 +235,7 @@ mod tests {
 
     const LAUNCH: &str = "# Launch\n\n<a id=\"B1\"></a>\n## B1: Parser\n\n| Field | Value |\n|---|---|\n| id | B1 |\n| owns | `src/parse/**`, `docs/PARSE.md` |\n\n<a id=\"B2\"></a>\n## B2: Lexer\n- **owns:** `src/lex/**`\n\n<a id=\"B3\"></a>\n## B3\nowns: src/**\n\n<a id=\"B4\"></a>\n## B4\nNo owns yet.\n```\n<a id=\"B9\"></a>\n```\n";
 
-    const ROSTER: &str = "# Roster\n\n| Role or row | Session | PR | State |\n|---|---|---|---|\n| coordinator | s0 | | running |\n| [B1](launch.md#B1) | s1 | #3 | running |\n| `B2` | s2 | #4 | review |\n| B3 | s3 | #5 | merged |\n";
+    const ROSTER: &str = "coordinator\n\n| role | session | state |\n|---|---|---|\n| planner | s0 | running |\n\n| row | session | pr | shard | state |\n|---|---|---|---|---|\n| [B1](launch.md#B1) | s1 | #3 | 1 | building |\n| `B2` | s2 | #4 | 0 | review |\n| B3 | s3 | #5 | 1 | merged |\n| B5 | s5 | #7 | 1 | ended |\n";
 
     #[test]
     fn reads_launch_rows() {
@@ -250,7 +253,7 @@ mod tests {
     #[test]
     fn reads_running_rows() {
         let r: Vec<String> = running(ROSTER).into_iter().map(|(id, _)| id).collect();
-        assert_eq!(r, vec!["coordinator", "B1", "B2"]);
+        assert_eq!(r, vec!["B1", "B2"]);
     }
 
     #[test]

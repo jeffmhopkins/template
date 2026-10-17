@@ -34,6 +34,19 @@ pub struct Template {
     #[serde(default)]
     pub source: Option<String>,
     pub version: String,
+    /// The template commit the project's files came from, as a full SHA. A project records
+    /// it at intake and moves it on each upgrade, which diffs from it. Absent in the template.
+    #[serde(default)]
+    pub commit: Option<String>,
+}
+
+/// Why `commit` is not a full commit SHA, if it isn't.
+pub fn commit_problem(commit: &str) -> Option<String> {
+    (commit.len() != 40
+        || !commit
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f')))
+    .then(|| format!("{FILE}: [template].commit `{commit}` is not a full 40-character commit SHA"))
 }
 
 /// Why `source` is not a GitHub `<owner>/<repo>` name, if it isn't.
@@ -343,6 +356,9 @@ pub fn check(root: &Path) -> Vec<String> {
         Some(source) => out.extend(source_problem(source)),
         None => out.push(format!("{FILE}: [template].source is missing")),
     }
+    if let Some(commit) = &config.template.commit {
+        out.extend(commit_problem(commit));
+    }
     if config.docs.max_cover_files == 0 {
         out.push(format!("{FILE}: [docs].max_cover_files must be at least 1"));
     }
@@ -550,6 +566,30 @@ prefix = "//! Docs:"
             "a b/c",
         ] {
             assert!(source_problem(bad).is_some(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn template_commit_is_a_full_sha() {
+        assert_eq!(Config::parse(CONFIG).unwrap().template.commit, None);
+        let sha = "0123456789abcdef0123456789abcdef01234567";
+        let with = CONFIG.replace(
+            "version = \"0.1.0\"",
+            &format!("version = \"0.1.0\"\ncommit = \"{sha}\""),
+        );
+        assert_eq!(
+            Config::parse(&with).unwrap().template.commit.as_deref(),
+            Some(sha)
+        );
+        assert_eq!(commit_problem(sha), None);
+        for bad in [
+            "",
+            "0123456",
+            "v0.1.0",
+            &sha.to_uppercase(),
+            &format!("{sha}0"),
+        ] {
+            assert!(commit_problem(bad).is_some(), "{bad}");
         }
     }
 

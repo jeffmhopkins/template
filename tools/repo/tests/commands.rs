@@ -98,6 +98,72 @@ fn governance_lists_and_enforces() {
 }
 
 #[test]
+fn governance_into_a_wave() {
+    let f = Fixture::new(
+        "gov-wave",
+        &[
+            (".github/workflows/ci.yml", "jobs:\n  fmt:\n"),
+            ("src/a.rs", "fn a() {}\n"),
+        ],
+    );
+    f.git(&["branch", "wave/a"]);
+    // Main moves, with a protected change.
+    f.write(".github/workflows/ci.yml", "jobs:\n  fmt:\n  docs:\n");
+    f.commit("ci on main");
+    // A sync PR: main merged into a branch off the wave. Main's files are skipped.
+    f.git(&["checkout", "-q", "-b", "sync", "wave/a"]);
+    f.git(&["merge", "-q", "--no-edit", "main"]);
+    let args = [
+        "governance",
+        "--base",
+        "wave/a",
+        "--into",
+        "wave/a",
+        "--main",
+        "main",
+        "--labels",
+        "",
+    ];
+    let r = f.repo(&args);
+    assert!(r.ok() && r.out.contains("as on main, skipped"), "{}", r.out);
+    // A builder PR into the wave that edits a protected path fails, label or not.
+    f.git(&["checkout", "-q", "-b", "pr", "wave/a"]);
+    f.write(".github/workflows/ci.yml", "jobs:\n  nothing:\n");
+    f.commit("loosen ci inside the wave");
+    let body = f.path().join("../gov-wave-body.md");
+    std::fs::write(&body, "## Governance change\nA reason.\n").unwrap();
+    let body = body.to_string_lossy().into_owned();
+    let labeled = [
+        "governance",
+        "--base",
+        "wave/a",
+        "--into",
+        "wave/a",
+        "--main",
+        "main",
+        "--pr-body",
+        &body,
+        "--labels",
+        "governance-approved",
+    ];
+    let r = f.repo(&labeled);
+    assert_eq!(r.code, 1, "{}", r.out);
+    assert!(r.out.contains("target `main` instead"), "{}", r.out);
+    // The same change into main passes with the label and the section.
+    let r = f.repo(&[
+        "governance",
+        "--base",
+        "main",
+        "--pr-body",
+        &body,
+        "--labels",
+        "governance-approved",
+    ]);
+    assert!(r.ok(), "{}", r.out);
+    let _ = std::fs::remove_file(&body);
+}
+
+#[test]
 fn lane_guard_checks_claims() {
     let f = Fixture::new(
         "lanes",
@@ -158,6 +224,59 @@ fn lane_guard_checks_claims() {
         "{}",
         none.out
     );
+}
+
+#[test]
+fn lane_guard_checks_lane_files_and_wave_landings() {
+    let decl = "protocol = { value = 3, holder = 9, files = [\"src/version.rs\"], pattern = 'PROTOCOL' }\n";
+    let origin = Fixture::new(
+        "lane-files-origin",
+        &[
+            ("lanes.toml", decl),
+            ("src/version.rs", "pub const PROTOCOL: u32 = 3;\n"),
+        ],
+    );
+    origin.git(&["branch", "wave/a"]);
+    let f = origin.clone_as("lane-files");
+    f.git(&["checkout", "-q", "-b", "pr"]);
+    let guard = |extra: &[&str]| {
+        let args = [
+            "lane-guard",
+            "--base",
+            "origin/main",
+            "--head",
+            "HEAD",
+            "--pr",
+            "12",
+        ];
+        f.repo(&[&args[..], extra].concat())
+    };
+    // Bumping the value in code without a claim fails.
+    f.write("src/version.rs", "pub const PROTOCOL: u32 = 4;\n");
+    f.commit("bump in code only");
+    let r = guard(&[]);
+    assert_eq!(r.code, 1, "{}", r.out);
+    assert!(r.out.contains("makes no claim"), "{}", r.out);
+    // With the claim it passes.
+    f.write(
+        "lanes.toml",
+        &decl.replace("value = 3, holder = 9", "value = 4, holder = 12"),
+    );
+    f.commit("claim");
+    let r = guard(&[]);
+    assert!(r.ok(), "{}", r.out);
+    // `--wave` only for a wave branch on origin into main.
+    assert_eq!(guard(&["--wave"]).code, 2);
+    let r = guard(&["--wave", "--head-ref", "pr", "--base-ref", "main"]);
+    assert!(r.code == 2 && r.out.contains("landing PR"), "{}", r.out);
+    let r = guard(&["--wave", "--head-ref", "wave/b", "--base-ref", "main"]);
+    assert!(
+        r.code == 2 && r.out.contains("not a branch on origin"),
+        "{}",
+        r.out
+    );
+    let r = guard(&["--wave", "--head-ref", "wave/a", "--base-ref", "main"]);
+    assert!(r.ok(), "{}", r.out);
 }
 
 const PLAN: &str = "[[milestone]]\nid = \"M0\"\ntitle = \"Start\"\ndemo = \"It runs.\"\n\n[[item]]\nid = \"M0-1\"\nmilestone = \"M0\"\ntitle = \"One\"\n\n[[item]]\nid = \"M0-2\"\nmilestone = \"M0\"\ntitle = \"Two\"\ndeps = [\"M0-1\"]\nhardware = true\n\n[[item]]\nid = \"M0-3\"\nmilestone = \"M0\"\ntitle = \"Three\"\n";

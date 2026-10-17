@@ -1,9 +1,13 @@
 # governance: the checks that read the PR as data and run code from its base only.
 #   governance  `repo governance`: governance changes carry the label and the justification
 #               section; maintainer-only paths also need the label applied by the maintainer.
-#               A Dependabot PR that only re-pins actions is exempt (ADR-0004).
+#               A Dependabot PR that only re-pins actions is exempt (ADR-0004). Into a
+#               `wave/*` base, files as on the default branch are skipped and any other
+#               protected path fails: those changes target the default branch.
 #   pr-title    `repo pr-title`: the title is a Conventional Commit.
-#   lane-guard  `repo lane-guard`: a serial-lane claim is base + 1 and held by this PR.
+#   lane-guard  `repo lane-guard`: a serial-lane claim is base + 1 and held by this PR, and a
+#               lane's files change only with a claim. `--wave` only for a same-repo
+#               `wave/*` head into the default branch.
 #   head-labels on a push, removes governance-approved: the label counts only for the head
 #               it was applied to. Not a required check; it runs on drafts too.
 #
@@ -40,6 +44,8 @@ env:
   PR: ${{ github.event.pull_request.number }}
   BASE_SHA: ${{ github.event.pull_request.base.sha }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  BASE_REF: ${{ github.event.pull_request.base.ref }}
+  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
   # [labels].governance in repo.toml.
   GOVERNANCE_LABEL: governance-approved
   # The account whose label application counts as the maintainer's; bootstrap sets it.
@@ -76,7 +82,7 @@ jobs:
           cache-name: base-tool
       - name: Fetch the PR head as git objects
         run: |
-          git fetch --no-tags origin "$HEAD_SHA"
+          git fetch --no-tags origin "$HEAD_SHA" "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
           git cat-file -e "$HEAD_SHA^{commit}"
       - name: PR body and labels from the event
         env:
@@ -101,6 +107,7 @@ jobs:
           fi
           set +e
           "$REPO" governance --base "$BASE_SHA" --head "$HEAD_SHA" --author "$AUTHOR" \
+            --into "$BASE_REF" --main "origin/$DEFAULT_BRANCH" \
             --pr-body "$RUNNER_TEMP/pr-body.md" --labels "$LABELS" | tee "$RUNNER_TEMP/governance.txt"
           status=${PIPESTATUS[0]}
           set -e
@@ -163,7 +170,12 @@ jobs:
         env:
           REPO: ${{ steps.tool.outputs.path }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
+          # A landing PR: a wave branch of this repo into the default branch. The tool also
+          # checks that the branch exists on origin.
           wave=()
-          case "$HEAD_REF" in wave/*) wave=(--wave) ;; esac
+          if [ "$SAME_REPO" = true ] && [ "$BASE_REF" = "$DEFAULT_BRANCH" ]; then
+            case "$HEAD_REF" in wave/*) wave=(--wave --head-ref "$HEAD_REF" --base-ref "$BASE_REF") ;; esac
+          fi
           "$REPO" lane-guard --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" "${wave[@]}"

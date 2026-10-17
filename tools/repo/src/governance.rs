@@ -1,5 +1,5 @@
 //! `repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]
-//! [--author <login>]`.
+//! [--author <login>] [--into <branch>] [--main <rev>]`.
 //!
 //! Lists the governance changes between the merge base of `<base>` and `<head>`. Both
 //! sides are read as git objects only (`git show`, `git ls-tree`, `git diff`); nothing
@@ -17,6 +17,11 @@
 //! `[labels].governance` label and a non-empty `## Governance change` section. With
 //! `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
 //! to a new commit SHA is exempt (ADR-0004).
+//!
+//! With `--into wave/<name>` (the PR's base branch), a changed file whose head version is
+//! the one on `--main` (default `origin/main`) is skipped: it came from `main`, where it was
+//! judged. Any other change to a protected or maintainer-only path fails whatever the
+//! labels: such changes target `main`, since a wave's own workflows judge the PRs into it.
 
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
@@ -351,6 +356,30 @@ fn new_suppressions(rules: &Rules, p: &str, base: Option<&str>, head: &str, out:
     }
 }
 
+/// Protected and maintainer-only paths a PR into a wave changes. They must target `main`.
+pub fn wave_problems(rules: &Rules, files: &[FileChange], into: &str) -> Vec<String> {
+    files
+        .iter()
+        .filter(|f| rules.protected.is_match(&f.path) || rules.maintainer_only.is_match(&f.path))
+        .map(|f| {
+            format!(
+                "{}: a protected path changes in a PR into `{into}`; target `main` instead (docs/runbooks/waves.md#which-wave)",
+                f.path
+            )
+        })
+        .collect()
+}
+
+/// The blob id of `path` at `rev`; `None` when absent there.
+fn blob(root: &Path, rev: &str, path: &str) -> Option<String> {
+    git::text(
+        root,
+        &["rev-parse", "--verify", "-q", &format!("{rev}:{path}")],
+    )
+    .ok()
+    .map(|s| s.trim().to_owned())
+}
+
 /// The author whose pin-only PRs are exempt (ADR-0004).
 pub const DEPENDABOT: &str = "dependabot[bot]";
 
@@ -500,15 +529,34 @@ pub fn problems(changes: &[Change], labels: &[String], body: &str, label: &str) 
 }
 
 pub fn run(args: &[String]) -> Outcome {
-    let usage = "repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]";
-    let a = Args::parse(args, &["base", "head", "pr-body", "labels", "author"], &[])?;
+    let usage = "repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>] [--into <branch>] [--main <rev>]";
+    let a = Args::parse(
+        args,
+        &[
+            "base", "head", "pr-body", "labels", "author", "into", "main",
+        ],
+        &[],
+    )?;
     a.exactly(0, usage)?;
     let root = git::root()?;
     let base = git::resolve(&root, a.required("base", usage)?)?;
     let head = git::resolve(&root, a.value("head").unwrap_or("HEAD"))?;
     let mb = git::merge_base(&root, &base, &head)?;
     let rules = rules_at(&root, &base)?;
-    let files = changed_files(&root, &mb, &head)?;
+    let mut files = changed_files(&root, &mb, &head)?;
+    let into = a.value("into").filter(|b| b.starts_with("wave/"));
+    if into.is_some() {
+        let main = git::resolve(&root, a.value("main").unwrap_or("origin/main"))?;
+        let mut kept = Vec::new();
+        for f in files {
+            if blob(&root, &head, &f.path) == blob(&root, &main, &f.path) {
+                println!("governance: {}: as on main, skipped", f.path);
+            } else {
+                kept.push(f);
+            }
+        }
+        files = kept;
+    }
     if a.value("author") == Some(DEPENDABOT) && repin_only(&files) {
         for f in &files {
             println!("governance: {}: re-pins actions only", f.path);
@@ -520,6 +568,12 @@ pub fn run(args: &[String]) -> Outcome {
     }
     let (changes, maintainer) = classify(&rules, &files);
     print!("{}", render(&mb, &head, &changes, &maintainer));
+    let wave = into
+        .map(|b| wave_problems(&rules, &files, b))
+        .unwrap_or_default();
+    for p in &wave {
+        println!("governance: {p}");
+    }
     if a.value("pr-body").is_none() && a.value("labels").is_none() {
         return Ok(true);
     }
@@ -540,10 +594,10 @@ pub fn run(args: &[String]) -> Outcome {
     for p in &found {
         println!("governance: {p}");
     }
-    if found.is_empty() && !changes.is_empty() {
+    if found.is_empty() && wave.is_empty() && !changes.is_empty() {
         println!("governance: ok (labeled `{label}` and justified)");
     }
-    Ok(found.is_empty())
+    Ok(found.is_empty() && wave.is_empty())
 }
 
 #[cfg(test)]
@@ -793,6 +847,18 @@ mod tests {
             Some(&b)
         )]));
         assert!(!repin_only(&[]));
+    }
+
+    #[test]
+    fn protected_paths_into_a_wave_fail() {
+        let files = [
+            change(".github/workflows/ci.yml", Some("a"), Some("b")),
+            change("REVIEW.md", Some("a"), Some("b")),
+            change("src/a.rs", Some("a"), Some("b")),
+        ];
+        let got = wave_problems(&rules(), &files, "wave/w1");
+        assert_eq!(got.len(), 2, "{got:?}");
+        assert!(got[0].contains("into `wave/w1`"), "{got:?}");
     }
 
     #[test]
