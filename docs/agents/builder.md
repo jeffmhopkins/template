@@ -29,30 +29,37 @@ Delivers one roadmap item as one PR and drives it until it merges.
 
 Check `ops/STOP` (stop if present) and `ops/mode.md` (waves, main's health). If main is red,
 read its pinned "main is red" issue before investigating any failure. Never push a "fix" for a
-failure that issue already covers.
+failure that issue already covers. While it is open, triage may turn off auto-merge on your
+PR, and you don't turn it on: triage does that once `main` is green.
 
 <a id="the-loop"></a>
 ## The loop
 <!-- @section
 -->
 
-1. **Orient.** Read the row, then follow CLAUDE.md: `repo docs for <path>` for every file
-   the row owns.
+1. **Orient.** Read the row, then follow CLAUDE.md: `scripts/repo docs for <path>` for every
+   file the row owns.
 2. **Stay in your lane.** Edit only the row's `owns` paths, plus the doc sections that
-   `repo docs check` says the change made stale. If you need another path, send the planner
-   `BLOCKED <item>: needs <path>`, and carry on with the rest.
-3. **Branch** from main, or from the current wave if `ops/mode.md` says waves are on. Open a
-   **draft** PR early and subscribe to its events. The title is a Conventional Commit; the body
-   ends with `Completes: <id>` (or `Part-of: <id>` for one part of a larger item).
-4. **Before every push**, run the stack's fast checks, `repo docs check` and
-   `repo governance --base origin/main`. Batch fixes into one push.
+   `scripts/repo docs check` says the change made stale. If you need another path, send the
+   planner `BLOCKED <item>: <what>, needs path <glob>`, and carry on with the rest. On
+   `ROW-CHANGED`, re-read the row.
+3. **Branch** from main, or from the current wave if `ops/mode.md` says waves are on, unless
+   the change touches a protected path ([waves runbook](../runbooks/waves.md#which-wave)).
+   Open a **draft** PR early, subscribe to its events, and send the coordinator
+   `OPENED <item> #<pr>`. The title is a Conventional Commit; the body ends with
+   `Completes: <id>` (or `Part-of: <id>` for one part of a larger item).
+4. **Before every push**, run the stack's fast checks, `scripts/repo docs check` and
+   `scripts/repo governance --base origin/main` (for a PR into a wave,
+   `--base origin/wave/<name> --into wave/<name>`). Batch fixes into one push.
 5. **Ready.**
-   - Merge main or the wave (`repo docs merge-main`; merge, never rebase).
+   - Merge main or the wave (`scripts/repo docs merge-main`, with `--from wave/<name>` for a
+     wave; merge, never rebase).
    - Restamp only what you re-read.
    - Mark the PR ready and turn on auto-merge (squash). **Exception:** a lane PR keeps
      auto-merge off until it holds its slot.
-   - Send `REVIEW? #<pr> <sha>` to your shard's reviewer (shard = PR number mod reviewer count,
-     from `ops/roster.md`). Send it again after every later push.
+   - Send `REVIEW? #<pr> <sha>` to your shard's reviewer: your row's `shard` in
+     `ops/roster.md`, and that shard's `reviewer-<shard>` session in the roles table. Send it
+     again after every later push, and re-read the roster on `REVIEWERS`.
 6. **Review.**
    - After every push, read every PR comment, review thread and issue filed against the PR.
    - Answer each `B<n>` with a commit or a concrete rebuttal (R-GOV-004).
@@ -60,18 +67,19 @@ failure that issue already covers.
 7. **Serial lanes.** If the row declares a lane, send `LANE-READY <lane> #<pr>` once review
    passes, with the lane value left unchanged. On `LANE-HOLD <lane> <value>`, set it (one
    push, one more short review round), then turn on auto-merge.
-8. **After review passes,** check `mergeable_state` on every wake. On `MERGE-MAIN`, or a
-   conflict you see yourself:
+8. **After review passes,** check `mergeable_state` on every wake. On `MERGE-MAIN`, `BASE`,
+   or a conflict you see yourself:
    - merge straight away;
    - restamp with a note per section saying what the merge changed;
    - push once, and say on the PR that the round is merge-only.
 9. **Routed issues.** On `ROUTE #<issue>`, fix it in your PR if it's inside your `owns`.
-   Otherwise answer `BLOCKED`.
+   Otherwise answer triage `DECLINED #<issue>: <why>`.
 10. **Stacked follow-ups.** Only when the coordinator hands you one. When the base PR merges,
     retarget to main or the wave and merge it in. A stacked PR never merges into another PR's
     branch.
 11. **Merged:** send `MERGED <item> #<pr>` (adding `wave/<name>` if the base was a wave) to
-    the planner and the integrator. Then stop; the coordinator archives the session.
+    the coordinator, the planner and the integrator. Then stop; the coordinator archives the
+    session.
 
 <a id="decisions"></a>
 ## Decisions
@@ -89,16 +97,19 @@ failure that issue already covers.
 <!-- @section
 -->
 
-List what wasn't run in the PR's "Not run" section. If a run is needed, write
-`ops/hw/<item>.md` and send `HW <item> #<pr>: ops/hw/<item>.md`. A PR may merge at risk if it
-links a `hardware` tracking issue, opened with the **Hardware run** issue form.
+List what wasn't run in the PR's "Not run" section. If a run is needed, open a `hardware`
+tracking issue with the **Hardware run** issue form, with the checklist in it: each step and
+what a pass looks like. The device session reads it there, since it can't read `ops/`. Link
+the issue from the PR and send `HW <item> #<pr>: #<issue>`. A PR may merge at risk once it
+links that issue.
 
 On `HW-RESULT <item> #<pr>: pass <issue>`, open the **record PR**: one small PR that adds
 `docs/hardware/<item>.md` in the [record format](../hardware/README.md#format) (the
 checklist, the result and the commit it ran on, copied from the tracking issue) and ends its
 body with `Verified-on-hardware: <item>` and `Closes #<issue>`.
-On `fail`, fix it in a new PR and send `HW` again. On `not-run`, leave the issue open; the
-coordinator queues it again.
+Usually the PR has merged and you have ended, so triage gets the result instead. On `fail`,
+fix it in a new PR and send `HW` again. On `not-run`, leave the issue open; the coordinator
+queues it again.
 
 <a id="never"></a>
 ## Never

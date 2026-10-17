@@ -11,6 +11,10 @@ review_every = "90d"
 > The standing permissions and the approval contract every session in the project follows.
 > This is the only copy of both.
 
+> [!IMPORTANT]
+> The block's maintainer-only list is `[governance].maintainer_only` in
+> [`repo.toml`](../../repo.toml), path for path. A PR that changes one changes the other.
+
 Copy the whole block below with the copy button at its top right, and paste it into the
 Claude project's instructions. Then, in what you pasted, replace `PROJECT_NAME` with the
 project's name and `OWNER/REPO` with the repo, for example `jane/photo-sorter`. Paste it
@@ -33,30 +37,42 @@ the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
   - turn on auto-merge;
   - merge main or a wave into the branch;
   - self-apply `governance-approved` after examining what `scripts/repo governance` flagged
-    and writing its justification section, never on a maintainer-only path: the maintainer
-    applies it there;
+    at the current head and writing its justification section, except on a PR that changes
+    a maintainer-only path (below): the maintainer applies it there;
   - re-run a CI job that died before any test ran, once.
 - Integrator:
-  - move a PR between main and a wave;
+  - move a PR between main and a wave, or onto the next wave;
   - turn off and back on auto-merge on other PRs during a freeze;
   - create and sync wave branches.
 - Triage:
   - auto-merge and CI fixes on Dependabot PRs;
+  - turn off auto-merge on open PRs while the "main is red" issue is open, and back on once
+    it closes;
   - close a duplicate or won't-fix issue with a reason.
 - Reviewer: add `needs-human`, and remove it once its decision is recorded.
 - Coordinator:
   - start, adopt and archive sessions, within the daily budget;
   - re-run `review-gate` on open PRs once the maintainer says `REVIEWER_SESSIONS` is set.
 
-**Always needs the maintainer, even with `governance-approved`:** changes to the review gate
-workflow, `REVIEW.md`, the tier and gate ADRs, `docs/agents/project-instructions.md`, or the
-list above. These get `needs-human`.
+**Maintainer-only paths** (`[governance].maintainer_only` in `repo.toml`), which always need
+the maintainer, even with `governance-approved`: `.github/workflows/**`,
+`.github/actions/**`, `.github/scripts/**`, `.github/after-review-status.sh`, `repo.toml`,
+`tools/repo/src/**`, `REVIEW.md`, `docs/agents/review/**`, `docs/adr/0002-*.md`,
+`docs/adr/0003-*.md` and `docs/agents/project-instructions.md`. A PR that changes one gets
+`needs-human` and an `/approve` decision on it, and only the maintainer applies its
+`governance-approved`.
 
-**Needs the maintainer's own words, naming the object.** The coordinator relays their message id;
-the receiving session reads it with `fetch_messages`. A paraphrase is not an approval.
-- maintainer-tier ADRs (`/accept ADR-NNNN`);
+**Labels only the maintainer applies:** `review-override`, on any PR, and
+`governance-approved` on a PR that changes a maintainer-only path. A push removes both, so
+they apply them again after each push. Agents post under the maintainer's login, so this
+rule, not the checks, is what keeps those labels theirs.
+
+**Needs the maintainer's own words, naming the object.** The coordinator relays their message
+id as `source: <message id>`; the receiving session reads it with `fetch_messages` and checks
+that its author is the `author_id` in `ops/maintainer.md`. A paraphrase is not an approval.
+- maintainer-tier ADRs (`/accept ADR-NNNN`) and maintainer-only paths (`/approve <path>`);
 - turning off or deferring a required check;
-- `review-override` (the justification links their message);
+- `review-override`, which they apply themselves; the justification links their message;
 - outside actions:
   - publishing a release, tag or package;
   - creating any account;
@@ -75,8 +91,10 @@ questions and one daily digest. Reply in a thread only when the maintainer wrote
 comment and issue filed against it, and answer each one. A PR is done when CI is green and
 review feedback is handled.
 
-**Budget.** Daily token budget: <from intake>. At 80%, nothing new is launched; at 100%,
-builders pause until the maintainer says to continue.
+**Budget.** Daily budget: <from intake>, in tokens when the platform shows them, otherwise in
+session-hours, with a cap of <from intake> builder launches a day when neither can be read.
+At 80%, nothing new is launched; at 100%, builders pause until the maintainer says to
+continue.
 
 **Stop and resume.** "Stop" holds until the maintainer says "resume". After a usage-limit
 pause, the coordinator resumes on its own, in the order its brief gives.

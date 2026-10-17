@@ -25,7 +25,7 @@ body:
     id: checklist
     attributes:
       label: Checklist
-      description: The steps from ops/hw/<item>.md, with what a pass looks like for each.
+      description: Each step to run, with what a pass looks like. The device session follows this list.
     validations:
       required: true
   - type: dropdown

@@ -28,12 +28,13 @@ main's health in `ops/mode.md`, and the wave branches once they're on.
 -->
 
 A lane is a value only one PR at a time may change, such as a protocol or schema version or a
-migration number. An ADR takes its PR's number.
+migration number.
 
 **Claims.** Each lane is one line in `lanes.toml`:
-`protocol = { value = 21, holder = 512 }`. Two claims on the same lane conflict in git. `lane-guard` (CI) passes
-only when `value` is the base's plus one and `holder` is this PR. A wave landing PR may advance
-a lane by more than one.
+`protocol = { value = 21, holder = 512, files = ["src/proto.rs"], pattern = 'PROTOCOL' }`.
+Two claims on the same lane conflict in git. `lane-guard` (CI) passes only when `value` is
+the base's plus one and `holder` is this PR, and fails a change to a lane's `files` with no
+claim. A wave landing PR may advance a lane by more than one.
 
 **How slots are handed out.**
 1. The queue is `ops/lanes.md`, in priority order. A builder sends `LANE-READY` once its
@@ -43,9 +44,10 @@ a lane by more than one.
    value and turns on auto-merge.
 4. **The holder comes first.** When it conflicts, send its builder `MERGE-MAIN #<pr>` with what
    conflicts and how to resolve it.
-5. **When the holder merges** (you get its `MERGED` line), give the next ready PR the slot.
-6. **A holder that hasn't moved for 2 rechecks** loses the slot. Send `STALLED #<pr>` to the
-   coordinator for adoption, and give the slot to the next ready PR.
+5. **When the holder merges** (its `MERGED` line, or the reconcile finds it), give the next
+   ready PR the slot.
+6. **A holder whose author hasn't moved for 2 rechecks** loses the slot. Send
+   `STALLED #<pr>` to the coordinator for adoption, and give the slot to the next ready PR.
 
 <a id="mergeability"></a>
 ## Mergeability and main's health
@@ -53,9 +55,11 @@ a lane by more than one.
 -->
 
 - **Every 30 minutes** (`send_later` after each check), list open PRs that passed review but
-  are `dirty`, and send each builder `MERGE-MAIN #<pr>`.
-- **Idle builders.** A builder that passed review but didn't merge after two nudges goes to
-  the coordinator as `STALLED`.
+  are `dirty`, and send each author `MERGE-MAIN #<pr>`.
+- **Hourly reconcile from `main`** ([README › Lifecycle](README.md#lifecycle)): free the slot
+  of every lane holder that merged, and update `ops/waves.md`, even when no `MERGED` came.
+- **Silent authors.** An author whose PR passed review but didn't merge after two nudges goes
+  to the coordinator as `STALLED`.
 - **Main's health.** The `main-health` workflow keeps one pinned "main is red" issue while a
   required check fails on main. Mirror it in `ops/mode.md`.
   Triage fixes the cause.
@@ -63,30 +67,37 @@ a lane by more than one.
 <a id="waves"></a>
 ## Waves ([waves runbook](../runbooks/waves.md))
 <!-- @section
+depends_on = ["RUNBOOK-WAVES#landing"]
 -->
 
 - **Turn them on when** more than about 15 PRs are open, or runners queue for more than about
   10 minutes:
-  - create the wave branch and set `ops/mode.md` to waves on;
-  - retarget the open PRs (a standing permission);
-  - send each affected builder one line saying its new base.
+  - create the wave branch from `main` and set `ops/mode.md` to waves on;
+  - retarget the open PRs (a standing permission), except those that change protected paths;
+  - send each moved PR's author `BASE #<pr> wave/<name>`.
 - **While on:**
-  - sync main into the wave through a sync PR merged as a **merge commit**;
-  - cut the wave, moving the open PRs to the next one, and message each moved PR's builder;
+  - sync main into the wave through a sync PR merged as a **merge commit**, then send every
+    open PR into the wave `BASE #<pr> wave/<name>`;
+  - cut the wave: create the next wave from the cut wave's tip, move its open PRs onto it,
+    and send each `BASE #<pr> wave/<next>`;
   - open the landing PR, with every carried PR's `Completes:`/`Part-of:` lines and
     "Governance change" sections in its body;
-  - fix what the wave's full CI run finds, with fix PRs into the wave.
+  - fix what the wave's full CI run finds, with fix PRs into the wave, each listed under
+    `fixes:` in `ops/waves.md` and in the landing PR's body. Nothing else merges into a cut
+    wave.
+  - once it lands, GitHub deletes the wave branch; sync `main` into the next wave.
 - **Freeze.** While a lane holder or a landing merges, you may turn off auto-merge on other PRs
   in that wave (a standing permission). Turn it back on once it lands.
-- Subscribe to the wave PRs you open; you're their author session.
+- You're the author of the wave PRs you open: sync, landing and fix PRs
+  ([README › Lifecycle](README.md#lifecycle)).
 
 <a id="state"></a>
 ## State
 <!-- @section
 -->
 
-`ops/lanes.md`, `ops/waves.md`, `ops/mode.md`. On a cold start, rebuild them from open PRs and
-`lanes.toml` on main.
+`ops/lanes.md`, `ops/waves.md`, `ops/mode.md`, `ops/heads/integrator.txt`. On a cold start,
+rebuild them from open PRs and `lanes.toml` on main.
 
 <a id="never"></a>
 ## Never

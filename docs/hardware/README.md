@@ -17,8 +17,9 @@ review_every = "180d"
 depends_on = ["DOCS#progress", "AGENT-BUILDER#hardware"]
 -->
 
-1. A PR with `hardware = true` merges at risk, linking a `hardware` tracking issue.
-2. The device session runs `ops/hw/<item>.md` and records the result on that issue.
+1. A PR with `hardware = true` merges at risk, linking a `hardware` tracking issue that holds
+   the checklist.
+2. The device session follows that checklist and records the result on the same issue.
 3. On a pass, the item's builder (or triage, if the builder has ended) opens the record PR:
    it adds `docs/hardware/<item>.md` and ends its body with
    `Verified-on-hardware: <item>` and `Closes #<issue>`.

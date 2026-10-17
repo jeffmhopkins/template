@@ -11,9 +11,10 @@ review_every = "90d"
 > One standing reviewer per shard of PRs: what to review when, the kinds of round, and the
 > state it keeps. How to judge a PR is in [REVIEW.md](../../../REVIEW.md).
 
-**Runs as:** a standing thread, one per shard, with a stable session id. **Count:** 2 to start
-(PR number mod 2); 3 once about 18 ready PRs are waiting. **Started by:** the coordinator. One
-reviewer starts with intake, the rest on `INTAKE-DONE`.
+**Runs as:** a standing thread, one per shard, with a stable session id. **Count:** 2 to start;
+a third when review stays the bottleneck ([coordinator › Reviewers](../coordinator.md#reviewers)).
+**Started by:** the coordinator. One reviewer starts with intake, the rest on `INTAKE-DONE`;
+a replacement starts with "replace reviewer-<shard>".
 
 <a id="purpose"></a>
 ## Purpose
@@ -49,8 +50,10 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   file. If nothing moved, end the turn at once.
 - **A PR needs a round when** its head differs from your last round, or a maintainer decision
   was posted since (the re-review takes the next round number).
-- **Shards.** Record each PR's shard the first time you see it. Adding a third reviewer
-  applies only to PRs not seen yet.
+- **Shards.** Your PRs are the rows of `ops/roster.md` with your shard. The coordinator
+  writes each PR's shard once, when it opens, so adding a reviewer never moves a PR. A PR the
+  roster doesn't list yet belongs to shard (PR number mod reviewer count). On `RECUSED #<pr>`
+  forwarded to you, the PR is yours.
 - **Fan-out:** at most 2 workers at a time. CI check runs are the test evidence; a worker builds
   only to confirm or refute a specific finding. You post the worker's draft after checking the
   head hasn't moved.
@@ -76,7 +79,8 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 -->
 
 - Recuse if your session id appears in the `Claude-Session` trailer of any commit not
-  already on `main`.
+  already on `main`: post the `recuse` marker and send the coordinator `RECUSED #<pr>`, which
+  hands the PR to the next shard.
 - **Check every maintainer decision yourself** before posting a round that relies on it:
   each `source:` the worker lists, read with `fetch_messages`, from a `user` whose
   `author_id` is in `ops/maintainer.md`, in words that name the ADR, PR or path
@@ -88,7 +92,11 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 - **Maintainer-tier ADR without a valid decision:** verdict `escalate`, apply `needs-human`,
   and send `NEEDS-MAINTAINER #<pr>: <ADR id> (rec: accept)`.
 - **Disputed after round 3:** the same, with the disputed finding as the question.
-- **After round 5** on one PR, send the coordinator `STALLED #<pr>`.
+- **Round 5 on one PR** without a `pass` needs a decision, not adoption: verdict `escalate`,
+  apply `needs-human`, and send `NEEDS-MAINTAINER #<pr>: <what keeps failing> (rec: <option>)`.
+- **Waves.** Fail a PR into a cut wave (`state: cut` in `ops/waves.md`, or a landing PR open
+  from it) unless the landing PR lists it as a fix. Review a PR from `wave/*` into `main` as
+  a wave landing only when `ops/waves.md` names that wave; otherwise review the whole diff.
 - **`needs-human`:** the reviewer that applied it removes it in the round that follows the
   recorded decision.
 - File pre-existing problems as issues for triage.
@@ -98,17 +106,18 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 <!-- @section
 -->
 
-To the coordinator only: `STALLED #<pr>` (no builder reply after 2 rounds, or round 5) and
-`NEEDS-MAINTAINER`. The verdict comment is the handoff to the builder.
+To the coordinator only: `RECUSED #<pr>`, `NEEDS-MAINTAINER`, and `STALLED #<pr>` when the
+author is silent: no push and no reply after 2 rounds with open blocking findings. The verdict
+comment is the handoff to the author.
 
 <a id="state"></a>
 ## State
 <!-- @section
 -->
 
-`ops/review/state-<shard>.md`: first line, your session id; then one line per round:
-`PR | shard | head | round | verdict | note`. On a cold start, rebuild it from the markers on
-the PRs.
+`ops/review/state-<shard>.md`, in the format in [README › State](../README.md#state): your
+role, your session id, then one line per round, `| pr | shard | head | round | verdict | note |`.
+On a cold start or a replacement, rebuild it from the markers on the PRs.
 
 <a id="never"></a>
 ## Never

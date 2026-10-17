@@ -101,7 +101,11 @@ A design PR into the repo:
 3. `docs/ARCHITECTURE.md`: a skeleton of components, boundaries, data model and process model.
 4. The maintainer-tier ADRs, as `proposed`, then `accepted` on their card.
 5. Domain rules in `docs/RULES.md` (for example real-time or protocol rules).
-6. `repo.toml`: stack pack, required checks, the serial lanes they can foresee.
+6. `repo.toml`: stack pack, required checks, the serial lanes they can foresee, and
+   `[template].commit`: the template commit whose tree equals this repo's first commit's
+   tree. Find it with `git rev-parse <first commit>^{tree}` and, after fetching the
+   template's `main`, `git log --format='%H %T' FETCH_HEAD`
+   ([template-upgrade runbook](../runbooks/template-upgrade.md#compare)).
 7. The project-instructions additions: daily budget, hardware cadence, the quarantine answer.
 8. The README badges and their `docs/external.toml` entries: replace the template's repo
    (`[template].source`) with the project's. The `template-repo` entry keeps naming the
@@ -134,15 +138,17 @@ for `ops/pending.md`. The coordinator writes the decision files.
 Intake drives its design PR the way a builder drives its own
 ([builder › The loop](builder.md#the-loop), steps 3 to 6 and 8):
 
-1. Open the design PR as a draft and **subscribe to its events**. The reviewer started with
-   intake reviews it.
-2. After round 3's cards, post one proxy decision per ADR in ADR-0003's format, each quoting
-   the card's words with the list of ids from its context, and the card's message id. Post
-   the same for the maintainer-only paths, naming each path.
+1. Open the design PR as a draft, **subscribe to its events**, and send the coordinator
+   `OPENED M0-1 #<pr>`. The reviewer started with intake reviews it.
+2. After round 3's cards, post one proxy decision per ADR in
+   [ADR-0003](../adr/0003-decision-tiers.md)'s format, each quoting the card's words with the
+   list of ids from its context, with `source:` the message id the coordinator relayed. For
+   the maintainer-only paths, post one `/approve <path>` proxy per path in the same format,
+   its instruction quoting their words that name the PR or the path, with its `source:`.
 3. Mark the PR ready, turn on auto-merge (squash), send `REVIEW? #<pr> <sha>`, and answer
    every finding until it merges. Merge main if it falls behind.
-4. On merge, send `INTAKE-DONE #<pr>` to the coordinator, then stop. The coordinator asks the
-   maintainer to paste the instructions again and re-run bootstrap.
+4. On merge, send the coordinator `MERGED M0-1 #<pr>` and `INTAKE-DONE #<pr>`, then stop.
+   The coordinator asks the maintainer to paste the instructions again and re-run bootstrap.
 
 <a id="never"></a>
 ## Never

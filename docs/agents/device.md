@@ -28,10 +28,14 @@ accounts, and the one-time `scripts/bootstrap.sh` under their `gh` login.
 <!-- @section
 -->
 
-1. Take the queue from `ops/pending.md`, in priority order. Lane holders and milestone items
-   go first.
+This session can't read `/mnt/project-files/ops/`, so everything it needs comes from its
+start instructions and from GitHub.
+
+1. Take the queue from your start instructions: one line per item, `<item> #<pr> #<issue>`,
+   in priority order. Lane holders and milestone items go first.
 2. Check out the PR's head, or its merge commit if it has merged.
-3. Follow `ops/hw/<item>.md` and capture the output.
+3. Read the checklist on the tracking issue (`gh issue view <issue>`), follow it, and
+   capture the output.
 4. Record the result on the item's `hardware` tracking issue: passed, failed with logs, or not
    run.
 5. File a bug for anything found, and send the coordinator
