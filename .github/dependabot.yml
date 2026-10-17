@@ -11,6 +11,11 @@ updates:
     cooldown:
       default-days: 5
     groups:
+      # review-gate.yml uses only actions/github-script. Its bumps come as their own PR, so a
+      # change to the gate's runtime lands, and reverts, alone. An action added to
+      # review-gate.yml joins this group.
+      review-gate:
+        patterns: ["actions/github-script"]
       github-actions:
         patterns: ["*"]
     commit-message:
