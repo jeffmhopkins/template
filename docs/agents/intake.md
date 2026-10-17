@@ -93,7 +93,7 @@ A design PR into the repo:
 5. Domain rules in `docs/RULES.md` (for example real-time or protocol rules).
 6. `repo.toml`: stack pack, required checks, the serial lanes they can foresee.
 7. The project-instructions additions: daily budget, hardware cadence, the quarantine answer.
-8. The README badges and `docs/external.toml`: replace `<owner>/<repo>` with the project's repo.
+8. The README badges and `docs/external.toml`: replace the template's repo (`[template].source`) with the project's.
 
 To the coordinator, not the repo: the accounts and secrets to create and the hardware list,
 for `ops/pending.md`. The coordinator writes the decision files.

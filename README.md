@@ -8,7 +8,7 @@ review_every = "90d"
 
 # `<PROJECT>`
 
-[![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![CI](https://github.com/jeffmhopkins/template/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 [![Licence: MIT OR Apache-2.0](https://img.shields.io/badge/licence-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 
 > `<from intake>`: one sentence on what the product is and who it is for.

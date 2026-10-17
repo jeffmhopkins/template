@@ -35,8 +35,8 @@ recheck_every = "180d"
 
 [[external]]
 id = "ci-badge"
-url = "https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg"
-relied_on = "The status badge GitHub serves for the ci.yml workflow on the default branch; intake replaces <owner>/<repo> here and in the README"
+url = "https://github.com/jeffmhopkins/template/actions/workflows/ci.yml/badge.svg"
+relied_on = "The status badge GitHub serves for the ci.yml workflow on the default branch; it names the template repo until intake replaces it, here and in the README, with the project's repo"
 recheck_every = "365d"
 
 [[external]]

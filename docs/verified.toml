@@ -37,7 +37,7 @@ stamp = { hash = "b3:32ed4d1b07ec4bf3", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New first section; template mode by [template].source equal to origin's owner/repo, project mode while PRODUCT.md is draft; product docs match AGENT-INTAKE#outputs" }
 
 ["CLAUDE#which-repo"."dep:AGENT-INTAKE#outputs"]
-stamp = { hash = "b3:38abaf7c8c648ce1", by = "agent:structure-pass", note = "Template mode by [template].source equal to origin's owner/repo, project mode while PRODUCT.md is draft. Merge changed AGENT-INTAKE#outputs: it gained a summary and output 8, intake fills the badge <owner>/<repo>. That is a product-side edit intake owns, so the section's intake-only rule still holds" }
+stamp = { hash = "b3:02a73ac41e57dd4c", by = "agent:skeleton-lead", note = "Intake output 8 now replaces the template's repo, named by [template].source, in the badges instead of a placeholder. That is still an intake-owned product edit, so template vs project mode and the intake-only rule hold" }
 
 ["DOCS#governance"."body"]
 stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
@@ -271,7 +271,7 @@ stamp = { hash = "b3:344d9502c273ec44", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:e6a65a1a0ad90223", by = "agent:structure-pass", note = "The never-overwritten list matches intake outputs (PRODUCT, ROADMAP, ARCHITECTURE, ADRs, rule groups, repo.toml choices, project-instructions additions) plus lanes and the ledger. After the merge it adds output 8: the project's repo in the external.toml badge entries is project-owned, and README stays project-owned" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#what"."dep:AGENT-INTAKE#outputs"]
-stamp = { hash = "b3:38abaf7c8c648ce1", by = "agent:structure-pass", note = "The never-overwritten list matches intake outputs (PRODUCT, ROADMAP, ARCHITECTURE, ADRs, rule groups, repo.toml choices, project-instructions additions) plus lanes and the ledger. After the merge it adds output 8: the project's repo in the external.toml badge entries is project-owned, and README stays project-owned" }
+stamp = { hash = "b3:02a73ac41e57dd4c", by = "agent:skeleton-lead", note = "Intake output 8 now replaces [template].source's repo in the badges. The never-overwritten list already keeps README and the project's repo in the external.toml badge entries project-owned, so it still matches" }
 
 ["RUNBOOK-WAVES#current"."body"]
 stamp = { hash = "b3:8aa60d15758aa947", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main --from wave/<name> merges origin/wave/<name>, resolves ledger and generated-block conflicts, lists stale sections; merge never rebase" }
