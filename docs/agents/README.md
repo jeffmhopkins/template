@@ -104,7 +104,7 @@ flowchart LR
 | `STALLED #<pr>` | reviewer, integrator → coordinator ★ | nudges once, then adopts the PR |
 | `NEEDS-MAINTAINER <item or #pr>: <question> (rec: <option>)` | any → coordinator ★ | one decision card per object, de-duplicated |
 | `HW <item> #<pr>: ops/hw/<item>.md` | builder → coordinator ★ | adds it to the device queue |
-| `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>` | device → coordinator ★ → builder | builder fixes, or closes the tracking issue |
+| `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>` | device → coordinator ★ → builder (triage if it ended) | pass: opens the record PR, which closes the tracking issue; fail: fixes it |
 | `INTAKE-DONE #<pr>` | intake → coordinator ★ | starts the other roles |
 | `STOP` / `RESUME` | coordinator → all | stop at once / pick up from state files |
 

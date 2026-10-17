@@ -93,6 +93,13 @@ List what wasn't run in the PR's "Not run" section. If a run is needed, write
 `ops/hw/<item>.md` and send `HW <item> #<pr>: ops/hw/<item>.md`. A PR may merge at risk if it
 links a `hardware` tracking issue, opened with the **Hardware run** issue form.
 
+On `HW-RESULT <item> #<pr>: pass <issue>`, open the **record PR**: one small PR that adds
+`docs/hardware/<item>.md` in the [record format](../hardware/README.md#format) (the
+checklist, the result and the commit it ran on, copied from the tracking issue) and ends its
+body with `Verified-on-hardware: <item>` and `Closes #<issue>`.
+On `fail`, fix it in a new PR and send `HW` again. On `not-run`, leave the issue open; the
+coordinator queues it again.
+
 <a id="never"></a>
 ## Never
 <!-- @section

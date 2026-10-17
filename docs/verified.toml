@@ -150,6 +150,15 @@ stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:skeleton-lead", note = "Step
 ["GETTING-STARTED#start"."dep:RUNBOOK-BOOTSTRAP#by-hand"]
 stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Moved 'Until then no PR can merge' out of step 7 into a WARNING alert after the list; bootstrap by-hand step 3 change is presentational too" }
 
+["HARDWARE#flow"."body"]
+stamp = { hash = "b3:99c98b24cbce4416", by = "agent:template-thread", note = "New section: the four steps match builder#hardware (record PR adds docs/hardware/<item>.md with Verified-on-hardware and Closes), device#each-run (issue left open) and DOCS#progress (done needs the trailer)" }
+
+["HARDWARE#flow"."dep:AGENT-BUILDER#hardware"]
+stamp = { hash = "b3:6f592090316e48c8", by = "agent:template-thread", note = "New section: the four steps match builder#hardware (record PR adds docs/hardware/<item>.md with Verified-on-hardware and Closes), device#each-run (issue left open) and DOCS#progress (done needs the trailer)" }
+
+["HARDWARE#flow"."dep:DOCS#progress"]
+stamp = { hash = "b3:a00e8a132708198d", by = "agent:template-thread", note = "New section: the four steps match builder#hardware (record PR adds docs/hardware/<item>.md with Verified-on-hardware and Closes), device#each-run (issue left open) and DOCS#progress (done needs the trailer)" }
+
 ["REVIEW#checks"."body"]
 stamp = { hash = "b3:a44461568994e466", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
 
@@ -367,7 +376,7 @@ stamp = { hash = "b3:398a292664325578", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:cd27b57f813fccc9", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENT-REVIEWER-WORKER#steps"]
-stamp = { hash = "b3:5b6ea5e2c0f38acb", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
+stamp = { hash = "b3:0b7391337cbb20d2", by = "agent:template-thread", note = "Only change upstream is a link on REVIEW.md in reviewer-worker#steps; sub-worker rules here still match those steps" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
 stamp = { hash = "b3:5060cc64cfbe171b", by = "agent:callout-pass", note = "AGENTS#state wrapped its five shared-folder rules in a WARNING alert unchanged; sub-workers never write ops/ still matches" }

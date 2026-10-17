@@ -35,7 +35,8 @@ accounts, and the one-time `scripts/bootstrap.sh` under their `gh` login.
 4. Record the result on the item's `hardware` tracking issue: passed, failed with logs, or not
    run.
 5. File a bug for anything found, and send the coordinator
-   `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>`.
+   `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>`. Leave the issue open: a pass is
+   recorded on `main` by the builder's record PR, which closes it.
 
 <a id="considerate"></a>
 ## Being considerate of the machine

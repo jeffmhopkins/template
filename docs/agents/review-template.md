@@ -9,7 +9,7 @@ review_every = "90d"
 # Review round template
 
 > The skeleton of one review round's summary comment. Copy it, fill every part, and delete
-> the hints. The rules behind it are in REVIEW.md; where they differ, REVIEW.md wins.
+> the hints. The rules behind it are in [REVIEW.md](../../REVIEW.md); where they differ, REVIEW.md wins.
 
 <a id="template"></a>
 ## The comment

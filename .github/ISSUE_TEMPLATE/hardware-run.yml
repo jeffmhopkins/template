@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        The device session records the result here. A pass closes this issue. The next PR that touches the item carries `Verified-on-hardware: <item id>` (docs/DOCS.md, Progress).
+        The device session records the result here. On a pass, the item's builder opens a record PR that adds `docs/hardware/<item id>.md`, carries `Verified-on-hardware: <item id>` and closes this issue (docs/DOCS.md, Progress).
   - type: input
     id: item
     attributes:

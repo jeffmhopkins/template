@@ -55,6 +55,7 @@ How these docs are checked is in [DOCS.md](DOCS.md). The project's own pitch is 
 | [waves.md](runbooks/waves.md) | Opening, syncing, cutting and landing wave branches |
 | [serial-lanes.md](runbooks/serial-lanes.md) | How a PR gets the next value of a serial lane |
 | [template-upgrade.md](runbooks/template-upgrade.md) | Taking a newer template version into a project |
+| [hardware/](hardware/README.md) | Records of passed hardware runs, and the record format |
 
 <a id="agents"></a>
 ## Agents

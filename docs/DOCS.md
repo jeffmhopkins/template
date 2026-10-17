@@ -328,7 +328,9 @@ Roadmap status is derived, never recorded.
 
 - A PR's body ends with `Completes: <id>` or `Part-of: <id>`. The squash message is the PR
   body, and carries the trailer onto `main`. A wave's landing PR carries every trailer of the
-  PRs in it. A run on hardware is recorded with `Verified-on-hardware: <id>`.
+  PRs in it. A passed run on hardware is recorded by a record PR that adds
+  `docs/hardware/<id>.md` and carries `Verified-on-hardware: <id>`
+  ([builder › Hardware](agents/builder.md#hardware)).
 - A `Revert "…"` commit cancels the reverted commit's trailers, and reverting the revert
   restores them. A trailer naming an unknown item is a warning.
 - `scripts/repo progress` reads the trailers on every commit reachable from `HEAD` and prints

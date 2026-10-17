@@ -48,6 +48,9 @@ end the turn.
    done or waiting on nothing real. From `ops/launch.md`, find rows that are unblocked and not
    in the roster. Send the coordinator `IDLE <thread>: can take <row>`. A row with no thread to
    take it is the planner's business: it already sent `UNBLOCKED`.
+6. **Hardware results** forwarded to you because the item's builder has ended: on a pass,
+   open the record PR as the [builder brief](builder.md#hardware) describes; on a fail, send
+   the planner `ROW? <item> failed on hardware`.
 
 <a id="state"></a>
 ## State
