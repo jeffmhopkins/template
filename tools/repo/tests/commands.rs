@@ -260,6 +260,22 @@ fn config_check_compares_required_checks_with_workflows() {
     let r = f.repo(&["config", "check"]);
     assert_eq!(r.code, 1, "{}", r.out);
     assert!(r.out.contains("unknown field `extra`"), "{}", r.out);
+    f.write(
+        "repo.toml",
+        &common::CONFIG.replace("source = \"owner/template\"\n", ""),
+    );
+    let r = f.repo(&["config", "check"]);
+    assert!(
+        !r.ok() && r.out.contains("[template].source is missing"),
+        "{}",
+        r.out
+    );
+    f.write(
+        "repo.toml",
+        &common::CONFIG.replace("owner/template", "https://github.com/owner/template"),
+    );
+    let r = f.repo(&["config", "check"]);
+    assert!(!r.ok() && r.out.contains("is not a GitHub"), "{}", r.out);
     f.write("repo.toml", common::CONFIG);
     f.write("lanes.toml", "p = { value = 1 }\n");
     let r = f.repo(&["config", "check"]);

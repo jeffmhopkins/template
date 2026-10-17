@@ -55,7 +55,7 @@ stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/config.rs"]
-stamp = { hash = "b3:9e72c30ba7b5a114", by = "agent:structure-pass", note = "config.rs adds the required [template].source with an owner/repo check and parse.rs skips fenced code for bare URLs; strict config, root resolution and the command table still hold" }
+stamp = { hash = "b3:1d1699c969d3bead", by = "agent:structure-pass", note = "config.rs adds [template].source (optional when parsing older revisions, required and owner/repo-checked by config check); parse.rs skips fenced code for bare URLs; strict config and the command table still hold" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/backrefs.rs"]
 stamp = { hash = "b3:530e42b902d67075", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }

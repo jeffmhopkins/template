@@ -29,8 +29,10 @@ pub struct Config {
 #[serde(deny_unknown_fields)]
 pub struct Template {
     /// The template's GitHub repository, as `<owner>/<repo>`. In the template itself it names
-    /// the repository it is in.
-    pub source: String,
+    /// the repository it is in. Optional when parsing, so an older revision's config still
+    /// reads; `config check` requires it.
+    #[serde(default)]
+    pub source: Option<String>,
     pub version: String,
 }
 
@@ -323,7 +325,10 @@ pub fn check(root: &Path) -> Vec<String> {
             config.template.version
         ));
     }
-    out.extend(source_problem(&config.template.source));
+    match &config.template.source {
+        Some(source) => out.extend(source_problem(source)),
+        None => out.push(format!("{FILE}: [template].source is missing")),
+    }
     if config.docs.max_cover_files == 0 {
         out.push(format!("{FILE}: [docs].max_cover_files must be at least 1"));
     }
@@ -497,12 +502,11 @@ prefix = "//! Docs:"
     }
 
     #[test]
-    fn template_source_is_required_and_checked() {
+    fn template_source_is_checked() {
         let c = Config::parse(CONFIG).unwrap();
-        assert_eq!(c.template.source, "owner/template");
+        assert_eq!(c.template.source.as_deref(), Some("owner/template"));
         let missing = CONFIG.replace("source = \"owner/template\"\n", "");
-        let err = Config::parse(&missing).unwrap_err();
-        assert!(format!("{err:#}").contains("source"), "{err:#}");
+        assert_eq!(Config::parse(&missing).unwrap().template.source, None);
         let unknown = CONFIG.replace("[template]", "[template]\nupstream = \"x/y\"");
         assert!(Config::parse(&unknown).is_err());
         for good in ["owner/template", "my-org/repo.name", "a_b/c-1"] {
