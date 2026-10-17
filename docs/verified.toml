@@ -373,10 +373,10 @@ stamp = { hash = "b3:4b001dd704dc4efe", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:398a292664325578", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
 
 ["SECURITY-AGENTS#sub-workers"."body"]
-stamp = { hash = "b3:cd27b57f813fccc9", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
+stamp = { hash = "b3:28264f00f586fb09", by = "agent:template-thread", note = "Reviewer worker link now points at agents/review/reviewer-worker.md; its steps only had relative links rewritten, so the sub-worker may/may-not lists still match" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENT-REVIEWER-WORKER#steps"]
-stamp = { hash = "b3:0b7391337cbb20d2", by = "agent:template-thread", note = "Only change upstream is a link on REVIEW.md in reviewer-worker#steps; sub-worker rules here still match those steps" }
+stamp = { hash = "b3:da5319e9a08b1c82", by = "agent:template-thread", note = "Reviewer worker link now points at agents/review/reviewer-worker.md; its steps only had relative links rewritten, so the sub-worker may/may-not lists still match" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
 stamp = { hash = "b3:5060cc64cfbe171b", by = "agent:callout-pass", note = "AGENTS#state wrapped its five shared-folder rules in a WARNING alert unchanged; sub-workers never write ops/ still matches" }

@@ -83,7 +83,7 @@ depends_on = ["AGENTS#state", "AGENT-REVIEWER-WORKER#steps"]
 -->
 
 A sub-worker is an Agent-tool worker a session starts for one task, such as the
-[reviewer worker](agents/reviewer-worker.md).
+[reviewer worker](agents/review/reviewer-worker.md).
 
 - **May:** read the repo and read-only GitHub data, work in its own scratch worktree, run the
   commands its task needs, write files where its prompt says, and report back.

@@ -21,8 +21,8 @@ and the approval contract live only in [project-instructions.md](project-instruc
 | Coordinator | [coordinator.md](coordinator.md) | 1 | the project's chat session |
 | Planner | [planner.md](planner.md) | 1 | a standing thread |
 | Builder | [builder.md](builder.md) | at most 6 per reviewer (12 to start) | one thread per roadmap row, ended after its PR merges |
-| Reviewer | [reviewer.md](reviewer.md) | 2 to start, 3 at about 18 ready PRs | standing threads, one per shard |
-| Reviewer worker | [reviewer-worker.md](reviewer-worker.md) | at most 2 per reviewer at a time | an Agent-tool worker a reviewer starts for one PR |
+| Reviewer | [reviewer.md](review/reviewer.md) | 2 to start, 3 at about 18 ready PRs | standing threads, one per shard |
+| Reviewer worker | [reviewer-worker.md](review/reviewer-worker.md) | at most 2 per reviewer at a time | an Agent-tool worker a reviewer starts for one PR |
 | Integrator | [integrator.md](integrator.md) | 1 | a standing thread |
 | Triage | [triage.md](triage.md) | 1 | a standing thread |
 | Board | [board.md](board.md) | 1 small thread, or a scheduled task | a cheap-model thread that rebuilds an artifact hourly |

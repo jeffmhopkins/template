@@ -52,7 +52,7 @@ words.
 
 ```
 CLAUDE.md                     entry point for builders: where the rules are, not what they are
-REVIEW.md                     how the reviewer judges a PR
+REVIEW.md                     how the reviewer judges a PR (at the root, where review tools look)
 README.md                     project pitch, link to progress
 CONTRIBUTING.md  SECURITY.md  CODE_OF_CONDUCT.md  LICENSE-*
 repo.toml                     the one config: tracked and protected paths, required checks,
@@ -77,6 +77,7 @@ docs/
   SECURITY-AGENTS.md          the agents' rules on untrusted text, approvals and secrets
   runbooks/  waves.md  serial-lanes.md  bootstrap.md  template-upgrade.md
   agents/                     one brief per agent type, plus project-instructions.md
+    review/                   the reviewer, reviewer worker and review round template
   design/                     this document
 .github/
   pull_request_template.md  ISSUE_TEMPLATE/  dependabot.yml

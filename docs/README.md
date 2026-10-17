@@ -66,7 +66,7 @@ How these docs are checked is in [DOCS.md](DOCS.md). The project's own pitch is 
 |---|---|
 | [agents/](agents/README.md) | Every agent type, the day 0 order, the message formats and the shared state |
 | [project-instructions.md](agents/project-instructions.md) | The standing permissions and the approval contract |
-| [Review round template](agents/review-template.md) | The skeleton of a reviewer's round comment |
+| [Review round template](agents/review/review-template.md) | The skeleton of a reviewer's round comment |
 | [Steward skill](../.claude/skills/steward/SKILL.md) | What to do on each event on your own PR |
 | [Verify-docs skill](../.claude/skills/verify-docs/SKILL.md) | How to re-read and restamp stale sections |
 

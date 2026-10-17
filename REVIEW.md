@@ -18,7 +18,7 @@ passes. Nobody else reviews the code before it lands.
 
 This file says **how** to judge a PR. It does not restate the rules: you pull the rules
 that apply to each changed file from the repo. How to run as a reviewer (shards, kinds of
-round, state) is in [docs/agents/reviewer.md](docs/agents/reviewer.md).
+round, state) is in [docs/agents/reviewer.md](docs/agents/review/reviewer.md).
 
 <a id="ground-rules"></a>
 ## Ground rules
