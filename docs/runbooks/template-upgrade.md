@@ -124,7 +124,10 @@ that come over renamed to match.
      $(git ls-tree --name-only <commit> -- 'docs/adr/' | grep '/[0-9]') > "$TMPDIR/adrs.patch"
    git apply --3way "$TMPDIR/adrs.patch"
    ```
-   Then port each ADR the template added since, as [above](#what) says.
+   An accepted ADR changes only by being superseded ([R-DOC-008](../RULES.md#R-DOC-008)), so
+   this patch should carry only `status`, `superseded_by` and banner changes. Any other
+   change to an accepted ADR fails `governance` whatever the labels: leave it out and tell
+   the maintainer. Then port each ADR the template added since, as [above](#what) says.
 4. Resolve each conflict by keeping the project's values (what intake set, the project's
    rules and ADRs) inside the template's new structure.
 5. Set `[template].version` in `repo.toml`, and the `template-version` value in

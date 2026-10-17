@@ -13,8 +13,13 @@
 //! status banner; edits to the pack's `[protected_tables]` in manifests; new lint
 //! suppressions (the pack's patterns).
 //!
+//! A change to any `R-GOV-*` rule (added, deleted, or its heading, text or metadata edited)
+//! is reported as maintainer-only, as `maintainer-only: <path>#<rule id>`.
+//!
 //! With `--pr-body` or `--labels` it enforces: when there are changes, the PR needs the
-//! `[labels].governance` label and a non-empty `## Governance change` section. With
+//! `[labels].governance` label and a non-empty `## Governance change` section. An accepted
+//! ADR edited beyond `status = "superseded"` with a `superseded_by` and its status banner
+//! fails whatever the labels (R-DOC-008). With
 //! `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
 //! to a new commit SHA is exempt (ADR-0004).
 //!
@@ -120,16 +125,78 @@ fn doc_id(path: &str, text: &str) -> Option<String> {
     (!id.is_empty()).then(|| id.to_owned())
 }
 
-/// Classifies every changed file; also returns the maintainer-only paths touched.
-pub fn classify(rules: &Rules, files: &[FileChange]) -> (Vec<Change>, Vec<String>) {
-    let mut out = Vec::new();
-    let mut maintainer = Vec::new();
+/// The tracked docs among `files`, each as one before-and-after pair: a doc deleted at one
+/// path and added at another with the same `@doc` id is one pair under the new path, and the
+/// added side is not listed again.
+fn doc_pairs(rules: &Rules, files: &[FileChange]) -> Vec<FileChange> {
     // Tracked docs added at the head, by `@doc` id: a deleted doc whose id reappears moved.
     let added: BTreeMap<String, &FileChange> = files
         .iter()
         .filter(|f| f.base.is_none() && rules.tracked.is_tracked(&f.path))
         .filter_map(|f| Some((doc_id(&f.path, f.head.as_deref()?)?, f)))
         .collect();
+    let mut targets = std::collections::BTreeSet::new();
+    let mut out = Vec::new();
+    for f in files.iter().filter(|f| rules.tracked.is_tracked(&f.path)) {
+        let moved = match (&f.base, &f.head) {
+            (Some(b), None) => doc_id(&f.path, b).and_then(|id| added.get(&id)),
+            _ => None,
+        };
+        match moved {
+            // Compare the old text with the new one, under the new path.
+            Some(to) => {
+                targets.insert(to.path.clone());
+                out.push(FileChange {
+                    path: to.path.clone(),
+                    base: f.base.clone(),
+                    head: to.head.clone(),
+                });
+            }
+            None => out.push(FileChange {
+                path: f.path.clone(),
+                base: f.base.clone(),
+                head: f.head.clone(),
+            }),
+        }
+    }
+    out.retain(|f| f.base.is_some() || !targets.contains(&f.path));
+    out
+}
+
+/// Whether an id names a rule on who decides: its edits are maintainer-only.
+fn governs_decisions(id: &str) -> bool {
+    id.starts_with("R-GOV-")
+}
+
+/// A rule's heading, normalized text and metadata, when the doc has it.
+fn rule_state(doc: &Doc, id: &str) -> Option<(Option<String>, Option<toml::Table>)> {
+    let r = doc.rule(id)?;
+    Some((rule_text(doc, id), r.meta.clone()))
+}
+
+/// The `R-GOV-*` rules a pair adds, deletes or edits, in id order.
+fn decision_rules(f: &FileChange) -> Vec<String> {
+    let parsed = |t: &Option<String>| t.as_deref().map(|t| parse(&f.path, t, &mut Vec::new()));
+    let (base, head) = (parsed(&f.base), parsed(&f.head));
+    let ids: std::collections::BTreeSet<String> = [&base, &head]
+        .into_iter()
+        .flatten()
+        .flat_map(|d| d.rules.iter().map(|r| r.id.clone()))
+        .filter(|id| governs_decisions(id))
+        .collect();
+    ids.into_iter()
+        .filter(|id| {
+            let state = |d: &Option<Doc>| d.as_ref().and_then(|d| rule_state(d, id));
+            state(&base) != state(&head)
+        })
+        .collect()
+}
+
+/// Classifies every changed file; also returns the maintainer-only paths touched, and each
+/// `R-GOV-*` rule changed as `<path>#<rule id>`.
+pub fn classify(rules: &Rules, files: &[FileChange]) -> (Vec<Change>, Vec<String>) {
+    let mut out = Vec::new();
+    let mut maintainer = Vec::new();
     for f in files {
         let p = f.path.as_str();
         let verb = match (&f.base, &f.head) {
@@ -145,24 +212,6 @@ pub fn classify(rules: &Rules, files: &[FileChange]) -> (Vec<Change>, Vec<String
         } else if rules.maintainer_only.is_match(p) {
             push(&mut out, p, format!("{verb} a maintainer-only path"));
         }
-        if rules.tracked.is_tracked(p) {
-            let moved = match (&f.base, &f.head) {
-                (Some(b), None) => doc_id(p, b).and_then(|id| added.get(&id)),
-                _ => None,
-            };
-            match moved {
-                // Compare the old text with the new one, under the new path.
-                Some(to) => doc_meta(
-                    &FileChange {
-                        path: to.path.clone(),
-                        base: f.base.clone(),
-                        head: to.head.clone(),
-                    },
-                    &mut out,
-                ),
-                None => doc_meta(f, &mut out),
-            }
-        }
         if let (Some(base), Some(head)) = (&f.base, &f.head) {
             for (globs, tables) in &rules.tables {
                 if globs.is_match(p) {
@@ -176,7 +225,79 @@ pub fn classify(rules: &Rules, files: &[FileChange]) -> (Vec<Change>, Vec<String
             }
         }
     }
+    for pair in doc_pairs(rules, files) {
+        doc_meta(&pair, &mut out);
+        for id in decision_rules(&pair) {
+            push(
+                &mut out,
+                &pair.path,
+                format!("changes rule `{id}`, which only the maintainer approves"),
+            );
+            maintainer.push(format!("{}#{id}", pair.path));
+        }
+    }
     (out, maintainer)
+}
+
+/// Edits no label allows: an accepted ADR changes beyond becoming `superseded` with a
+/// `superseded_by`, plus its generated status banner (R-DOC-008). A moved ADR is compared
+/// across the move.
+pub fn hard_problems(rules: &Rules, files: &[FileChange]) -> Vec<String> {
+    let mut out = Vec::new();
+    for f in doc_pairs(rules, files) {
+        let Some(base_text) = &f.base else {
+            continue;
+        };
+        let base = parse(&f.path, base_text, &mut Vec::new());
+        if !accepted_adr(&base) {
+            continue;
+        }
+        let p = &f.path;
+        let Some(head_text) = &f.head else {
+            out.push(format!(
+                "{p}: deletes an accepted ADR; supersede it with a new ADR instead (R-DOC-008)"
+            ));
+            continue;
+        };
+        if base_text == head_text {
+            continue;
+        }
+        let head = parse(p, head_text, &mut Vec::new());
+        if adr_content(&base) != adr_content(&head) {
+            out.push(format!(
+                "{p}: edits an accepted ADR's text; a changed decision is a new ADR that supersedes it (R-DOC-008)"
+            ));
+        }
+        let (Some(b), Some(h)) = (&base.meta, &head.meta) else {
+            out.push(format!(
+                "{p}: breaks an accepted ADR's metadata block (R-DOC-008)"
+            ));
+            continue;
+        };
+        let without = |t: &toml::Table| {
+            let mut t = t.clone();
+            t.remove("status");
+            t.remove("superseded_by");
+            t
+        };
+        if without(b) != without(h) {
+            out.push(format!(
+                "{p}: edits an accepted ADR's metadata other than `status` and `superseded_by` (R-DOC-008)"
+            ));
+        }
+        let status =
+            |t: &toml::Table, k: &str| t.get(k).and_then(toml::Value::as_str).map(str::to_owned);
+        let same = status(b, "status") == status(h, "status")
+            && b.get("superseded_by") == h.get("superseded_by");
+        let superseded = status(h, "status").as_deref() == Some("superseded")
+            && status(h, "superseded_by").is_some_and(|s| !s.trim().is_empty());
+        if !same && !superseded {
+            out.push(format!(
+                "{p}: an accepted ADR's status changes only to `superseded`, with `superseded_by` (R-DOC-008)"
+            ));
+        }
+    }
+    out
 }
 
 fn show(v: Option<&toml::Value>) -> String {
@@ -299,16 +420,18 @@ fn doc_meta(f: &FileChange, out: &mut Vec<Change>) {
     }
 }
 
+/// An ADR's text after its metadata block, without its generated status banner.
+fn adr_content(d: &Doc) -> String {
+    let lines: Vec<&str> = d.text.lines().collect();
+    strip_block(
+        &lines[d.content_start.min(lines.len())..].join("\n"),
+        STATUS,
+    )
+}
+
 /// An accepted ADR may change only its `status`, `superseded_by` and status banner.
 fn adr_edits(p: &str, base: &Doc, head: &Doc, out: &mut Vec<Change>) {
-    let content = |d: &Doc| {
-        let lines: Vec<&str> = d.text.lines().collect();
-        strip_block(
-            &lines[d.content_start.min(lines.len())..].join("\n"),
-            STATUS,
-        )
-    };
-    if content(base) != content(head) {
+    if adr_content(base) != adr_content(head) {
         push(out, p, "edits an accepted ADR's content".into());
     }
     match (&base.meta, &head.meta) {
@@ -356,15 +479,27 @@ fn new_suppressions(rules: &Rules, p: &str, base: Option<&str>, head: &str, out:
     }
 }
 
-/// Protected and maintainer-only paths a PR into a wave changes. They must target `main`.
-pub fn wave_problems(rules: &Rules, files: &[FileChange], into: &str) -> Vec<String> {
-    files
+/// Protected and maintainer-only paths, and `R-GOV-*` rules (`maintainer` entries holding a
+/// `#`), a PR into a wave changes. They must target `main`.
+pub fn wave_problems(
+    rules: &Rules,
+    files: &[FileChange],
+    maintainer: &[String],
+    into: &str,
+) -> Vec<String> {
+    let paths = files
         .iter()
         .filter(|f| rules.protected.is_match(&f.path) || rules.maintainer_only.is_match(&f.path))
-        .map(|f| {
+        .map(|f| f.path.as_str());
+    let decision_rules = maintainer
+        .iter()
+        .filter(|m| m.contains('#'))
+        .map(String::as_str);
+    paths
+        .chain(decision_rules)
+        .map(|p| {
             format!(
-                "{}: a protected path changes in a PR into `{into}`; target `main` instead (docs/runbooks/waves.md#which-wave)",
-                f.path
+                "{p}: a protected path changes in a PR into `{into}`; target `main` instead (docs/runbooks/waves.md#which-wave)"
             )
         })
         .collect()
@@ -569,10 +704,14 @@ pub fn run(args: &[String]) -> Outcome {
     let (changes, maintainer) = classify(&rules, &files);
     print!("{}", render(&mb, &head, &changes, &maintainer));
     let wave = into
-        .map(|b| wave_problems(&rules, &files, b))
+        .map(|b| wave_problems(&rules, &files, &maintainer, b))
         .unwrap_or_default();
     for p in &wave {
         println!("governance: {p}");
+    }
+    let hard = hard_problems(&rules, &files);
+    for p in &hard {
+        println!("governance: no label allows this: {p}");
     }
     if a.value("pr-body").is_none() && a.value("labels").is_none() {
         return Ok(true);
@@ -594,10 +733,10 @@ pub fn run(args: &[String]) -> Outcome {
     for p in &found {
         println!("governance: {p}");
     }
-    if found.is_empty() && wave.is_empty() && !changes.is_empty() {
+    if found.is_empty() && wave.is_empty() && hard.is_empty() && !changes.is_empty() {
         println!("governance: ok (labeled `{label}` and justified)");
     }
-    Ok(found.is_empty() && wave.is_empty())
+    Ok(found.is_empty() && wave.is_empty() && hard.is_empty())
 }
 
 #[cfg(test)]
@@ -708,6 +847,116 @@ mod tests {
             whats(&[change("docs/adr/0001-t.md", Some(adr), Some(&tier))]),
             vec!["docs/adr/0001-t.md: edits an accepted ADR's `tier`"]
         );
+    }
+
+    const ADR: &str = "<!-- @doc\nid = \"ADR-0001\"\ntitle = \"T\"\nkind = \"adr\"\nstatus = \"accepted\"\ntier = \"agent\"\n-->\n\n# ADR-0001: T\n\n<!-- @generated begin adr-status -->\n> **Status:** accepted\n<!-- @generated end adr-status -->\n\nDecision.\n";
+
+    fn hard(files: &[FileChange]) -> Vec<String> {
+        hard_problems(&rules(), files)
+    }
+
+    #[test]
+    fn accepted_adr_edits_fail_whatever_the_labels() {
+        let path = "docs/adr/0001-t.md";
+        let superseded = ADR
+            .replace(
+                "status = \"accepted\"",
+                "status = \"superseded\"\nsuperseded_by = \"ADR-0002\"",
+            )
+            .replace(
+                "> **Status:** accepted",
+                "> **Status:** superseded by [ADR-0002](0002-x.md)",
+            );
+        assert!(hard(&[change(path, Some(ADR), Some(&superseded))]).is_empty());
+        assert!(hard(&[change(path, Some(ADR), Some(ADR))]).is_empty());
+
+        let edited = ADR.replace("Decision.", "Another decision.");
+        let got = hard(&[change(path, Some(ADR), Some(&edited))]);
+        assert_eq!(got.len(), 1, "{got:?}");
+        assert!(got[0].contains("edits an accepted ADR's text"), "{got:?}");
+
+        // Superseding doesn't carry a content edit with it.
+        let both = superseded.replace("Decision.", "Another decision.");
+        assert_eq!(hard(&[change(path, Some(ADR), Some(&both))]).len(), 1);
+
+        let tier = ADR.replace("tier = \"agent\"", "tier = \"maintainer\"");
+        assert!(hard(&[change(path, Some(ADR), Some(&tier))])[0].contains("metadata other than"));
+
+        let no_successor = ADR.replace("status = \"accepted\"", "status = \"superseded\"");
+        assert!(
+            hard(&[change(path, Some(ADR), Some(&no_successor))])[0]
+                .contains("only to `superseded`")
+        );
+        let reopened = ADR.replace("status = \"accepted\"", "status = \"proposed\"");
+        assert_eq!(hard(&[change(path, Some(ADR), Some(&reopened))]).len(), 1);
+
+        assert!(hard(&[change(path, Some(ADR), None)])[0].contains("deletes an accepted ADR"));
+
+        // A move with the same text is not an edit; a move with an edit is.
+        let moved = [
+            change(path, Some(ADR), None),
+            change("docs/adr/0001-u.md", None, Some(ADR)),
+        ];
+        assert!(hard(&moved).is_empty(), "{:?}", hard(&moved));
+        let moved_edited = [
+            change(path, Some(ADR), None),
+            change("docs/adr/0001-u.md", None, Some(&edited)),
+        ];
+        assert_eq!(hard(&moved_edited).len(), 1);
+
+        // Proposed ADRs, new ADRs and other docs are free to change.
+        let proposed = ADR.replace("status = \"accepted\"", "status = \"proposed\"");
+        let proposed_edit = proposed.replace("Decision.", "Better decision.");
+        assert!(hard(&[change(path, Some(&proposed), Some(&proposed_edit))]).is_empty());
+        assert!(hard(&[change(path, None, Some(ADR))]).is_empty());
+        let other = DOC.replace("Text.", "Other text.");
+        assert!(hard(&[change("docs/D.md", Some(DOC), Some(&other))]).is_empty());
+    }
+
+    const GOV: &str = "<!-- @doc\nid = \"RULES\"\ntitle = \"R\"\nkind = \"normative\"\nstatus = \"active\"\n-->\n<a id=\"governance\"></a>\n## Governance\n<!-- @section\n-->\n\n<a id=\"R-GOV-001\"></a>\n### R-GOV-001: Labels\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = []\n-->\nOnly the maintainer applies it.\n\n<a id=\"R-DOC-001\"></a>\n### R-DOC-001: Docs\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = []\n-->\nDocs.\n";
+
+    #[test]
+    fn decision_rule_edits_are_maintainer_only() {
+        let path = "docs/RULES.md";
+        let maintainer = |head: &str| classify(&rules(), &[change(path, Some(GOV), Some(head))]).1;
+        let loosened = GOV.replace("Only the maintainer applies it.", "Anyone applies it.");
+        assert_eq!(
+            maintainer(&loosened),
+            vec!["docs/RULES.md#R-GOV-001".to_owned()]
+        );
+        assert!(
+            whats(&[change(path, Some(GOV), Some(&loosened))])
+                .iter()
+                .any(|w| w.contains("`R-GOV-001`, which only the maintainer approves"))
+        );
+        let retitled = GOV.replace("### R-GOV-001: Labels", "### R-GOV-001: Labels, loosely");
+        assert_eq!(maintainer(&retitled).len(), 1);
+        let retired = GOV.replacen(
+            "status = \"active\"\nenforced_by",
+            "status = \"retired\"\nenforced_by",
+            1,
+        );
+        assert_eq!(maintainer(&retired).len(), 1);
+        let added = GOV.replace(
+            "<a id=\"R-DOC-001\"></a>",
+            "<a id=\"R-GOV-002\"></a>\n### R-GOV-002: New\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = []\n-->\nNew.\n\n<a id=\"R-DOC-001\"></a>",
+        );
+        assert_eq!(
+            maintainer(&added),
+            vec!["docs/RULES.md#R-GOV-002".to_owned()]
+        );
+        // Other rules and prose outside the rule stay agent-labelled.
+        let other = GOV.replace("Docs.\n", "Docs, edited.\n");
+        assert!(maintainer(&other).is_empty());
+        let prose = GOV.replace(
+            "## Governance\n<!-- @section\n-->\n",
+            "## Governance\n<!-- @section\n-->\nIntro.\n",
+        );
+        assert!(maintainer(&prose).is_empty(), "{:?}", maintainer(&prose));
+        // Into a wave, a decision rule change fails like a protected path.
+        let files = [change(path, Some(GOV), Some(&loosened))];
+        let m = classify(&rules(), &files).1;
+        assert_eq!(wave_problems(&rules(), &files, &m, "wave/w1").len(), 1);
     }
 
     #[test]
@@ -856,7 +1105,7 @@ mod tests {
             change("REVIEW.md", Some("a"), Some("b")),
             change("src/a.rs", Some("a"), Some("b")),
         ];
-        let got = wave_problems(&rules(), &files, "wave/w1");
+        let got = wave_problems(&rules(), &files, &[], "wave/w1");
         assert_eq!(got.len(), 2, "{got:?}");
         assert!(got[0].contains("into `wave/w1`"), "{got:?}");
     }

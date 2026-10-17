@@ -61,7 +61,7 @@ depends_on = ["DOCS#tool"]
    sections the PR re-verified, with their notes, are its changes to `docs/verified.toml`
    (`git diff <base>... -- docs/verified.toml`).
 4. `<base tool> --root <head worktree> governance --base <base>`: the governance changes and
-   any `maintainer-only:` paths. For a PR into a wave, add `--into wave/<name>`: a protected
+   any `maintainer-only:` entries, a path or a `<path>#R-GOV-…` rule. For a PR into a wave, add `--into wave/<name>`: a protected
    path that doesn't come from `main` is then **blocking**, since such changes target `main`.
 5. Enough surrounding code to know the callers and invariants. The diff alone is not
    enough.
@@ -157,8 +157,8 @@ depends_on = ["DOCS#governance", "RULES#R-GOV-002", "RULES#R-GOV-007"]
 - If `scripts/repo governance` lists changes, the PR needs the `governance-approved` label
   and a "Governance change" section. Judge whether the justification holds for what was
   loosened. A missing or weak justification is **blocking**.
-- A `maintainer-only:` path needs an `/approve` decision on the PR for it, in ADR-0003's
-  format, whose `source:` you check as in [Tier checks](#tiers), with `needs-human` until it
+- A `maintainer-only:` path or `R-GOV-*` rule needs an `/approve` decision on the PR for it,
+  in ADR-0003's format, whose `source:` you check as in [Tier checks](#tiers), with `needs-human` until it
   is there ([R-GOV-007](docs/RULES.md#R-GOV-007)). Without it the verdict is `escalate`.
 - `governance-approved` on a PR with a maintainer-only path, or `review-override` on any PR,
   applied by an agent is **blocking**; only the maintainer applies them. Agents share the
@@ -171,6 +171,9 @@ depends_on = ["DOCS#governance", "RULES#R-GOV-002", "RULES#R-GOV-007"]
   label: confirm the diff is limited to that, and for a major bump read the action's
   changelog against how the repo uses it.
 - New lint suppressions carry their reason in the code.
+- An edit to an accepted ADR beyond superseding it fails `governance` whatever the labels
+  ([R-DOC-008](docs/RULES.md#R-DOC-008)). It is **blocking**: the change belongs in a new ADR
+  that supersedes it.
 
 <a id="severity"></a>
 ## Step 3: Classify
