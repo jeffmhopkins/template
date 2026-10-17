@@ -84,7 +84,7 @@ jobs:
             let overrideLabeledBy = null;
             if (labels.includes(OVERRIDE) && !pushed) {
               const events = await github.paginate(github.rest.issues.listEvents, { owner, repo, issue_number: number, per_page: 100 });
-              const applied = events.filter((e) => e.event === 'labeled' && e.label?.name === 'review-override');
+              const applied = events.filter((e) => e.event === 'labeled' && e.label?.name === OVERRIDE);
               overrideLabeledBy = applied.length ? applied[applied.length - 1].actor?.login ?? null : null;
             }
             const commits = await github.paginate(github.rest.pulls.listCommits, { owner, repo, pull_number: number, per_page: 100 });

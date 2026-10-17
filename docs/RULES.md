@@ -218,7 +218,8 @@ enforced_by = ["ci:governance", "review"]
 applies_to = ["docs/adr/**"]
 -->
 After acceptance only `status`, `superseded_by` and the generated `adr-status` block
-change. A changed decision is a new ADR that supersedes it.
+change, and `status` only to `superseded`, with `superseded_by`. A changed decision is a new
+ADR that supersedes it. The `governance` check fails any other edit whatever the labels.
 
 <a id="R-DOC-009"></a>
 ### R-DOC-009: Covered globs match, within bounds
@@ -344,12 +345,15 @@ maintainer didn't give.
 <!-- @rule
 status = "active"
 enforced_by = ["review"]
-applies_to = [".github/workflows/**", ".github/actions/**", ".github/scripts/**", ".github/after-review-status.sh", "repo.toml", "tools/repo/src/**", "REVIEW.md", "docs/agents/review/**", "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]
+applies_to = [".github/workflows/**", ".github/actions/**", ".github/scripts/**", ".github/after-review-status.sh", "repo.toml", "tools/repo/src/**", "stacks/*/pack.toml", ".claude/settings.json", "CLAUDE.md", "REVIEW.md", "docs/agents/review/**", "docs/agents/coordinator.md", "docs/agents/project-instructions.md", "docs/SECURITY-AGENTS.md", "docs/adr/0002-*.md", "docs/adr/0003-*.md"]
 -->
-A change to a path in `[governance].maintainer_only` in `repo.toml` needs the maintainer's
-own words on the PR, as an `/approve` decision whose `source:` the reviewer checks
+A change to a path in `[governance].maintainer_only` in `repo.toml`, or to the heading, text
+or metadata of any `R-GOV-*` rule, needs the maintainer's own words on the PR, as an
+`/approve` decision whose `source:` the reviewer checks
 ([ADR-0003](adr/0003-decision-tiers.md), [R-GOV-006](#R-GOV-006)). Only the maintainer
 applies `governance-approved` on such a PR. It carries `needs-human` until both are there.
+This rule's `applies_to` is the same list as `maintainer_only`, and `scripts/repo config
+check` fails when they differ.
 
 <a id="testing"></a>
 ## Testing

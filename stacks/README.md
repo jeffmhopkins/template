@@ -75,8 +75,8 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
 
 > [!IMPORTANT]
 > Everything under `stacks/` and `.github/` is a protected path, so the PR is a governance
-> change with a "Governance change" section. The setup action and the CI jobs are
-> maintainer-only paths, so the maintainer approves the PR and applies the
+> change with a "Governance change" section. The pack's `pack.toml`, the setup action and
+> the CI jobs are maintainer-only paths, so the maintainer approves the PR and applies the
 > `governance-approved` label themselves.
 
 1. **Make the directory** `stacks/<name>/`, lower case, one word (`node`, `python`, `go`).

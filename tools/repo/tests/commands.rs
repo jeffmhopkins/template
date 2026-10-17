@@ -409,6 +409,82 @@ fn config_check_compares_required_checks_with_workflows() {
 }
 
 #[test]
+fn config_check_compares_copies_of_the_config() {
+    let f = Fixture::new("config-copies", &[("lanes.toml", "# none\n")]);
+    f.write(
+        ".github/workflows/ci.yml",
+        "on: push\njobs:\n  fmt:\n    runs-on: x\n  docs:\n    runs-on: x\n",
+    );
+    assert!(f.repo(&["config", "check"]).ok());
+    // A workflow copy of a label, annotated, must match repo.toml.
+    f.write(
+        ".github/workflows/governance.yml",
+        "env:\n  # [labels].governance in repo.toml.\n  GOVERNANCE_LABEL: gov-ok\njobs:\n  x:\n    runs-on: x\n",
+    );
+    let r = f.repo(&["config", "check"]);
+    assert!(
+        !r.ok()
+            && r.out
+                .contains("governance.yml:3: annotated with [labels].governance"),
+        "{}",
+        r.out
+    );
+    f.write(
+        ".github/workflows/governance.yml",
+        "env:\n  GOVERNANCE_LABEL: governance-approved\njobs:\n  x:\n    runs-on: x\n",
+    );
+    let r = f.repo(&["config", "check"]);
+    assert!(
+        !r.ok() && r.out.contains("no line is annotated `[labels].governance"),
+        "{}",
+        r.out
+    );
+    f.write(
+        ".github/workflows/governance.yml",
+        "env:\n  GOVERNANCE_LABEL: governance-approved   # [labels].governance in repo.toml\njobs:\n  x:\n    runs-on: x\n",
+    );
+    assert!(f.repo(&["config", "check"]).ok());
+    // R-GOV-007 and the instructions list the same maintainer-only paths as repo.toml.
+    let rule = |applies: &str| {
+        format!(
+            "<!-- @doc\nid = \"RULES\"\ntitle = \"R\"\nkind = \"normative\"\nstatus = \"active\"\n-->\n<a id=\"g\"></a>\n## G\n<!-- @section\n-->\n\n<a id=\"R-GOV-007\"></a>\n### R-GOV-007: M\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = {applies}\n-->\nText.\n"
+        )
+    };
+    f.write("docs/RULES.md", &rule("[\"REVIEW.md\"]"));
+    assert!(f.repo(&["config", "check"]).ok());
+    f.write("docs/RULES.md", &rule("[\"REVIEW.md\", \"x/**\"]"));
+    let r = f.repo(&["config", "check"]);
+    assert!(
+        !r.ok() && r.out.contains("R-GOV-007's applies_to differs") && r.out.contains("x/**"),
+        "{}",
+        r.out
+    );
+    f.write("docs/RULES.md", &rule("[\"REVIEW.md\"]"));
+    let instructions = |list: &str| {
+        format!(
+            "**Maintainer-only paths** (`[governance].maintainer_only` in `repo.toml`), always: {list}. More.\n"
+        )
+    };
+    f.write(
+        "docs/agents/project-instructions.md",
+        &instructions("`REVIEW.md`"),
+    );
+    assert!(f.repo(&["config", "check"]).ok());
+    f.write(
+        "docs/agents/project-instructions.md",
+        &instructions("`CLAUDE.md`"),
+    );
+    let r = f.repo(&["config", "check"]);
+    assert!(
+        !r.ok()
+            && r.out
+                .contains("missing [\"REVIEW.md\"], extra [\"CLAUDE.md\"]"),
+        "{}",
+        r.out
+    );
+}
+
+#[test]
 fn root_points_at_another_tree() {
     let f = Fixture::new("root", &[("lanes.toml", "# none\n")]);
     f.write(

@@ -25,11 +25,16 @@ protected = [".github/**", ".claude/settings.json", ".claude/hooks/**", ".claude
              "tools/repo/**", "stacks/**", "scripts/**", "repo.toml", "CLAUDE.md", "REVIEW.md",
              "docs/DOCS.md", "docs/agents/**", "docs/SECURITY-AGENTS.md", ".gitattributes", ".editorconfig",
              "deny.toml", "clippy.toml", "rustfmt.toml", "rust-toolchain.toml"]
-# The trust base: what runs with the repository's token, what classifies changes, and the
-# reviewer's instructions. This list protects itself: repo.toml and the governance code are on it.
+# The trust base: what runs with the repository's token, what classifies changes, what agents
+# may run unprompted, the reviewer's instructions, and the rules on who decides. The text of
+# every R-GOV-* rule counts too (the governance tool). This list protects itself: repo.toml
+# and the governance code are on it. R-GOV-007's applies_to and the list in
+# docs/agents/project-instructions.md copy it; `config check` compares them.
 maintainer_only = [".github/workflows/**", ".github/actions/**", ".github/scripts/**", ".github/after-review-status.sh",
-                   "repo.toml", "tools/repo/src/**", "REVIEW.md", "docs/agents/review/**",
-                   "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]
+                   "repo.toml", "tools/repo/src/**", "stacks/*/pack.toml", ".claude/settings.json", "CLAUDE.md",
+                   "REVIEW.md", "docs/agents/review/**", "docs/agents/coordinator.md",
+                   "docs/agents/project-instructions.md", "docs/SECURITY-AGENTS.md",
+                   "docs/adr/0002-*.md", "docs/adr/0003-*.md"]
 
 [labels]
 governance = "governance-approved"

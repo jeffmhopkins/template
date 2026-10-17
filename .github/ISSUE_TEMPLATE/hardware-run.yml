@@ -1,7 +1,7 @@
 name: Hardware run
 description: Tracks a check that only runs on the maintainer's hardware, for a PR that merged at risk.
 title: "Hardware: <item id>"
-labels: ["hardware"]
+labels: ["hardware"]   # [labels].hardware in repo.toml
 body:
   - type: markdown
     attributes:

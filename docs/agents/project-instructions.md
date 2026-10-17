@@ -13,7 +13,8 @@ review_every = "90d"
 
 > [!IMPORTANT]
 > The block's maintainer-only list is `[governance].maintainer_only` in
-> [`repo.toml`](../../repo.toml), path for path. A PR that changes one changes the other.
+> [`repo.toml`](../../repo.toml), path for path. A PR that changes one changes the other;
+> `scripts/repo config check` fails when they differ.
 
 Copy the whole block below with the copy button at its top right, and paste it into the
 Claude project's instructions. Then, in what you pasted, replace `PROJECT_NAME` with the
@@ -57,10 +58,12 @@ the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
 **Maintainer-only paths** (`[governance].maintainer_only` in `repo.toml`), which always need
 the maintainer, even with `governance-approved`: `.github/workflows/**`,
 `.github/actions/**`, `.github/scripts/**`, `.github/after-review-status.sh`, `repo.toml`,
-`tools/repo/src/**`, `REVIEW.md`, `docs/agents/review/**`, `docs/adr/0002-*.md`,
-`docs/adr/0003-*.md` and `docs/agents/project-instructions.md`. A PR that changes one gets
-`needs-human` and an `/approve` decision on it, and only the maintainer applies its
-`governance-approved`.
+`tools/repo/src/**`, `stacks/*/pack.toml`, `.claude/settings.json`, `CLAUDE.md`,
+`REVIEW.md`, `docs/agents/review/**`, `docs/agents/coordinator.md`,
+`docs/agents/project-instructions.md`, `docs/SECURITY-AGENTS.md`, `docs/adr/0002-*.md` and
+`docs/adr/0003-*.md`. An edit to any `R-GOV-*` rule in `docs/RULES.md` counts the same. A PR
+that changes one gets `needs-human` and an `/approve` decision on it, and only the maintainer
+applies its `governance-approved`.
 
 **Labels only the maintainer applies:** `review-override`, on any PR, and
 `governance-approved` on a PR that changes a maintainer-only path. A push removes both, so

@@ -282,6 +282,24 @@ hold the value, and is checked on every PR. ADRs are exempt.
 from that page) and `recheck_every`. A link check proves the page loads, not that
 `relied_on` still holds; re-checking means re-reading the page against it.
 
+<a id="copies"></a>
+## Copies of `repo.toml` values
+<!-- @section
+-->
+
+`repo.toml` holds each label name and the verdict marker prefix once. Files that can't read
+it at run time copy the value: the workflows and the issue templates. `scripts/repo config
+check` keeps the copies equal:
+
+- Each copy under `.github/` carries an annotation, `[labels].<key> in repo.toml` or
+  `[review].marker in repo.toml`, on its own line or on the comment line right above it. The
+  annotated line must contain the value.
+- A quoted value, or a bare YAML value, on a line with no annotation for it fails.
+- The files that copy a value must keep at least one annotated line for it.
+- `[governance].maintainer_only` is copied in R-GOV-007's `applies_to` and in the
+  maintainer-only paragraph of [project-instructions.md](agents/project-instructions.md).
+  Both must list the same paths. Other docs point to `repo.toml` and list no paths.
+
 <a id="ttl"></a>
 ## Time-based review
 <!-- @section
@@ -383,6 +401,7 @@ non-empty `## Governance change` section saying what is loosened or tightened, a
 
 - edits to `covers`, `applies_to`, `enforced_by` or `status` in any metadata block;
 - edits to an active rule's heading or text;
+- adding, removing or editing any `R-GOV-*` rule, which is also maintainer-only;
 - any edit to an accepted ADR, except to its `status`, its `superseded_by` and its
   `adr-status` block;
 - retiring a rule or a doc, or removing a section. A doc moved to a new path with the same
@@ -395,7 +414,8 @@ non-empty `## Governance change` section saying what is loosened or tightened, a
 
 `scripts/repo governance --base <rev>` lists the changes between the merge base and `HEAD`.
 With `--pr-body` and `--labels` it also fails when the label or the section is missing. It
-prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`.
+prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`,
+and `maintainer-only: <path>#<rule id>` for each changed `R-GOV-*` rule.
 With `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
 of the same action to a new full commit SHA, with its release in a trailing comment, is
 exempt ([ADR-0004](adr/0004-ci-drafts-platform-pins.md)). With `--into wave/<name>`, a file
@@ -405,8 +425,14 @@ workflows judge the PRs into it, so those changes target `main`
 ([waves runbook](runbooks/waves.md#which-wave)).
 
 > [!IMPORTANT]
-> Paths in `[governance].maintainer_only` always need the maintainer's own words
-> ([R-GOV-007](RULES.md#R-GOV-007)), and only the maintainer applies the label on such a PR.
+> Paths in `[governance].maintainer_only` and the `R-GOV-*` rules always need the
+> maintainer's own words ([R-GOV-007](RULES.md#R-GOV-007)), and only the maintainer applies
+> the label on such a PR.
+
+No label allows an edit to an accepted ADR's text or to metadata other than `status` and
+`superseded_by`, nor a status change other than to `superseded` with a `superseded_by`
+([R-DOC-008](RULES.md#R-DOC-008)). With `--pr-body` or `--labels`, the check fails on one
+whatever the labels. A changed decision is a new ADR that supersedes the old one.
 
 The workflow runs on `pull_request_target`. It builds the tool from the base commit and
 reads the head only as git objects: a PR's edits to the tool never change how its own
@@ -498,7 +524,7 @@ check another, as the reviewer checks a PR head with the base's tool
 
 | Command | What it does |
 |---|---|
-| `config check` | schema-check `repo.toml`, `lanes.toml` and the stack pack; compare `[checks].required` with the check names in `.github/workflows/`: a job's `name:`, else its id |
+| `config check` | schema-check `repo.toml`, `lanes.toml` and the stack pack; compare `[checks].required` with the check names in `.github/workflows/`: a job's `name:`, else its id; compare every copy of a `repo.toml` value with the value ([One source](#copies)) |
 | `docs check [--draft]` | [What the docs check fails on](#gate) |
 | `docs verify <DOC#anchor> --by … --note …` | restamp a section ([The ledger](#ledger)) |
 | `docs for <path>` | what governs a file ([Code back-references](#backrefs)) |

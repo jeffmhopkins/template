@@ -455,6 +455,252 @@ pub fn check(root: &Path) -> Vec<String> {
             }
         }
     }
+    out.extend(check_constants(root, &config));
+    out.extend(check_maintainer_copies(root, &config));
+    out
+}
+
+/// The `repo.toml` values that files under `.github/` hard-code, by the annotation that marks
+/// each copy: `[labels].<key>` or `[review].marker`.
+fn constants(config: &Config) -> Vec<(&'static str, &str)> {
+    vec![
+        ("[labels].governance", config.labels.governance.as_str()),
+        ("[labels].override", config.labels.override_.as_str()),
+        ("[labels].human", config.labels.human.as_str()),
+        ("[labels].hardware", config.labels.hardware.as_str()),
+        ("[review].marker", config.review.marker.as_str()),
+    ]
+}
+
+/// The files that must carry an annotated copy of a constant, and which.
+const COPIES: &[(&str, &str)] = &[
+    (".github/workflows/governance.yml", "[labels].governance"),
+    (".github/workflows/review-gate.yml", "[labels].override"),
+    (".github/workflows/review-gate.yml", "[review].marker"),
+    (".github/workflows/sweep.yml", "[labels].governance"),
+    (".github/workflows/sweep.yml", "[labels].override"),
+    (
+        ".github/ISSUE_TEMPLATE/hardware-run.yml",
+        "[labels].hardware",
+    ),
+];
+
+/// Whether `value` occurs in `line` with no word character (`[A-Za-z0-9_-]`) on either side.
+fn has_word(line: &str, value: &str) -> bool {
+    let word =
+        |c: Option<char>| c.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
+    line.match_indices(value).any(|(k, _)| {
+        !word(line[..k].chars().next_back()) && !word(line[k + value.len()..].chars().next())
+    })
+}
+
+/// Whether `value` occurs in `code` as a literal: quoted, or as a whole YAML value.
+fn has_literal(code: &str, value: &str) -> bool {
+    ['\'', '"', '`']
+        .iter()
+        .any(|q| code.contains(&format!("{q}{value}{q}")))
+        || code
+            .split_once(": ")
+            .is_some_and(|(_, v)| v.trim().trim_matches(['\'', '"']) == value)
+}
+
+/// A line without its trailing comment (` #` or ` //` onward); empty for a comment line.
+fn code_part(line: &str) -> &str {
+    let t = line.trim_start();
+    if t.starts_with('#') || t.starts_with("//") {
+        return "";
+    }
+    let cut = [" #", " //"].iter().filter_map(|m| line.find(m)).min();
+    cut.map_or(line, |k| &line[..k])
+}
+
+/// Problems with the hard-coded copies of `repo.toml` values in one file's text. A line holds
+/// an annotated copy when it, or the comment line right above it, names the key; that line
+/// must contain the value. A quoted or bare-value literal of a value on a line not annotated
+/// for it is a copy nothing checks.
+pub fn constant_problems(path: &str, text: &str, config: &Config) -> Vec<String> {
+    let consts = constants(config);
+    let mut out = Vec::new();
+    let lines: Vec<&str> = text.lines().collect();
+    for (i, line) in lines.iter().enumerate() {
+        let mut keys: Vec<&str> = consts
+            .iter()
+            .map(|c| c.0)
+            .filter(|k| line.contains(k))
+            .collect();
+        if code_part(line).is_empty() && !keys.is_empty() {
+            // A comment's annotation is for the line below it.
+            continue;
+        }
+        if let Some(above) = i.checked_sub(1).map(|k| lines[k]) {
+            if code_part(above).is_empty() {
+                keys.extend(consts.iter().map(|c| c.0).filter(|k| above.contains(k)));
+            }
+        }
+        for (key, value) in &consts {
+            if keys.contains(key) && !has_word(line, value) {
+                out.push(format!(
+                    "{path}:{}: annotated with {key}, but doesn't contain its value `{value}` from {FILE}",
+                    i + 1
+                ));
+            } else if !keys.contains(key) && has_literal(code_part(line), value) {
+                out.push(format!(
+                    "{path}:{}: hard-codes `{value}` without the annotation `{key} in {FILE}`",
+                    i + 1
+                ));
+            }
+        }
+    }
+    out
+}
+
+/// Whether `text` has a line annotated with `key` (on it, or on the comment line above).
+fn annotated(text: &str, key: &str) -> bool {
+    let lines: Vec<&str> = text.lines().collect();
+    lines.iter().enumerate().any(|(i, l)| {
+        (l.contains(key) && !code_part(l).is_empty())
+            || (code_part(l).is_empty() && l.contains(key) && i + 1 < lines.len())
+    })
+}
+
+/// The files under `.github/` that may hard-code `repo.toml` values: everything but tests and
+/// Markdown.
+fn github_files(root: &Path) -> Vec<PathBuf> {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for e in entries.filter_map(Result::ok) {
+            let p = e.path();
+            if p.is_dir() {
+                walk(&p, out);
+            } else if p.extension().is_none_or(|x| x != "md") {
+                out.push(p);
+            }
+        }
+    }
+    let mut out = Vec::new();
+    walk(&root.join(".github"), &mut out);
+    out.retain(|p| !p.starts_with(root.join(".github/tests")));
+    out.sort();
+    out
+}
+
+/// Every hard-coded copy of a `repo.toml` value under `.github/` matches it, and the files
+/// that need a copy have one.
+fn check_constants(root: &Path, config: &Config) -> Vec<String> {
+    let mut out = Vec::new();
+    for p in github_files(root) {
+        let Ok(text) = std::fs::read_to_string(&p) else {
+            continue;
+        };
+        let rel = p
+            .strip_prefix(root)
+            .unwrap_or(&p)
+            .to_string_lossy()
+            .replace('\\', "/");
+        out.extend(constant_problems(&rel, &text, config));
+        for (file, key) in COPIES.iter().filter(|(f, _)| *f == rel) {
+            if !annotated(&text, key) {
+                out.push(format!(
+                    "{file}: no line is annotated `{key} in {FILE}`, so its copy of that value is unchecked"
+                ));
+            }
+        }
+    }
+    out
+}
+
+/// The rule whose `applies_to` copies `[governance].maintainer_only`, and its file.
+pub const MAINTAINER_RULE: (&str, &str) = ("docs/RULES.md", "R-GOV-007");
+/// The pasted instructions, whose maintainer-only paragraph copies it too.
+pub const INSTRUCTIONS: &str = "docs/agents/project-instructions.md";
+/// The paragraph of [`INSTRUCTIONS`] that lists the paths.
+const INSTRUCTIONS_LEAD: &str = "**Maintainer-only paths**";
+
+/// The backticked paths listed in the instructions' maintainer-only paragraph: the code spans
+/// after its first colon outside code spans, up to the first `.` outside one.
+pub fn instructions_paths(text: &str) -> Option<Vec<String>> {
+    let start = text.find(INSTRUCTIONS_LEAD)?;
+    let rest = &text[start..];
+    let mut in_code = false;
+    let mut listing = false;
+    let mut span = String::new();
+    let mut out = Vec::new();
+    for c in rest.chars() {
+        match (c, in_code) {
+            ('`', false) => {
+                in_code = true;
+                span.clear();
+            }
+            ('`', true) => {
+                in_code = false;
+                if listing {
+                    out.push(span.clone());
+                }
+            }
+            (_, true) => span.push(c),
+            (':', false) => listing = true,
+            ('.', false) if listing => return Some(out),
+            _ => {}
+        }
+    }
+    None
+}
+
+/// The copies of `[governance].maintainer_only` list the same paths.
+fn check_maintainer_copies(root: &Path, config: &Config) -> Vec<String> {
+    let want: BTreeSet<&str> = config
+        .governance
+        .maintainer_only
+        .iter()
+        .map(String::as_str)
+        .collect();
+    let mut out = Vec::new();
+    let compare = |what: String, got: BTreeSet<&str>| {
+        let missing: Vec<&&str> = want.difference(&got).collect();
+        let extra: Vec<&&str> = got.difference(&want).collect();
+        (!missing.is_empty() || !extra.is_empty()).then(|| {
+            format!(
+                "{what} differs from [governance].maintainer_only in {FILE}: missing {missing:?}, extra {extra:?}"
+            )
+        })
+    };
+    let (rules_file, rule_id) = MAINTAINER_RULE;
+    if let Ok(text) = std::fs::read_to_string(root.join(rules_file)) {
+        let doc = crate::docs::parse::parse(rules_file, &text, &mut Vec::new());
+        match doc.rule(rule_id) {
+            None => out.push(format!("{rules_file}: rule {rule_id} is missing")),
+            Some(r) => {
+                let list: Vec<String> = r
+                    .meta
+                    .as_ref()
+                    .and_then(|m| m.get("applies_to"))
+                    .and_then(toml::Value::as_array)
+                    .map(|a| {
+                        a.iter()
+                            .filter_map(|v| v.as_str().map(str::to_owned))
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                out.extend(compare(
+                    format!("{rules_file}: {rule_id}'s applies_to"),
+                    list.iter().map(String::as_str).collect(),
+                ));
+            }
+        }
+    }
+    if let Ok(text) = std::fs::read_to_string(root.join(INSTRUCTIONS)) {
+        match instructions_paths(&text) {
+            None => out.push(format!(
+                "{INSTRUCTIONS}: no {INSTRUCTIONS_LEAD} paragraph listing paths after a colon"
+            )),
+            Some(list) => out.extend(compare(
+                format!("{INSTRUCTIONS}: the {INSTRUCTIONS_LEAD} list"),
+                list.iter().map(String::as_str).collect(),
+            )),
+        }
+    }
     out
 }
 
@@ -591,6 +837,51 @@ prefix = "//! Docs:"
         ] {
             assert!(commit_problem(bad).is_some(), "{bad}");
         }
+    }
+
+    #[test]
+    fn hard_coded_constants_match_the_config() {
+        let c = Config::parse(CONFIG).unwrap();
+        let ok = "env:\n  # [labels].governance in repo.toml.\n  GOVERNANCE_LABEL: governance-approved\n  # [labels].governance and [labels].override in repo.toml.\n  AUDIT: governance-approved review-override\n            const MARKER = 'review v1';   // [review].marker in repo.toml\n  # A comment may say review-override freely.\n  - name: Remove governance-approved after a push\n  pull-requests: write   # removes review-override\nlabels: [\"hardware\"]   # [labels].hardware in repo.toml\n";
+        assert!(
+            constant_problems("w.yml", ok, &c).is_empty(),
+            "{:?}",
+            constant_problems("w.yml", ok, &c)
+        );
+        // The config changed and the copy didn't.
+        let renamed =
+            Config::parse(&CONFIG.replace("\"review-override\"", "\"skip-review\"")).unwrap();
+        let got = constant_problems("w.yml", ok, &renamed);
+        assert_eq!(got.len(), 1, "{got:?}");
+        assert!(
+            got[0].starts_with("w.yml:5:") && got[0].contains("skip-review"),
+            "{got:?}"
+        );
+        // A literal nothing annotates.
+        let bare =
+            "      const applied = events.filter((e) => e.label?.name === 'review-override');\n";
+        let got = constant_problems("w.yml", bare, &c);
+        assert!(
+            got.len() == 1 && got[0].contains("without the annotation `[labels].override"),
+            "{got:?}"
+        );
+        let value = "  LABEL: needs-human\n";
+        assert_eq!(constant_problems("w.yml", value, &c).len(), 1);
+        // A longer word is not the value.
+        let marker = "  // [review].marker in repo.toml\n  const MARKER = 'review v10';\n";
+        assert_eq!(constant_problems("w.yml", marker, &c).len(), 1);
+        assert!(annotated(ok, "[review].marker"));
+        assert!(!annotated("x: 1\n", "[labels].override"));
+    }
+
+    #[test]
+    fn maintainer_only_copies_are_parsed() {
+        let text = "x\n**Maintainer-only paths** (`[governance].maintainer_only` in `repo.toml`), which\nneed the maintainer, even with `governance-approved`: `REVIEW.md`,\n`.github/**` and `docs/a-*.md`. A PR that changes `x`.\n";
+        assert_eq!(
+            instructions_paths(text).unwrap(),
+            vec!["REVIEW.md", ".github/**", "docs/a-*.md"]
+        );
+        assert_eq!(instructions_paths("no list here"), None);
     }
 
     #[test]
