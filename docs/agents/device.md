@@ -12,8 +12,8 @@ review_every = "90d"
 > hardware checks, other operating systems, signed-in accounts and bootstrap.
 
 **Runs as:** a Remote Control session on the maintainer's machine. **Count:** 0 or 1. **Started
-by:** the coordinator, after the maintainer says yes to a device-run card. It runs only while
-their machine is on.
+by:** the coordinator, after the maintainer says yes to a device-run card, or asks for
+bootstrap in the chat. It runs only while their machine is on.
 
 <a id="purpose"></a>
 ## Purpose
@@ -38,6 +38,31 @@ accounts, and the one-time `scripts/bootstrap.sh` under their `gh` login.
    `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>`. Leave the issue open: a pass is
    recorded on `main` by the builder's record PR, which closes it.
 
+<a id="bootstrap"></a>
+## Bootstrap
+<!-- @section
+depends_on = ["RUNBOOK-BOOTSTRAP#run"]
+-->
+
+When the coordinator starts this session for bootstrap, follow the
+[bootstrap runbook](../runbooks/bootstrap.md#run) under the maintainer's `gh` login:
+
+1. Say what you'll do: change the repo's GitHub settings with `scripts/bootstrap.sh`, in a
+   folder of their choice.
+2. Check the tools: `git --version`, `gh auth status` and `python3 --version` (3.11 or
+   later). If one is missing, give them the install line for their system from
+   [Getting started](../GETTING-STARTED.md#before), and wait.
+3. Clone the repo with `gh repo clone OWNER/REPO`, or use their existing clone, and change
+   into it. Pull `main` first if the clone already existed.
+4. Run `scripts/bootstrap.sh`. Exit 2 means it stopped before changing anything: pass on its
+   message as it is, and stop.
+5. Run `scripts/bootstrap.sh --check`. It must end with `All settings match.`
+6. Send the coordinator `BOOTSTRAP-RESULT ok/stopped/failed: <the last line, or the stop
+   message>`, and tell them they can close the folder. Leave the clone in place.
+
+The same procedure re-runs bootstrap after intake's design PR merges. Change nothing beyond
+what the script does.
+
 <a id="considerate"></a>
 ## Being considerate of the machine
 <!-- @section
@@ -57,3 +82,4 @@ accounts, and the one-time `scripts/bootstrap.sh` under their `gh` login.
 
 - Push from the device, unless the fix is trivial and inside the PR's own row.
 - Change system settings beyond what the checklist names.
+- Run bootstrap unless the maintainer asked for it, or edit a repo setting by hand.

@@ -28,11 +28,19 @@ words attached, and reports to them in the project chat. It doesn't plan, build 
 <!-- @section
 -->
 
-Follow the day 0 order in [README.md](README.md#day-0-order). Create `ops/` and its files,
-each with its owner on the first line. Pin the board artifact once the board role exists.
-Each time a reviewer starts or is replaced, post the reviewer session ids in the chat for the
-maintainer to set as `REVIEWER_SESSIONS`
-([bootstrap runbook, by hand](../runbooks/bootstrap.md#by-hand)).
+Follow the day 0 order in [README.md](README.md#day-0-order).
+- **Bootstrap first.** If the maintainer asks for bootstrap, start a device session for it
+  ([device › Bootstrap](device.md#bootstrap)) and pass on its `BOOTSTRAP-RESULT`. Start
+  intake only once bootstrap has run; if you can't tell, ask once in the chat.
+- Create `ops/` and its files, each with its owner on the first line. Pin the board artifact
+  once the board role exists.
+- **Reviewer ids card.** Each time a reviewer starts or is replaced, post one decision card:
+  "Set `REVIEWER_SESSIONS` to `<every current reviewer session id, comma-separated>`", with
+  the options **Done** (rec) and **Not yet**, and a link to
+  [Getting started › Things you'll do on GitHub](../GETTING-STARTED.md#github). Keep it in
+  every digest until they tap **Done**. On **Done**, re-run `review-gate` on each open PR (a
+  `workflow_dispatch` with the PR number), since changing the variable doesn't re-run it.
+  If the gate still says "Gate not configured", tell them once.
 
 <a id="maintainer-messages"></a>
 ## Every message from the maintainer
@@ -81,7 +89,12 @@ maintainer to set as `REVIEWER_SESSIONS`
 - `BLOCKED … needs maintainer`: put it in `ops/pending.md` and the next card or digest.
 - `MERGED` (milestone items): one line in the chat. Then archive the builder's session unless
   it was handed a stacked follow-up.
-- `INTAKE-DONE`: start the remaining standing roles ([README.md](README.md#day-0-order)).
+- `INTAKE-DONE`: post one card asking the maintainer to paste the project instructions again
+  (intake changed them) and re-run bootstrap (intake may have changed the required checks),
+  offering a device session for bootstrap. Then start the remaining standing roles
+  ([README.md](README.md#day-0-order)), with a new reviewer ids card.
+- `BOOTSTRAP-RESULT`: tell the maintainer in one line; when it stopped, quote the script's
+  message.
 
 <a id="approval-contract"></a>
 ## The approval contract
@@ -100,7 +113,7 @@ never post a decision they didn't give.
 Once a day, one message in the chat:
 - merges and milestone progress (link the board);
 - open PRs, ready and waiting on review;
-- what needs them (from `ops/pending.md`);
+- what needs them (from `ops/pending.md`), including an unanswered reviewer ids card;
 - uses of `governance-approved` and `review-override` since the last digest, with
   "Any to revert? (rec: no)";
 - cost: sessions running and hours, review rounds (full, merge-only, empty) and CI minutes,

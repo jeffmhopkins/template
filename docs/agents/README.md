@@ -33,21 +33,30 @@ and the approval contract live only in [project-instructions.md](project-instruc
 <!-- @section
 -->
 
-1. The maintainer creates the repo from the template and runs `scripts/bootstrap.sh`
-   (or asks for it on their machine through a device session). Bootstrap uses template
-   defaults.
-2. The maintainer pastes [project-instructions.md](project-instructions.md) into the project
-   settings, filling in the project name.
-3. The coordinator creates `ops/` (below), then starts intake and one reviewer together, so
-   intake's design PR can be reviewed.
-4. On `INTAKE-DONE`, the coordinator starts the planner, the second reviewer, the integrator,
-   triage and the board, then launches the first builders from the planner's rows.
+The maintainer's side of the same steps is in
+[Getting started](../GETTING-STARTED.md#start).
+
+1. The maintainer creates the repo from the template, installs the Claude GitHub App on it,
+   and adds it to the Claude project.
+2. The maintainer pastes the block in [project-instructions.md](project-instructions.md)
+   into the project settings, filling in `PROJECT_NAME` and `OWNER/REPO`.
+3. Bootstrap runs with template defaults: the maintainer runs `scripts/bootstrap.sh`, or asks
+   in the chat and the coordinator starts a device session for it
+   ([device › Bootstrap](device.md#bootstrap)).
+4. The coordinator creates `ops/` (below), then starts intake and one reviewer together, so
+   intake's design PR can be reviewed. It posts the reviewer's session id as a card for the
+   maintainer to set as `REVIEWER_SESSIONS`.
+5. On `INTAKE-DONE`, the coordinator asks the maintainer to paste the instructions again and
+   re-run bootstrap, since intake may have changed both. It starts the planner, the second
+   reviewer (with a new ids card), the integrator, triage and the board, then launches the
+   first builders from the planner's rows.
 
 ```mermaid
 flowchart LR
-    A["Repo from the template"] --> B["scripts/bootstrap.sh"]
-    B --> C["Paste project-instructions.md"]
-    C --> D["Coordinator creates ops/, starts intake and one reviewer"]
+    A["Repo from the template, Claude app, Claude project"] --> C["Paste project-instructions.md"]
+    C --> B["scripts/bootstrap.sh"]
+    B --> D["Coordinator creates ops/, starts intake and one reviewer; ids card"]
+    D -->|INTAKE-DONE| G["Maintainer re-pastes the instructions, re-runs bootstrap"]
     D -->|INTAKE-DONE| E["Planner, second reviewer, integrator, triage, board"]
     E --> F["First builders, from the planner's rows"]
 ```
@@ -78,7 +87,7 @@ flowchart LR
     builder -->|"MERGED (milestone), HW"| coord
     integrator -->|"MERGE-MAIN, LANE-HOLD"| builder
     triage -->|ROUTE| builder
-    device([device]) -->|HW-RESULT| coord
+    device([device]) -->|"HW-RESULT, BOOTSTRAP-RESULT"| coord
     coord -->|HW-RESULT| builder
     any([any role]) -->|BLOCKED| planner
     any -->|BLOCKED| integrator
@@ -87,7 +96,7 @@ flowchart LR
 ```
 
 <details>
-<summary><b>All message formats</b> (16)</summary>
+<summary><b>All message formats</b> (17)</summary>
 
 | Line | From → to | Receiver does |
 |---|---|---|
@@ -105,7 +114,8 @@ flowchart LR
 | `NEEDS-MAINTAINER <item or #pr>: <question> (rec: <option>)` | any → coordinator ★ | one decision card per object, de-duplicated |
 | `HW <item> #<pr>: ops/hw/<item>.md` | builder → coordinator ★ | adds it to the device queue |
 | `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>` | device → coordinator ★ → builder (triage if it ended) | pass: opens the record PR, which closes the tracking issue; fail: fixes it |
-| `INTAKE-DONE #<pr>` | intake → coordinator ★ | starts the other roles |
+| `INTAKE-DONE #<pr>` | intake → coordinator ★ | asks the maintainer to re-paste the instructions and re-run bootstrap; starts the other roles |
+| `BOOTSTRAP-RESULT ok/stopped/failed: <the script's last line or stop message>` | device → coordinator ★ | tells the maintainer the result in the chat, with the script's stop message when it stopped |
 | `STOP` / `RESUME` | coordinator → all | stop at once / pick up from state files |
 
 </details>
@@ -149,8 +159,8 @@ flowchart LR
 -->
 
 - **On every wake, first** check `ops/STOP` (stop if present) and `ops/mode.md`.
-- **A PR's events go to its author session only.** Builders subscribe to their PRs, the
-  integrator to the wave PRs it opens, triage to Dependabot PRs. Other roles poll.
+- **A PR's events go to its author session only.** Builders subscribe to their PRs, intake to
+  its design PR, the integrator to the wave PRs it opens, triage to Dependabot PRs. Other roles poll.
 - **Adoption.** When a session dies or is replaced, the coordinator starts a new one with
   "adopt #<pr>". The new session subscribes, reads the PR and the old thread, and the
   coordinator archives the old one and updates the roster.

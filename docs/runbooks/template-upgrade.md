@@ -71,11 +71,12 @@ lost):
 - ADRs 0006 and up, and the rule groups intake added to `docs/RULES.md`;
 - the values intake set inside template-owned files: `[stack]`, the project's extra
   `[checks].required` names and lanes in `repo.toml`, the licence allow list in the stack
-  pack, the project-instructions additions, and the project's repo in the badge entries of
-  `docs/external.toml`;
+  pack, the project-instructions additions, the project's repo in the badge entries of
+  `docs/external.toml`, and the security report link in `.github/ISSUE_TEMPLATE/config.yml`;
 - `lanes.toml`, and the ledger `docs/verified.toml`, which only `docs verify` writes.
 
-`CHANGELOG.md` describes the template; it is read at the new tag and not copied. A template
+In a project, `CHANGELOG.md` is the project's own: intake replaced the template's. The
+template's changelog is read at the new tag and never copied. A template
 ADR numbered above 0005 comes over under the project's next free ADR number, and the links to
 it in the files that come over are renamed to match.
 
