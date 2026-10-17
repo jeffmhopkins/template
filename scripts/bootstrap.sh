@@ -16,8 +16,9 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 # GitHub Actions' app id. Required checks are pinned to it so only Actions can satisfy them.
 ACTIONS_APP_ID=15368
-# Value written to REVIEWER_SESSIONS when it does not exist yet. It matches no session id.
-SESSIONS_PLACEHOLDER="none"
+# The stable reviewer role names the review gate counts markers from (ADR-0007). Written to
+# REVIEWER_ROLES when it does not exist yet; the coordinator runs at most these three.
+REVIEWER_ROLES="reviewer-0,reviewer-1,reviewer-2"
 
 check=0
 template=0
@@ -449,7 +450,7 @@ for key in governance override human hardware; do
   fi
 done
 
-# 5. Repository variables. REVIEWER_SESSIONS and REVIEWER_LOGIN are created only when missing,
+# 5. Repository variables. REVIEWER_ROLES and REVIEWER_LOGIN are created only when missing,
 # never overwritten. MAINTAINER_LOGIN always names the login that runs bootstrap.
 echo "== variables"
 variable() {
@@ -460,8 +461,7 @@ variable() {
     fix "variable $name is not set" "" gh variable set "$name" -R "$repo" --body "$default"
   fi
 }
-# Placeholder until the maintainer lists the reviewer sessions.
-variable REVIEWER_SESSIONS "$SESSIONS_PLACEHOLDER"
+variable REVIEWER_ROLES "$REVIEWER_ROLES"
 variable REVIEWER_LOGIN "$me"
 # The person the label checks trust. Without it the workflows fall back to the repo's owner,
 # which for an organization's repo is the organization: a login no person has.
@@ -527,10 +527,8 @@ By hand (bootstrap cannot do these; docs/runbooks/bootstrap.md#by-hand):
      Claude project: https://github.com/apps/claude
   2. Paste the project instructions (the block in docs/agents/project-instructions.md, with
      PROJECT_NAME and OWNER/REPO replaced) into the Claude project, if you haven't yet.
-  3. When the coordinator posts the reviewer session ids, set REVIEWER_SESSIONS to them,
-     then tell the coordinator. Do it again each time it posts new ids.
-  4. Private repo only: turn on the dependency graph in Settings > Code security.
-  5. After intake's design PR merges, paste the project instructions again and run
+  3. Private repo only: turn on the dependency graph in Settings > Code security.
+  4. After intake's design PR merges, paste the project instructions again and run
      bootstrap again: intake may have changed both.
 EOF
 

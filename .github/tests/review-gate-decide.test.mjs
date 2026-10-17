@@ -15,6 +15,10 @@ const OLD = 'b'.repeat(40);
 const LOGIN = 'reviewer-bot';
 const REVIEWER = 'session_REVIEWER1';
 const OTHER_REVIEWER = 'session_REVIEWER2';
+const ROLE = 'reviewer-0';
+const OTHER_ROLE = 'reviewer-1';
+// The role a test session posts as, unless a test names another.
+const roleOf = (session) => (session === OTHER_REVIEWER ? OTHER_ROLE : ROLE);
 const BUILDER = 'session_BUILDER1';
 const T0 = '2026-01-01T00:00:00Z';
 
@@ -22,7 +26,7 @@ const marker = (verdict, round, o = {}) => ({
   user: { login: o.login ?? LOGIN },
   created_at: T0,
   updated_at: o.edited ? '2026-01-01T00:05:00Z' : T0,
-  body: `Round ${round}\n\nB1: …\n\n<!-- review v1 verdict=${verdict} sha=${o.sha ?? H} round=${round} reviewer-session=${o.session ?? REVIEWER} -->\n`,
+  body: `Round ${round}\n\nB1: …\n\n<!-- review v1 verdict=${verdict} sha=${o.sha ?? H} round=${round} reviewer=${o.role ?? roleOf(o.session ?? REVIEWER)} reviewer-session=${o.session ?? REVIEWER} -->\n`,
 });
 const commit = (o = {}) => ({
   sha: o.sha ?? 'c'.repeat(40),
@@ -44,7 +48,7 @@ const run = (o = {}) => decide({
   overrideLabeledBy: o.overrideLabeledBy ?? null,
   maintainer: o.maintainer ?? 'the-maintainer',
   reviewerLogin: o.reviewerLogin ?? LOGIN,
-  sessions: o.sessions ?? [REVIEWER, `https://claude.ai/code/${OTHER_REVIEWER}`],
+  roles: o.roles ?? [ROLE, OTHER_ROLE, 'reviewer-2'],
 });
 const state = (o) => run(o)[0];
 
@@ -53,16 +57,22 @@ test('pass from the configured reviewer: success', () => assert.equal(state({ co
 test('fail: failure', () => assert.equal(state({ comments: [marker('fail', 1)] }), 'failure'));
 test('marker from another login is ignored', () =>
   assert.equal(state({ comments: [marker('pass', 1, { login: 'someone' })] }), 'pending'));
-test('marker from an unlisted session is ignored', () =>
-  assert.equal(state({ comments: [marker('pass', 1, { session: 'session_ROGUE' })] }), 'pending'));
+test('marker from an unlisted role is ignored', () =>
+  assert.equal(state({ comments: [marker('pass', 1, { role: 'reviewer-9' })] }), 'pending'));
+test('any session of a listed role counts: a fresh session per fire', () =>
+  assert.equal(state({ comments: [marker('pass', 1, { session: 'session_FRESHFIRE7' })] }), 'success'));
+test('a marker without the reviewer field does not count', () =>
+  assert.equal(state({ comments: [{ ...marker('pass', 1), body: marker('pass', 1).body.replace(/ reviewer=\S+/, '') }] }), 'pending'));
 test('edited marker comment is ignored', () =>
   assert.equal(state({ comments: [marker('pass', 1, { edited: true })] }), 'pending'));
 test('edited pass does not mask an unedited fail', () =>
   assert.equal(state({ comments: [marker('fail', 1), marker('pass', 2, { edited: true })] }), 'failure'));
 test('marker for an older SHA only: pending', () =>
   assert.equal(state({ comments: [marker('pass', 1, { sha: OLD })] }), 'pending'));
-test('session given as a URL matches the listed id', () =>
-  assert.equal(state({ comments: [marker('pass', 1, { session: OTHER_REVIEWER })] }), 'success'));
+test('a reviewer-session given as a URL is still recused by a bare-id trailer', () => {
+  const commits = [commit({ message: `fix: y\n\nClaude-Session: ${OTHER_REVIEWER}\n` })];
+  assert.equal(state({ commits, comments: [marker('pass', 1, { session: `https://claude.ai/code/${OTHER_REVIEWER}`, role: OTHER_ROLE })] }), 'pending');
+});
 test('fail beats pass within a round', () =>
   assert.equal(state({ comments: [marker('pass', 2), marker('fail', 2, { session: OTHER_REVIEWER }), marker('pass', 2)] }), 'failure'));
 test('highest round decides', () =>
@@ -125,14 +135,14 @@ test('unset MAINTAINER_LOGIN fails loudly', () => {
 });
 test('unconfigured gate fails', () => {
   assert.equal(state({ reviewerLogin: '', comments: [marker('pass', 1)] }), 'failure');
-  assert.equal(state({ sessions: [], comments: [marker('pass', 1)] }), 'failure');
+  assert.equal(state({ roles: [], comments: [marker('pass', 1)] }), 'failure');
 });
-test('REVIEWER_SESSIONS as a comma-separated string, trimmed', () =>
-  assert.equal(state({ sessions: ` ${OTHER_REVIEWER} , ${REVIEWER} `, comments: [marker('pass', 1)] }), 'success'));
-test('REVIEWER_SESSIONS = none allows no session', () => {
-  assert.equal(state({ sessions: 'none', comments: [marker('pass', 1)] }), 'failure');
-  assert.equal(state({ sessions: ' none ', comments: [marker('pass', 1, { session: 'none' })] }), 'failure');
-  assert.equal(state({ sessions: '', comments: [marker('pass', 1)] }), 'failure');
+test('REVIEWER_ROLES as a comma-separated string, trimmed', () =>
+  assert.equal(state({ roles: ` ${OTHER_ROLE} , ${ROLE} `, comments: [marker('pass', 1)] }), 'success'));
+test('REVIEWER_ROLES empty or none allows no role', () => {
+  assert.equal(state({ roles: 'none', comments: [marker('pass', 1)] }), 'failure');
+  assert.equal(state({ roles: ' none ', comments: [marker('pass', 1, { role: 'none' })] }), 'failure');
+  assert.equal(state({ roles: '', comments: [marker('pass', 1)] }), 'failure');
 });
 test('unknown verdicts do not count', () =>
   assert.equal(state({ comments: [{ ...marker('pass', 1), body: marker('pass', 1).body.replace('verdict=pass', 'verdict=maybe') }] }), 'pending'));

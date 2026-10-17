@@ -22,8 +22,8 @@ Parts appear in this order, and none is left out: write "None" where a part is e
 ````markdown
 ## Review · round <n> · <sha7>
 
-<One paragraph: what this PR does, which kind of round this is (full, merge-only, lane value,
-draft, wave landing, bot rebase), and what was read.>
+<One paragraph: what this PR does, which kind of round this is (full, incremental, merge-only,
+lane value, draft, wave landing, bot rebase), and what was read.>
 
 ### Earlier findings
 - **B1:** resolved in <sha7> (`path:line`). / still open: <why>. / withdrawn: <why the rebuttal holds>.
@@ -53,7 +53,7 @@ Fix: …
 - PR description: <answers the template; trailers `Completes:` / `Part-of:` correct; ends with `Claude-Session:`>.
 - CI at <sha7>: <green / which checks are red, and whose they are>.
 
-<!-- review v1 verdict=<pass|fail|escalate|recuse> sha=<40-char head SHA> round=<n> reviewer-session=<session id> -->
+<!-- review v1 verdict=<pass|fail|escalate|recuse> sha=<40-char head SHA> round=<n> reviewer=<role> reviewer-session=<session id> -->
 <✅ No blocking issues at <sha7> (round <n>). Non-blocking: N1. / ❌ <k> blocking issue(s) at <sha7>: B1, B3 / ⚠️ Needs the maintainer: <what> / ↩️ Recused: this session authored the PR>
 
 ---

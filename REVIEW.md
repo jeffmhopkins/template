@@ -225,8 +225,11 @@ Fix: return `Err(Empty)` from `parse`, and add a test for the empty input.
 The marker line, on its own line, exactly in this form:
 
 ```markdown
-<!-- review v1 verdict=pass sha=<40-char head SHA> round=<n> reviewer-session=<your session id> -->
+<!-- review v1 verdict=pass sha=<40-char head SHA> round=<n> reviewer=<your role> reviewer-session=<your session id> -->
 ```
+
+`reviewer` is your stable role name, such as `reviewer-0`, and `reviewer-session` is the
+session that posts the round.
 
 | verdict | When | Human line |
 |---|---|---|
@@ -238,12 +241,12 @@ The marker line, on its own line, exactly in this form:
 **How the gate reads markers.** `review-gate` counts a marker only when it:
 - names the current head SHA;
 - was posted by the configured login;
-- comes from a session listed in the `REVIEWER_SESSIONS` repository variable;
+- names a reviewer role listed in the `REVIEWER_ROLES` repository variable;
 - hasn't been edited.
 
 Of those, the **highest round** decides. Within it, a `fail` or `escalate` beats a `pass`;
-a `recuse` marker never counts. A marker from a session that appears in a commit's `Claude-Session:` trailer is
-ignored, and the gate fails while any non-merge commit lacks that trailer. Commits already
+a `recuse` marker never counts. A marker whose `reviewer-session` appears in a commit's
+`Claude-Session:` trailer is ignored, and the gate fails while any non-merge commit lacks that trailer. Commits already
 on `main` (a wave sync PR carries them) and Dependabot's GitHub-signed commits are exempt;
 a wave's squash commits carry the trailer from the PR body. A push removes
 `review-override`. So:
@@ -257,14 +260,25 @@ a wave's squash commits carry the trailer from the PR body. A push removes
 -->
 
 The round number is one more than the highest `round=` in any earlier marker on the PR, or
-1. On each new head:
+1. Review a head only once every required check other than `review-gate` is green on it,
+unless the author or the maintainer asks for a round anyway. Each round is one of these
+kinds, found with `git range-diff <last reviewed base>...<last reviewed head>
+<base>...<head>`:
 
-1. Re-review the **whole** diff against the base, not just the new commits. A merge-only
-   round (the PR's own commits unchanged, only a base merge added) reviews the merge
-   resolution and each restamp note, and carries earlier findings forward.
-2. Give every earlier finding a status: **resolved** (cite where), **still open**, or
+| Kind | When | What you review |
+|---|---|---|
+| **Full** | a new PR; the range-diff changes an earlier reviewed commit; asked for by the author, the maintainer or a reviewer; or the last 3 rounds were incremental | the whole diff against the base |
+| **Incremental** | every earlier reviewed commit is unchanged, and only new commits sit on top | the new commits, against the code they touch, and every open finding |
+| **Merge-only** | every earlier reviewed commit is unchanged, and the only new commit is a merge of the base | the merge resolution and each restamp note; earlier findings carry forward |
+
+Then:
+
+1. Give every earlier finding a status: **resolved** (cite where), **still open**, or
    **withdrawn** (say why the rebuttal convinced you).
-3. New findings get new IDs.
+2. New findings get new IDs.
+3. Say in the round's first paragraph which kind it was. An incremental round that finds
+   the new commits reach code the earlier rounds reviewed under other assumptions widens
+   itself to a full round.
 
 **Disputes.** The builder may answer that a finding is wrong. Weigh the rebuttal honestly.
 If you still disagree after the builder has rebutted a blocking finding in two rounds, and

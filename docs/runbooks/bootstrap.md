@@ -103,7 +103,7 @@ depends_on = ["DESIGN#setup"]
 | Ruleset `wave/*` | on `refs/heads/wave/*`: the same, with merge commits allowed as well as squash, required checks not enforced when the branch is created, and no deletion rule, so GitHub deletes a wave once its landing PR merges |
 | Actions | workflow token read-only and unable to approve PRs; actions must be pinned to a full commit SHA; fork PRs from every outside collaborator wait for approval |
 | Labels | the four names in `[labels]` (governance, override, human, hardware), each with a fixed colour and description |
-| Variables | `REVIEWER_SESSIONS` created with the placeholder `none` and `REVIEWER_LOGIN` with the `gh` user's login, each only when it does not exist yet; an existing value is never overwritten. `MAINTAINER_LOGIN` always set to the `gh` user's login: the person whose labels the `governance` and `review-gate` checks trust. Without it they fall back to the repo's owner, which for an organization's repo is the organization |
+| Variables | `REVIEWER_ROLES` created as `reviewer-0,reviewer-1,reviewer-2`, the stable reviewer role names the gate counts markers from ([ADR-0007](../adr/0007-swarm-operating-model.md)), and `REVIEWER_LOGIN` with the `gh` user's login, each only when it does not exist yet; an existing value is never overwritten. Starting or replacing a reviewer changes neither. `MAINTAINER_LOGIN` always set to the `gh` user's login: the person whose labels the `governance` and `review-gate` checks trust. Without it they fall back to the repo's owner, which for an organization's repo is the organization |
 | Security | Dependabot vulnerability alerts and automated security fixes on; private vulnerability reporting on (public repos); secret scanning and secret scanning push protection enabled |
 
 The required checks are exactly `[checks].required`. Jobs outside it, such as `governance`'s
@@ -159,18 +159,9 @@ These need the maintainer's own accounts. The script prints this list at the end
 2. **Paste the project instructions,** before bootstrap: the fenced block in
    [docs/agents/project-instructions.md](../agents/project-instructions.md), with
    `PROJECT_NAME` and `OWNER/REPO` replaced, into the Claude project's instructions.
-3. **List the reviewer sessions.** Each time the coordinator posts a card with reviewer
-   session ids (the first reviewers, and each one added or replaced), the maintainer sets
-   `REVIEWER_SESSIONS` to them, comma-separated, as the `review-gate` workflow reads them:
-   `gh variable set REVIEWER_SESSIONS --body "<ids>"`, or in the repo's **Settings › Secrets
-   and variables › Actions**. Then they tell the coordinator, which re-runs `review-gate` on
-   the open PRs: changing a variable doesn't re-run it.
-4. **Private repo only: turn on the dependency graph** in **Settings › Code security**, or
+3. **Private repo only: turn on the dependency graph** in **Settings › Code security**, or
    `dependency-review` fails on every PR.
-5. **After intake's design PR merges,** paste the project instructions again and run
+4. **After intake's design PR merges,** paste the project instructions again and run
    bootstrap again. Intake adds its answers to the instructions and may change
    `[checks].required`. Until bootstrap runs, the rulesets still require the old list, and a
    PR can wait on a check that no workflow runs any more.
-
-> [!WARNING]
-> Until `REVIEWER_SESSIONS` lists the reviewers, the gate counts no marker.

@@ -1,14 +1,15 @@
 # review-gate: turns the reviewer's verdict marker into the required commit status
 # `review-gate` on the PR's head SHA. Marker format: REVIEW.md (`[review].marker` in repo.toml):
-#   <!-- review v1 verdict=pass|fail|escalate|recuse sha=<40hex> round=<n> reviewer-session=<session id> -->
+#   <!-- review v1 verdict=pass|fail|escalate|recuse sha=<40hex> round=<n> reviewer=<role> reviewer-session=<session id> -->
 #
 # A marker counts only when it is:
 #   - for the current head SHA;
 #   - in a comment by the login in the repo variable REVIEWER_LOGIN;
-#   - from a session listed in the repo variable REVIEWER_SESSIONS (comma-separated, trimmed;
-#     `none` or empty lists no session);
+#   - from a reviewer role listed in the repo variable REVIEWER_ROLES (comma-separated,
+#     trimmed; bootstrap sets `reviewer-0,reviewer-1,reviewer-2`; empty lists no role);
 #   - in a comment never edited (created_at == updated_at);
-#   - from a session that authored no commit of the PR (recusal by `Claude-Session:` trailer).
+#   - from a session that authored no commit of the PR (recusal by `Claude-Session:` trailer,
+#     against the marker's reviewer-session).
 # Among counted markers the highest round decides, and within it a fail beats a pass.
 # The gate fails when a non-merge commit has no `Claude-Session:` trailer. Commits already
 # reachable from the default branch (main's commits in a wave sync PR) and Dependabot's
@@ -58,7 +59,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           REVIEWER_LOGIN: ${{ vars.REVIEWER_LOGIN }}
-          REVIEWER_SESSIONS: ${{ vars.REVIEWER_SESSIONS }}
+          REVIEWER_ROLES: ${{ vars.REVIEWER_ROLES }}
           MAINTAINER: ${{ vars.MAINTAINER_LOGIN }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr }}
         with:
@@ -113,7 +114,7 @@ jobs:
               overrideLabeledBy,
               maintainer: (process.env.MAINTAINER || '').trim(),
               reviewerLogin: (process.env.REVIEWER_LOGIN || '').trim(),
-              sessions: process.env.REVIEWER_SESSIONS || '',
+              roles: process.env.REVIEWER_ROLES || '',
             });
             await github.rest.repos.createCommitStatus({
               owner, repo, sha: head, state, context: 'review-gate',
@@ -165,16 +166,16 @@ jobs:
               }
 
               // 3. Configuration.
-              // REVIEWER_SESSIONS: comma-separated; `none` (bootstrap's placeholder) or empty allows no session.
-              const listed = Array.isArray(input.sessions) ? input.sessions : String(input.sessions || '').split(',');
-              const sessions = new Set(listed.map((s) => String(s).trim()).filter((s) => s && s.toLowerCase() !== 'none').map(norm));
-              if (!reviewerLogin || sessions.size === 0) {
-                return ['failure', 'Gate not configured: set REVIEWER_LOGIN and REVIEWER_SESSIONS (docs/GETTING-STARTED.md#github)'];
+              // REVIEWER_ROLES: comma-separated stable role names; empty or `none` allows no role.
+              const listed = Array.isArray(input.roles) ? input.roles : String(input.roles || '').split(',');
+              const roles = new Set(listed.map((s) => String(s).trim()).filter((s) => s && s.toLowerCase() !== 'none'));
+              if (!reviewerLogin || roles.size === 0) {
+                return ['failure', 'Gate not configured: run scripts/bootstrap.sh to set REVIEWER_LOGIN and REVIEWER_ROLES (docs/runbooks/bootstrap.md#settings)'];
               }
 
               // 4. Markers that count.
               const esc = MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const markerRe = new RegExp(`^<!-- ${esc} verdict=(pass|fail|escalate|recuse) sha=([0-9a-f]{40}) round=(\\d+) reviewer-session=(\\S+) -->[ \\t]*$`, 'm');
+              const markerRe = new RegExp(`^<!-- ${esc} verdict=(pass|fail|escalate|recuse) sha=([0-9a-f]{40}) round=(\\d+) reviewer=(\\S+) reviewer-session=(\\S+) -->[ \\t]*$`, 'm');
               const counted = [];
               let older = null;
               for (const c of comments) {
@@ -182,8 +183,8 @@ jobs:
                 if (c.created_at !== c.updated_at) continue;
                 const m = (c.body || '').match(markerRe);
                 if (!m) continue;
-                const marker = { verdict: m[1], sha: m[2], round: Number(m[3]), session: norm(m[4]) };
-                if (!sessions.has(marker.session)) continue;
+                const marker = { verdict: m[1], sha: m[2], round: Number(m[3]), role: m[4], session: norm(m[5]) };
+                if (!roles.has(marker.role)) continue;
                 if (marker.verdict === 'recuse') continue;
                 if (authors.has(marker.session)) continue;
                 if (marker.sha !== head) { older = marker; continue; }
