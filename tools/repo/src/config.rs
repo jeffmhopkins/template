@@ -126,6 +126,10 @@ pub struct Pack {
     pub jobs: BTreeMap<String, String>,
     #[serde(default)]
     pub suppressions: Suppressions,
+    /// Manifest glob → dotted table names (`lints`, `workspace.lints`) whose edits are
+    /// governance changes.
+    #[serde(default)]
+    pub protected_tables: BTreeMap<String, Vec<String>>,
     pub backrefs: Backrefs,
 }
 
@@ -202,7 +206,7 @@ impl Repo {
     }
 }
 
-/// Job ids and `name:` values of the workflow files under `.github/workflows/` at `root`.
+/// The check names of each workflow file under `.github/workflows/` at `root`.
 fn workflow_jobs(root: &Path) -> Result<BTreeMap<String, BTreeSet<String>>> {
     let dir = root.join(".github/workflows");
     let mut out = BTreeMap::new();
@@ -237,9 +241,12 @@ fn scalar(v: &str) -> String {
     v.trim().trim_matches(['"', '\'']).to_owned()
 }
 
-/// The job ids under the top-level `jobs:` key of a workflow, and each job's `name:`.
+/// The check names of the jobs under the top-level `jobs:` key of a workflow: a job's
+/// `name:` when it has one, else its id. A job whose `name:` is an expression has no fixed
+/// check name and adds none.
 pub fn job_names(yaml: &str) -> BTreeSet<String> {
-    let mut out = BTreeSet::new();
+    // (id, name): `None` no `name:` yet; `Some(None)` an expression.
+    let mut jobs: Vec<(String, Option<Option<String>>)> = Vec::new();
     let mut in_jobs = false;
     let mut job_indent: Option<usize> = None;
     // Inside a job: the indent of its own keys, once seen.
@@ -266,7 +273,7 @@ pub fn job_names(yaml: &str) -> BTreeSet<String> {
                 if let Some((id, rest)) = trimmed.split_once(':') {
                     let rest = rest.trim();
                     if rest.is_empty() || rest.starts_with('#') {
-                        out.insert(scalar(id));
+                        jobs.push((scalar(id), None));
                         key_indent = Some(None);
                     }
                 }
@@ -277,14 +284,21 @@ pub fn job_names(yaml: &str) -> BTreeSet<String> {
             let ki = *ki.get_or_insert(indent);
             if indent == ki {
                 if let Some(n) = trimmed.strip_prefix("name:").map(scalar) {
-                    if !n.is_empty() && !n.contains("${{") {
-                        out.insert(n);
+                    if let Some(job) = jobs.last_mut() {
+                        if !n.is_empty() {
+                            job.1 = Some((!n.contains("${{")).then_some(n));
+                        }
                     }
                 }
             }
         }
     }
-    out
+    jobs.into_iter()
+        .filter_map(|(id, name)| match name {
+            None => Some(id),
+            Some(n) => n,
+        })
+        .collect()
 }
 
 /// Problems with `config`, `pack` and `lanes.toml` at `root`.
@@ -376,6 +390,19 @@ pub fn check(root: &Path) -> Vec<String> {
                     out.push(format!("{path}: suppression pattern `{p}`: {e}"));
                 }
             }
+            for (g, tables) in &pack.protected_tables {
+                if let Err(e) = crate::glob::compile(g) {
+                    out.push(format!("{path}: [protected_tables]: {e:#}"));
+                }
+                if tables
+                    .iter()
+                    .any(|t| t.is_empty() || t.split('.').any(str::is_empty))
+                {
+                    out.push(format!(
+                        "{path}: [protected_tables] `{g}`: table names are dotted keys such as `workspace.lints`"
+                    ));
+                }
+            }
             for g in pack.suppressions.files.iter().chain(&pack.backrefs.roots) {
                 if let Err(e) = crate::glob::compile(g) {
                     out.push(format!("{path}: {e:#}"));
@@ -406,7 +433,7 @@ pub fn check(root: &Path) -> Vec<String> {
             for c in &config.checks.required {
                 if !found.contains(c) {
                     out.push(format!(
-                        "{FILE}: required check `{c}` is not a job id or job name in .github/workflows/*.yml"
+                        "{FILE}: required check `{c}` is not a check name in .github/workflows/*.yml (a job's `name:`, else its id)"
                     ));
                 }
             }
@@ -530,6 +557,7 @@ prefix = "//! Docs:"
     fn finds_job_ids_and_names() {
         let yaml = "name: CI\non:\n  pull_request:\njobs:\n  fmt:\n    runs-on: x\n    steps:\n      - name: not a job\n        run: x\n  docs-job:\n    name: docs\n    runs-on: x\n  \"quoted\": # c\n    name: \"${{ matrix.os }}\"\nother:\n  nope:\n";
         let names: Vec<String> = job_names(yaml).into_iter().collect();
-        assert_eq!(names, vec!["docs", "docs-job", "fmt", "quoted"]);
+        // `docs-job` reports as `docs`; `quoted`'s name is an expression, so no fixed name.
+        assert_eq!(names, vec!["docs", "fmt"]);
     }
 }

@@ -25,7 +25,11 @@ use anyhow::{Result, bail};
 type Outcome = Result<bool>;
 
 const USAGE: &str = "\
-usage: repo <command> [args]
+usage: repo [--root <dir>] <command> [args]
+
+  --root <dir>                              run on the repository at <dir>, not the current
+                                            directory's (a reviewer points a base build at a
+                                            PR head's worktree)
 
 commands:
   config check                              schema-check repo.toml, lanes.toml, the stack pack, CI job names
@@ -51,6 +55,13 @@ commands:
   stack run <job>                           run the stack pack's command for a CI job";
 
 fn run(args: &[String]) -> Outcome {
+    let args = match args {
+        [flag, dir, rest @ ..] if flag == "--root" => {
+            git::set_root(std::path::Path::new(dir))?;
+            rest
+        }
+        _ => args,
+    };
     let rest = |n: usize| &args[n.min(args.len())..];
     match (
         args.first().map(String::as_str),

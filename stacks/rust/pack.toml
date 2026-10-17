@@ -11,8 +11,15 @@ test = "cargo test --workspace"
 deps = "cargo deny check"
 
 [suppressions]
-patterns = ['#\[allow\(', '#!\[allow\(', '#\[expect\(', '#!\[expect\(']
+# #[ignore] disables a test (R-TEST-004); its reason is `#[ignore = "..."]`, so it always
+# reports as missing `reason =`.
+patterns = ['#\[allow\(', '#!\[allow\(', '#\[expect\(', '#!\[expect\(', 'cfg_attr\(.*\b(allow|expect)\(',
+            '#\[ignore']
 reason_required = true   # suppression must carry `reason = "..."`
+
+# Manifest tables that set lint levels: an edit to one is a governance change.
+[protected_tables]
+"**/Cargo.toml" = ["lints", "workspace.lints"]
 
 [backrefs]
 roots = ["**/src/lib.rs", "**/src/main.rs"]

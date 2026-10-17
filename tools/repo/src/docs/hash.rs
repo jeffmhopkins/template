@@ -8,8 +8,8 @@
 //!
 //! Wherever Markdown is hashed, well-formed metadata blocks and generated blocks are left
 //! out, so recording a verification or regenerating a block never stales a section. In
-//! covered workflow files, the ref after `@` in `uses:` lines is ignored, so action pin
-//! bumps don't stale the section that describes the workflow.
+//! covered workflow and composite action files, the ref after `@` in `uses:` lines is
+//! ignored, so action pin bumps don't stale the section that describes the file.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -87,7 +87,7 @@ pub fn file_content(path: &str, bytes: &[u8]) -> Vec<u8> {
     if path.ends_with(".md") {
         text = strip_markdown(path, &text);
     }
-    if !path.starts_with(".github/workflows/") {
+    if !(path.starts_with(".github/workflows/") || path.starts_with(".github/actions/")) {
         return text.into_bytes();
     }
     text.lines()
@@ -207,6 +207,18 @@ mod tests {
             b"- uses: actions/checkout@bbbb # v8\nrun: x\n",
         );
         assert_eq!(a, b);
+        assert_eq!(
+            file_content(
+                ".github/actions/x/action.yml",
+                b"- uses: a/b@aaaa # v1
+"
+            ),
+            file_content(
+                ".github/actions/x/action.yml",
+                b"- uses: a/b@bbbb # v2
+"
+            )
+        );
         assert_ne!(
             file_content("src/x.rs", b"uses: a@1"),
             file_content("src/x.rs", b"uses: a@2")

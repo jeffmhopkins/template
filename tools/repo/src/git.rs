@@ -86,9 +86,28 @@ pub fn split_z(bytes: &[u8]) -> Vec<String> {
     paths
 }
 
-/// The repository root: the git top level of the current directory when it holds a
-/// `repo.toml`, else the nearest ancestor of the current directory that holds one.
+/// The directory given with the global `--root <dir>`, if any.
+static ROOT: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+
+/// Sets the directory [`root`] starts from, in place of the current directory. Paths given
+/// as other arguments stay relative to the current directory.
+pub fn set_root(dir: &Path) -> Result<()> {
+    let dir = dir
+        .canonicalize()
+        .with_context(|| format!("--root {}", dir.display()))?;
+    if ROOT.set(dir).is_err() {
+        bail!("`--root` given twice");
+    }
+    Ok(())
+}
+
+/// The repository root: the git top level of the start directory when it holds a
+/// `repo.toml`, else the nearest ancestor of the start directory that holds one. The start
+/// directory is `--root`'s, else the current directory.
 pub fn root() -> Result<PathBuf> {
+    if let Some(dir) = ROOT.get() {
+        return root_from(dir);
+    }
     let cwd = std::env::current_dir().context("reading the current directory")?;
     root_from(&cwd)
 }

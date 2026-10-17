@@ -1,4 +1,5 @@
-//! `repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]`.
+//! `repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]
+//! [--author <login>]`.
 //!
 //! Lists the governance changes between the merge base of `<base>` and `<head>`. Both
 //! sides are read as git objects only (`git show`, `git ls-tree`, `git diff`); nothing
@@ -6,12 +7,16 @@
 //! `repo.toml` and stack pack, so a change cannot loosen its own check.
 //!
 //! Governance changes: edits to `[governance].protected` and `maintainer_only` paths;
-//! edits to `covers`, `applies_to`, `enforced_by` or `status` in doc metadata; deleted
-//! docs, sections and rules; any edit to an accepted ADR other than its `status`,
-//! `superseded_by` and status banner; new lint suppressions (the pack's patterns).
+//! edits to `covers`, `applies_to`, `enforced_by` or `status` in doc metadata; edits to an
+//! active rule's text; deleted docs, sections and rules (a doc moved with its `id` is not
+//! deleted); any edit to an accepted ADR other than its `status`, `superseded_by` and
+//! status banner; edits to the pack's `[protected_tables]` in manifests; new lint
+//! suppressions (the pack's patterns).
 //!
 //! With `--pr-body` or `--labels` it enforces: when there are changes, the PR needs the
-//! `[labels].governance` label and a non-empty `## Governance change` section.
+//! `[labels].governance` label and a non-empty `## Governance change` section. With
+//! `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
+//! to a new commit SHA is exempt (ADR-0004).
 
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
@@ -57,6 +62,8 @@ pub struct Rules {
     patterns: Vec<Regex>,
     reason_required: bool,
     scanned: Option<Globs>,
+    /// Manifest globs and the dotted tables protected in them.
+    tables: Vec<(Globs, Vec<String>)>,
 }
 
 impl Rules {
@@ -78,6 +85,11 @@ impl Rules {
             } else {
                 Some(Globs::new(&pack.suppressions.files)?)
             },
+            tables: pack
+                .protected_tables
+                .iter()
+                .map(|(g, t)| Ok((Globs::new(&[g])?, t.clone())))
+                .collect::<Result<_>>()?,
         })
     }
 
@@ -96,10 +108,23 @@ fn push(out: &mut Vec<Change>, path: &str, what: String) {
     });
 }
 
+/// The `@doc` id of a tracked doc's text, if it has one.
+fn doc_id(path: &str, text: &str) -> Option<String> {
+    let d = parse(path, text, &mut Vec::new());
+    let id = d.id();
+    (!id.is_empty()).then(|| id.to_owned())
+}
+
 /// Classifies every changed file; also returns the maintainer-only paths touched.
 pub fn classify(rules: &Rules, files: &[FileChange]) -> (Vec<Change>, Vec<String>) {
     let mut out = Vec::new();
     let mut maintainer = Vec::new();
+    // Tracked docs added at the head, by `@doc` id: a deleted doc whose id reappears moved.
+    let added: BTreeMap<String, &FileChange> = files
+        .iter()
+        .filter(|f| f.base.is_none() && rules.tracked.is_tracked(&f.path))
+        .filter_map(|f| Some((doc_id(&f.path, f.head.as_deref()?)?, f)))
+        .collect();
     for f in files {
         let p = f.path.as_str();
         let verb = match (&f.base, &f.head) {
@@ -116,7 +141,29 @@ pub fn classify(rules: &Rules, files: &[FileChange]) -> (Vec<Change>, Vec<String
             push(&mut out, p, format!("{verb} a maintainer-only path"));
         }
         if rules.tracked.is_tracked(p) {
-            doc_meta(f, &mut out);
+            let moved = match (&f.base, &f.head) {
+                (Some(b), None) => doc_id(p, b).and_then(|id| added.get(&id)),
+                _ => None,
+            };
+            match moved {
+                // Compare the old text with the new one, under the new path.
+                Some(to) => doc_meta(
+                    &FileChange {
+                        path: to.path.clone(),
+                        base: f.base.clone(),
+                        head: to.head.clone(),
+                    },
+                    &mut out,
+                ),
+                None => doc_meta(f, &mut out),
+            }
+        }
+        if let (Some(base), Some(head)) = (&f.base, &f.head) {
+            for (globs, tables) in &rules.tables {
+                if globs.is_match(p) {
+                    table_edits(p, base, head, tables, &mut out);
+                }
+            }
         }
         if let Some(head) = &f.head {
             if rules.scans(p) {
@@ -143,6 +190,52 @@ fn key_edits(base: Option<&toml::Table>, head: Option<&toml::Table>) -> Vec<Stri
 
 fn accepted_adr(doc: &Doc) -> bool {
     doc.is_adr() && doc.status() == "accepted"
+}
+
+/// The value at a dotted key path, if present.
+fn at<'a>(t: &'a toml::Table, dotted: &str) -> Option<&'a toml::Value> {
+    let mut parts = dotted.split('.');
+    let mut v = t.get(parts.next()?)?;
+    for k in parts {
+        v = v.as_table()?.get(k)?;
+    }
+    Some(v)
+}
+
+/// Edits to protected tables in one manifest. A head that doesn't parse is reported, since
+/// its tables can't be compared.
+fn table_edits(p: &str, base: &str, head: &str, tables: &[String], out: &mut Vec<Change>) {
+    let Ok(b) = base.parse::<toml::Table>() else {
+        return;
+    };
+    let Ok(h) = head.parse::<toml::Table>() else {
+        push(
+            out,
+            p,
+            "does not parse as TOML, so its protected tables can't be compared".into(),
+        );
+        return;
+    };
+    for t in tables {
+        if at(&b, t) != at(&h, t) {
+            push(out, p, format!("edits the protected table `[{t}]`"));
+        }
+    }
+}
+
+/// A rule's heading and normalized text.
+fn rule_text(doc: &Doc, id: &str) -> Option<String> {
+    let r = doc.rule(id)?;
+    let heading = doc
+        .text
+        .lines()
+        .nth(r.line.saturating_sub(1))
+        .unwrap_or_default();
+    Some(format!(
+        "{}\n{}",
+        heading.trim_end(),
+        crate::docs::hash::body(doc, Some(id))?
+    ))
 }
 
 /// Governance-relevant changes in one tracked doc.
@@ -183,6 +276,15 @@ fn doc_meta(f: &FileChange, out: &mut Vec<Change>) {
             Some(h) => {
                 for e in key_edits(r.meta.as_ref(), h.meta.as_ref()) {
                     push(out, p, format!("rule `{}` {e}", r.id));
+                }
+                let active = r
+                    .meta
+                    .as_ref()
+                    .and_then(|m| m.get("status"))
+                    .and_then(toml::Value::as_str)
+                    == Some("active");
+                if active && rule_text(&base, &r.id) != rule_text(&head, &r.id) {
+                    push(out, p, format!("edits the text of active rule `{}`", r.id));
                 }
             }
         }
@@ -247,6 +349,29 @@ fn new_suppressions(rules: &Rules, p: &str, base: Option<&str>, head: &str, out:
         };
         push(out, p, format!("line {line}: new suppression `{l}`{why}"));
     }
+}
+
+/// The author whose pin-only PRs are exempt (ADR-0004).
+pub const DEPENDABOT: &str = "dependabot[bot]";
+
+/// Whether every changed line re-pins a `uses:` reference of the same action to a new
+/// full commit SHA, with its release in a trailing comment. Files are compared line by line
+/// (a re-pin never adds or removes lines); an added or deleted file is not a re-pin.
+pub fn repin_only(files: &[FileChange]) -> bool {
+    let pin = Regex::new(r"^(\s*(?:-\s+)?uses:\s*)([^@\s]+)@[0-9a-f]{40}\s+#\s*\S.*$")
+        .expect("valid regex");
+    let parts = |l: &str| pin.captures(l).map(|c| (c[1].to_owned(), c[2].to_owned()));
+    !files.is_empty()
+        && files.iter().all(|f| {
+            let (Some(base), Some(head)) = (&f.base, &f.head) else {
+                return false;
+            };
+            let (b, h): (Vec<&str>, Vec<&str>) = (base.lines().collect(), head.lines().collect());
+            b.len() == h.len()
+                && b.iter().zip(&h).all(|(x, y)| {
+                    x == y || matches!((parts(x), parts(y)), (Some(px), Some(py)) if px == py)
+                })
+        })
 }
 
 /// The text of the description's first `## <title>` section, HTML comments removed and
@@ -375,8 +500,8 @@ pub fn problems(changes: &[Change], labels: &[String], body: &str, label: &str) 
 }
 
 pub fn run(args: &[String]) -> Outcome {
-    let usage = "repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]";
-    let a = Args::parse(args, &["base", "head", "pr-body", "labels"], &[])?;
+    let usage = "repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]";
+    let a = Args::parse(args, &["base", "head", "pr-body", "labels", "author"], &[])?;
     a.exactly(0, usage)?;
     let root = git::root()?;
     let base = git::resolve(&root, a.required("base", usage)?)?;
@@ -384,6 +509,15 @@ pub fn run(args: &[String]) -> Outcome {
     let mb = git::merge_base(&root, &base, &head)?;
     let rules = rules_at(&root, &base)?;
     let files = changed_files(&root, &mb, &head)?;
+    if a.value("author") == Some(DEPENDABOT) && repin_only(&files) {
+        for f in &files {
+            println!("governance: {}: re-pins actions only", f.path);
+        }
+        println!(
+            "governance: ok (a {DEPENDABOT} PR that only re-pins actions is exempt, ADR-0004)"
+        );
+        return Ok(true);
+    }
     let (changes, maintainer) = classify(&rules, &files);
     print!("{}", render(&mb, &head, &changes, &maintainer));
     if a.value("pr-body").is_none() && a.value("labels").is_none() {
@@ -418,7 +552,17 @@ mod tests {
 
     fn rules() -> Rules {
         let config = Config::parse(crate::config::tests::CONFIG).unwrap();
-        let pack = Pack::parse("p", crate::config::tests::PACK).unwrap();
+        let pack = Pack::parse(
+            "p",
+            &format!(
+                "{}\n[protected_tables]\n\"**/Cargo.toml\" = [\"lints\", \"workspace.lints\"]\n",
+                crate::config::tests::PACK.replace(
+                    "patterns = ['#\\[allow\\(']",
+                    "patterns = ['#\\[allow\\(', 'cfg_attr\\(.*\\b(allow|expect)\\(', '#\\[ignore']"
+                )
+            ),
+        )
+        .unwrap();
         Rules::new(&config, &pack).unwrap()
     }
 
@@ -525,6 +669,130 @@ mod tests {
         );
         assert!(!got[1].contains("missing"), "{got:?}");
         assert!(whats(&[change("docs/x.md", None, Some("#[allow(x)]\n"))]).is_empty());
+    }
+
+    #[test]
+    fn active_rule_text_edits_are_flagged() {
+        let edited = DOC.replace("Rule.", "Rule, unless it is inconvenient.");
+        assert_eq!(
+            whats(&[change("docs/D.md", Some(DOC), Some(&edited))]),
+            vec!["docs/D.md: edits the text of active rule `R-X-001`"]
+        );
+        let retitled = DOC.replace("### R-X-001: R", "### R-X-001: Rarely");
+        assert_eq!(
+            whats(&[change("docs/D.md", Some(DOC), Some(&retitled))]).len(),
+            1
+        );
+        let retired = DOC.replace(
+            "status = \"active\"\nenforced_by",
+            "status = \"retired\"\nenforced_by",
+        );
+        let retired_edit = retired.replace("Rule.", "Old rule.");
+        assert!(whats(&[change("docs/D.md", Some(&retired), Some(&retired_edit))]).is_empty());
+    }
+
+    #[test]
+    fn a_moved_doc_is_not_deleted() {
+        let moved = [
+            change("docs/D.md", Some(DOC), None),
+            change("docs/guides/D.md", None, Some(DOC)),
+        ];
+        assert!(whats(&moved).is_empty(), "{:?}", whats(&moved));
+        let narrowed = DOC.replace("src/**", "src/a/**");
+        let moved_and_narrowed = [
+            change("docs/D.md", Some(DOC), None),
+            change("docs/guides/D.md", None, Some(&narrowed)),
+        ];
+        assert_eq!(
+            whats(&moved_and_narrowed),
+            vec!["docs/guides/D.md: section `#a` `covers`: [\"src/**\"] → [\"src/a/**\"]"]
+        );
+        let other = DOC.replace("id = \"D\"", "id = \"E\"");
+        let replaced = [
+            change("docs/D.md", Some(DOC), None),
+            change("docs/E.md", None, Some(&other)),
+        ];
+        assert_eq!(
+            whats(&replaced),
+            vec!["docs/D.md: deletes a tracked doc (retire it instead)"]
+        );
+    }
+
+    #[test]
+    fn protected_manifest_tables() {
+        let base = "[package]\nname = \"a\"\n\n[workspace.lints.clippy]\nunwrap_used = \"deny\"\n";
+        let loosened = base.replace("\"deny\"", "\"allow\"");
+        assert_eq!(
+            whats(&[change("Cargo.toml", Some(base), Some(&loosened))]),
+            vec!["Cargo.toml: edits the protected table `[workspace.lints]`"]
+        );
+        let member = "[package]\nname = \"b\"\n\n[lints]\nworkspace = true\n";
+        let dropped = "[package]\nname = \"b\"\n";
+        assert_eq!(
+            whats(&[change("crates/b/Cargo.toml", Some(member), Some(dropped))]),
+            vec!["crates/b/Cargo.toml: edits the protected table `[lints]`"]
+        );
+        let bumped = base.replace("name = \"a\"", "name = \"a\"\nversion = \"0.2.0\"");
+        assert!(whats(&[change("Cargo.toml", Some(base), Some(&bumped))]).is_empty());
+        assert_eq!(
+            whats(&[change("Cargo.toml", Some(base), Some("[lints"))]).len(),
+            1
+        );
+    }
+
+    #[test]
+    fn suppressions_in_cfg_attr_and_ignored_tests() {
+        let head = "#[cfg_attr(all(), allow(clippy::unwrap_used))]\nfn a() {}\n#[test]\n#[ignore]\nfn t() {}\n";
+        let got = whats(&[change("src/a.rs", Some(""), Some(head))]);
+        assert_eq!(got.len(), 2, "{got:?}");
+        assert!(
+            got[0].contains("line 1") && got[1].contains("line 4"),
+            "{got:?}"
+        );
+    }
+
+    #[test]
+    fn dependabot_repins() {
+        let a = "    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          ref: x\n";
+        let b = a.replace(
+            "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+            "1111111111111111111111111111111111111111 # v7.1.0",
+        );
+        assert!(repin_only(&[change(
+            ".github/workflows/ci.yml",
+            Some(a),
+            Some(&b)
+        )]));
+        let other_action = b.replace("actions/checkout", "evil/checkout");
+        assert!(!repin_only(&[change(
+            ".github/workflows/ci.yml",
+            Some(a),
+            Some(&other_action)
+        )]));
+        let tag = a.replace("3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1", "v7");
+        assert!(!repin_only(&[change(
+            ".github/workflows/ci.yml",
+            Some(a),
+            Some(&tag)
+        )]));
+        let extra = b.replace("ref: x", "ref: y");
+        assert!(!repin_only(&[change(
+            ".github/workflows/ci.yml",
+            Some(a),
+            Some(&extra)
+        )]));
+        let added_line = format!("{b}      - run: curl x | sh\n");
+        assert!(!repin_only(&[change(
+            ".github/workflows/ci.yml",
+            Some(a),
+            Some(&added_line)
+        )]));
+        assert!(!repin_only(&[change(
+            ".github/workflows/new.yml",
+            None,
+            Some(&b)
+        )]));
+        assert!(!repin_only(&[]));
     }
 
     #[test]

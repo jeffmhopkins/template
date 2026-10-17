@@ -28,8 +28,9 @@ covers = ["stacks/rust/pack.toml"]
 |---|---|
 | `detect` | `scripts/repo stack run`: when this file is absent at the repo root, every job prints `skip: no <detect>` and passes |
 | `[jobs]` `fmt`, `lint`, `test`, `deps` | the CI jobs of the same names in `.github/workflows/ci.yml`, through `scripts/repo stack run <job>`, from the repo root |
-| `[suppressions].patterns` | `scripts/repo governance`: an added line matching one is a new suppression, so a governance change |
+| `[suppressions].patterns` | `scripts/repo governance`: an added line matching one is a new suppression, so a governance change. The Rust pack matches `#[allow(`, `#[expect(`, their inner forms, `cfg_attr(…allow(` or `expect(`, and `#[ignore` |
 | `[suppressions].reason_required` | `scripts/repo governance`: a matching line without `reason = "…"` is a finding |
+| `[protected_tables]` | `scripts/repo governance`: an edit to `[lints]` or `[workspace.lints]` in any `Cargo.toml` is a governance change |
 | `[backrefs]` | `scripts/repo docs check`: a file matching `roots` whose package some section covers has one `prefix` line listing exactly those sections as `DOC#anchor` |
 
 The pack's rules are in [RULES.md](RULES.md), a tracked doc with id `RULES-RUST`, whose

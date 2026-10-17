@@ -3,9 +3,13 @@
 //! `[docs].progress` (by default `docs/progress.toml`) holds milestones and items only.
 //! Status comes from trailers in the commit messages reachable from HEAD:
 //! `Completes: <id>`, `Part-of: <id>` and `Verified-on-hardware: <id>` (several ids may be
-//! comma-separated). A commit whose message says `This reverts commit <sha>`, or whose
-//! subject is `Revert "<subject>"` naming an earlier commit's subject, cancels that commit's
-//! trailers; reverting the revert restores them.
+//! comma-separated). A trailer counts only in a trailer paragraph: one whose every line is
+//! `Key: value`, outside code fences, with HTML comments removed.
+//!
+//! A commit whose message says `This reverts commit <sha>`, or whose subject is
+//! `Revert "<subject>"` or `revert: <subject>` naming an earlier commit's subject, cancels
+//! that commit's trailers, unless a later revert cancels it in turn. A
+//! `Verified-on-hardware:` counts only after the item's latest `Completes:`.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
@@ -149,19 +153,60 @@ const COMPLETES: &str = "Completes";
 const PART_OF: &str = "Part-of";
 const VERIFIED: &str = "Verified-on-hardware";
 
-/// `(kind, id)` trailers in a message.
+/// A `Key: value` line, as git writes trailers: a key of letters, digits and `-`.
+fn trailer_line(line: &str) -> Option<(&str, &str)> {
+    let (key, value) = line.trim().split_once(':')?;
+    let ok = key.starts_with(|c: char| c.is_ascii_alphabetic())
+        && key.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+        && !value.trim().is_empty();
+    ok.then(|| (key, value.trim()))
+}
+
+/// The message without HTML comments, and with code-fenced lines blanked.
+fn plain(body: &str) -> String {
+    let mut text = body.to_owned();
+    while let Some(open) = text.find("<!--") {
+        match text[open..].find("-->") {
+            Some(close) => text.replace_range(open..open + close + 3, ""),
+            None => text.truncate(open),
+        }
+    }
+    let lines: Vec<&str> = text.lines().collect();
+    let outside = crate::docs::parse::outside_fences(&lines);
+    lines
+        .iter()
+        .zip(outside)
+        .map(|(l, o)| {
+            if o && !l.trim_start().starts_with("```") {
+                *l
+            } else {
+                ""
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// `(kind, id)` trailers in a message, from its trailer paragraphs only.
 fn trailers(body: &str) -> Vec<(&'static str, String)> {
     let mut out = Vec::new();
-    for line in body.lines() {
-        let Some((key, value)) = line.trim().split_once(':') else {
+    let text = plain(body);
+    let lines: Vec<&str> = text.lines().collect();
+    for para in lines.split(|l| l.trim().is_empty()) {
+        if para.is_empty() || !para.iter().all(|l| trailer_line(l).is_some()) {
             continue;
-        };
-        let kind = [COMPLETES, PART_OF, VERIFIED]
-            .into_iter()
-            .find(|k| k.eq_ignore_ascii_case(key.trim()));
-        if let Some(kind) = kind {
-            for id in value.split(',').map(str::trim).filter(|v| !v.is_empty()) {
-                out.push((kind, id.trim_matches('`').to_owned()));
+        }
+        for (key, value) in para.iter().filter_map(|l| trailer_line(l)) {
+            let kind = [COMPLETES, PART_OF, VERIFIED]
+                .into_iter()
+                .find(|k| k.eq_ignore_ascii_case(key));
+            let Some(kind) = kind else {
+                continue;
+            };
+            for id in value.split(',').map(|v| v.trim().trim_matches('`')) {
+                if !id.is_empty() && !id.contains(char::is_whitespace) {
+                    out.push((kind, id.to_owned()));
+                }
             }
         }
     }
@@ -181,8 +226,10 @@ fn reverted<'a>(m: &Message, earlier: &'a [Message]) -> Option<&'a Message> {
             }
         }
     }
-    let rest = m.subject().strip_prefix("Revert \"")?;
-    let inner = rest.rfind('"').map(|k| &rest[..k])?;
+    let inner = match m.subject().strip_prefix("Revert \"") {
+        Some(rest) => rest.rfind('"').map(|k| &rest[..k])?,
+        None => conventional_revert(m.subject())?,
+    };
     let strip = |s: &str| -> String {
         match crate::docs::history::pr_of(s) {
             Some(_) => s
@@ -197,6 +244,26 @@ fn reverted<'a>(m: &Message, earlier: &'a [Message]) -> Option<&'a Message> {
         .iter()
         .rev()
         .find(|e| e.subject() == inner || strip(e.subject()) == strip(inner))
+}
+
+/// The subject a Conventional Commit revert names: `revert: <subject>` or
+/// `revert(<scope>): <subject>`, without a trailing ` (#<n>)`.
+fn conventional_revert(subject: &str) -> Option<&str> {
+    let rest = subject.strip_prefix("revert")?;
+    let rest = match rest.strip_prefix('(') {
+        Some(r) => &r[r.find(')')? + 1..],
+        None => rest,
+    };
+    let rest = rest
+        .strip_prefix('!')
+        .unwrap_or(rest)
+        .strip_prefix(':')?
+        .trim();
+    let rest = match crate::docs::history::pr_of(rest) {
+        Some(_) => rest.trim_end().rsplit_once(" (#").map_or(rest, |(h, _)| h),
+        None => rest,
+    };
+    (!rest.is_empty()).then_some(rest)
 }
 
 /// Status of each item.
@@ -231,16 +298,16 @@ pub struct Derived {
 
 /// Applies `messages` (oldest first), honouring reverts.
 pub fn derive(messages: &[Message]) -> Derived {
+    // Newest first: a commit is cancelled when a revert that is not itself cancelled names
+    // it, so a chain of reverts settles by its length.
     let mut cancelled: BTreeSet<&str> = BTreeSet::new();
-    for (k, m) in messages.iter().enumerate() {
+    for k in (0..messages.len()).rev() {
+        let m = &messages[k];
+        if cancelled.contains(m.sha.as_str()) {
+            continue;
+        }
         if let Some(t) = reverted(m, &messages[..k]) {
-            if cancelled.contains(m.sha.as_str()) {
-                continue;
-            }
             cancelled.insert(&t.sha);
-            if let Some(u) = reverted(t, messages) {
-                cancelled.remove(u.sha.as_str());
-            }
         }
     }
     let mut d = Derived::default();
@@ -248,13 +315,24 @@ pub fn derive(messages: &[Message]) -> Derived {
         .iter()
         .filter(|m| !cancelled.contains(m.sha.as_str()))
     {
-        for (kind, id) in trailers(&m.body) {
-            let map = match kind {
-                COMPLETES => &mut d.completes,
-                PART_OF => &mut d.part_of,
-                _ => &mut d.verified,
+        let found = trailers(&m.body);
+        // Completions first: a verification counts only after the latest one.
+        for (kind, id) in found.iter().filter(|(k, _)| *k != VERIFIED) {
+            if *kind == COMPLETES {
+                d.verified.remove(id);
+            }
+            let map = if *kind == COMPLETES {
+                &mut d.completes
+            } else {
+                &mut d.part_of
             };
-            map.entry(id).or_default().push(m.sha.clone());
+            map.entry(id.clone()).or_default().push(m.sha.clone());
+        }
+        for (_, id) in found.iter().filter(|(k, _)| *k == VERIFIED) {
+            d.verified
+                .entry(id.clone())
+                .or_default()
+                .push(m.sha.clone());
         }
     }
     d
@@ -502,6 +580,93 @@ mod tests {
         assert_eq!(st, vec![Status::Done, Status::Done, Status::Done]);
         let md = markdown(&r);
         assert!(md.contains("| M0: T | 3 of 3 | 0 | 0 | 0 |"), "{md}");
+    }
+
+    fn statuses(plan: &Plan, msgs: &[Message]) -> Vec<Status> {
+        report(plan, &derive(msgs)).milestones[0]
+            .items
+            .iter()
+            .map(|i| i.status)
+            .collect()
+    }
+
+    #[test]
+    fn only_trailer_paragraphs_count() {
+        let plan = Plan::parse(PLAN).unwrap();
+        let prose = msg(
+            "p1",
+            "docs: plan (#1)\n\nThis PR prepares the item. Next:\nCompletes: A will follow in another PR.\n\n```\nCompletes: C\n```\n",
+        );
+        assert_eq!(statuses(&plan, &[prose]), vec![Status::Planned; 3]);
+        let template = msg(
+            "t1",
+            "feat: a (#2)\n\n## Summary\nx\n\n<!-- Trailers: keep the one that applies.\n     Claude-Session: always kept. -->\nCompletes: A\nClaude-Session: https://claude.ai/code/session_1\n",
+        );
+        assert_eq!(
+            statuses(&plan, &[template]),
+            vec![Status::Done, Status::Planned, Status::Planned]
+        );
+    }
+
+    #[test]
+    fn revert_chains_settle_by_length() {
+        let plan = Plan::parse(PLAN).unwrap();
+        let mut msgs = vec![msg("a1", "feat: a (#1)\n\nCompletes: A")];
+        let mut subject = "feat: a (#1)".to_owned();
+        let mut target = "a1".to_owned();
+        for n in 1..=4 {
+            let sha = format!("r{n}");
+            subject = format!("Revert \"{subject}\"");
+            msgs.push(msg(
+                &sha,
+                &format!("{subject}\n\nThis reverts commit {target}."),
+            ));
+            target = sha;
+            let want = if n % 2 == 1 {
+                Status::Planned
+            } else {
+                Status::Done
+            };
+            assert_eq!(statuses(&plan, &msgs)[0], want, "after {n} reverts");
+        }
+    }
+
+    #[test]
+    fn conventional_revert_titles() {
+        let msgs = vec![
+            msg("a1", "feat: a (#1)\n\nCompletes: A"),
+            msg("r1", "revert: feat: a (#2)\n\nThe item broke main."),
+        ];
+        assert!(derive(&msgs).completes.is_empty());
+        let scoped = vec![
+            msg("a1", "feat(x): a (#1)\n\nCompletes: A"),
+            msg("r1", "revert(x): feat(x): a"),
+        ];
+        assert!(derive(&scoped).completes.is_empty());
+        assert_eq!(conventional_revert("revert: x (#3)"), Some("x"));
+        assert_eq!(conventional_revert("reverted: x"), None);
+        assert_eq!(conventional_revert("refactor: x"), None);
+    }
+
+    #[test]
+    fn verification_counts_only_after_the_latest_completion() {
+        let plan = Plan::parse(PLAN).unwrap();
+        let msgs = vec![
+            msg("a1", "feat: a (#1)\n\nCompletes: A"),
+            msg("b1", "feat: b (#2)\n\nCompletes: B"),
+            msg("v1", "chore: hw (#3)\n\nVerified-on-hardware: B"),
+        ];
+        assert_eq!(statuses(&plan, &msgs)[1], Status::Done);
+        let mut again = msgs.clone();
+        again.push(msg(
+            "r1",
+            "Revert \"feat: b (#2)\"\n\nThis reverts commit b1.",
+        ));
+        assert_eq!(statuses(&plan, &again)[1], Status::Planned);
+        again.push(msg("b2", "feat: b again (#5)\n\nCompletes: B"));
+        assert_eq!(statuses(&plan, &again)[1], Status::Hardware);
+        again.push(msg("v2", "chore: hw (#6)\n\nVerified-on-hardware: B"));
+        assert_eq!(statuses(&plan, &again)[1], Status::Done);
     }
 
     #[test]

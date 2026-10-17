@@ -52,10 +52,12 @@ covers = ["tools/repo/src/config.rs", "tools/repo/src/stack.rs"]
 | `[suppressions].patterns` | no | regular expressions; an added line that matches one is a lint suppression, which `scripts/repo governance` reports as a governance change |
 | `[suppressions].reason_required` | no | when `true`, a matching line must also contain `reason =`, or it is a finding |
 | `[suppressions].files` | no | globs of the files to scan for suppressions; empty means every file that isn't Markdown |
+| `[protected_tables]` | no | manifest glob → list of dotted table names, such as `"**/Cargo.toml" = ["lints", "workspace.lints"]`. Any edit to one of those tables, including adding or removing it, is a governance change. A manifest whose new version doesn't parse is one too |
 | `[backrefs].roots` | yes | globs of package root files. A root whose package a doc section covers carries one back-reference line |
 | `[backrefs].prefix` | yes | the text that starts that line, such as `//! Docs:` or `# Docs:` |
 
-Unknown keys are an error. `scripts/repo config check` loads the pack and checks its globs.
+Unknown keys are an error. `scripts/repo config check` loads the pack and checks its globs
+and table names.
 
 > [!NOTE]
 > `reason_required` looks for the literal text `reason =`, which matches Rust's attribute
@@ -73,7 +75,9 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
 
 > [!IMPORTANT]
 > Everything under `stacks/` and `.github/` is a protected path, so the PR is a governance
-> change: it carries the `governance-approved` label and a "Governance change" section.
+> change with a "Governance change" section. The setup action and the CI jobs are
+> maintainer-only paths, so the maintainer approves the PR and applies the
+> `governance-approved` label themselves.
 
 1. **Make the directory** `stacks/<name>/`, lower case, one word (`node`, `python`, `go`).
 2. **Write `pack.toml`.** Pick the `detect` file, then the four job commands. Each command
@@ -83,7 +87,8 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
    - `test` runs every test;
    - `deps` audits dependencies for advisories and licences.
 
-   Add the suppression patterns and the back-reference prefix and roots (examples below).
+   Add the suppression patterns, the manifest tables that set lint levels
+   (`[protected_tables]`), and the back-reference prefix and roots (examples below).
 3. **Add the config files** the four commands read: formatter, linter, licence allow list.
    Licences follow [R-DEP-001](../docs/RULES.md#R-DEP-001).
 4. **Write `RULES.md`**, a tracked doc with id `RULES-<NAME>` and one `@rule` block per rule.
