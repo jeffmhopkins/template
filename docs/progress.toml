@@ -1,0 +1,16 @@
+# Roadmap items, milestones and dependencies: the input to `scripts/repo progress`
+# (docs/DOCS.md#progress). Status is derived from `Completes:`, `Part-of:` and
+# `Verified-on-hardware:` trailers on main, never written here. The planner is the only
+# writer, through one PR per re-plan.
+
+[[milestone]]
+id = "M0"
+title = "Template in place"
+demo = "A PR that changes one doc section is reviewed, restamped and auto-merged."
+
+[[item]]
+id = "M0-1"
+milestone = "M0"
+title = "Repo created from the template, bootstrap run, checks green on main"
+deps = []
+hardware = false

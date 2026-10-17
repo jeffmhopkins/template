@@ -1,0 +1,165 @@
+# review-gate: turns the reviewer's verdict marker into the required commit status
+# `review-gate` on the PR's head SHA. Marker format: REVIEW.md (`[review].marker` in repo.toml):
+#   <!-- review v1 verdict=pass|fail|escalate|recuse sha=<40hex> round=<n> reviewer-session=<session id> -->
+#
+# A marker counts only when it is:
+#   - for the current head SHA;
+#   - in a comment by the login in the repo variable REVIEWER_LOGIN;
+#   - from a session listed in the repo variable REVIEWER_SESSIONS (comma-separated, trimmed;
+#     `none` or empty lists no session);
+#   - in a comment never edited (created_at == updated_at);
+#   - from a session that authored no commit of the PR (recusal by `Claude-Session:` trailer).
+# Among counted markers the highest round decides, and within it a fail beats a pass.
+# The gate fails when a non-merge commit has no `Claude-Session:` trailer (dependabot[bot] aside).
+# `review-override` passes the gate only with a "## Review override" section that links the
+# maintainer's message, and only when the maintainer applied the label.
+#
+# Runs on pull_request_target and issue_comment, so GitHub takes this file from the base branch,
+# and it never checks out PR code. Changing it is maintainer-only (repo.toml [governance]).
+# The decision is the self-contained `decide` function between the BEGIN/END lines;
+# .github/tests/review-gate-decide.test.mjs cuts it out of this file and tests it.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+
+name: review-gate
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, labeled, unlabeled, ready_for_review]
+  issue_comment:
+    types: [created, edited, deleted]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to evaluate
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read      # comments and label events
+  statuses: write   # the review-gate status; nothing else is written
+
+concurrency:
+  group: review-gate-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr }}
+  cancel-in-progress: false
+
+jobs:
+  review-gate:
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate the reviewer's verdict
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REVIEWER_LOGIN: ${{ vars.REVIEWER_LOGIN }}
+          REVIEWER_SESSIONS: ${{ vars.REVIEWER_SESSIONS }}
+          MAINTAINER: ${{ vars.MAINTAINER_LOGIN || github.repository_owner }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const number = Number(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: number });
+            const head = pr.head.sha;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const labels = pr.labels.map((l) => l.name);
+            let overrideLabeledBy = null;
+            if (labels.includes('review-override')) {
+              const events = await github.paginate(github.rest.issues.listEvents, { owner, repo, issue_number: number, per_page: 100 });
+              const applied = events.filter((e) => e.event === 'labeled' && e.label?.name === 'review-override');
+              overrideLabeledBy = applied.length ? applied[applied.length - 1].actor?.login ?? null : null;
+            }
+            const commits = await github.paginate(github.rest.pulls.listCommits, { owner, repo, pull_number: number, per_page: 100 });
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: number, per_page: 100 });
+
+            const [state, description] = decide({
+              head,
+              comments,
+              commits,
+              labels,
+              body: pr.body || '',
+              overrideLabeledBy,
+              maintainer: process.env.MAINTAINER,
+              reviewerLogin: (process.env.REVIEWER_LOGIN || '').trim(),
+              sessions: process.env.REVIEWER_SESSIONS || '',
+            });
+            await github.rest.repos.createCommitStatus({
+              owner, repo, sha: head, state, context: 'review-gate',
+              description: description.slice(0, 140), target_url: runUrl,
+            });
+            core.info(`${state}: ${description}`);
+            return;
+
+            // BEGIN decide (tested by extracting this block; keep it self-contained)
+            function decide(input) {
+              const { head, comments, commits, labels, body, overrideLabeledBy, maintainer, reviewerLogin } = input;
+              const MARKER = 'review v1';   // [review].marker in repo.toml
+              const OVERRIDE = 'review-override';   // [labels].override in repo.toml
+              const norm = (s) => (String(s).match(/session_[A-Za-z0-9]+/) || [String(s).trim()])[0];
+              const sha7 = head.slice(0, 7);
+
+              // 1. Override: the maintainer's label plus a justification linking their message.
+              if (labels.includes(OVERRIDE)) {
+                const m = body.match(/^##[ \t]+Review override[^\n]*\n([\s\S]*?)(?=^##[ \t]|(?![\s\S]))/m);
+                const text = m ? m[1].replace(/<!--[\s\S]*?-->/g, '').trim() : '';
+                if (!text) return ['failure', `${OVERRIDE} needs a "## Review override" section in the PR description`];
+                if (!/https:\/\/\S+/.test(text)) return ['failure', `The "## Review override" section must link the maintainer's message`];
+                if (!overrideLabeledBy || overrideLabeledBy !== maintainer) {
+                  return ['failure', `${OVERRIDE} counts only when ${maintainer} applies it (last applied by ${overrideLabeledBy || 'nobody'})`];
+                }
+                return ['success', `Overridden by ${maintainer} (justified in the PR description)`];
+              }
+
+              // 2. Authoring sessions; every non-merge commit names its session.
+              const authors = new Set();
+              for (const c of commits) {
+                const found = [...(c.commit?.message || '').matchAll(/^Claude-Session:[ \t]*(\S+)[ \t]*$/gm)].map((x) => norm(x[1]));
+                found.forEach((s) => authors.add(s));
+                const merge = (c.parents || []).length > 1;
+                if (!merge && found.length === 0 && c.author?.login !== 'dependabot[bot]') {
+                  return ['failure', `Commit ${String(c.sha).slice(0, 7)} has no Claude-Session trailer`];
+                }
+              }
+
+              // 3. Configuration.
+              // REVIEWER_SESSIONS: comma-separated; `none` (bootstrap's placeholder) or empty allows no session.
+              const listed = Array.isArray(input.sessions) ? input.sessions : String(input.sessions || '').split(',');
+              const sessions = new Set(listed.map((s) => String(s).trim()).filter((s) => s && s.toLowerCase() !== 'none').map(norm));
+              if (!reviewerLogin || sessions.size === 0) {
+                return ['failure', 'Gate not configured: set the repo variables REVIEWER_LOGIN and REVIEWER_SESSIONS'];
+              }
+
+              // 4. Markers that count.
+              const esc = MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const markerRe = new RegExp(`^<!-- ${esc} verdict=(pass|fail|escalate|recuse) sha=([0-9a-f]{40}) round=(\\d+) reviewer-session=(\\S+) -->[ \\t]*$`, 'm');
+              const counted = [];
+              let older = null;
+              for (const c of comments) {
+                if (c.user?.login !== reviewerLogin) continue;
+                if (c.created_at !== c.updated_at) continue;
+                const m = (c.body || '').match(markerRe);
+                if (!m) continue;
+                const marker = { verdict: m[1], sha: m[2], round: Number(m[3]), session: norm(m[4]) };
+                if (!sessions.has(marker.session)) continue;
+                if (marker.verdict === 'recuse') continue;
+                if (authors.has(marker.session)) continue;
+                if (marker.sha !== head) { older = marker; continue; }
+                counted.push(marker);
+              }
+              if (counted.length === 0) {
+                return ['pending', older
+                  ? `Last review was of ${older.sha.slice(0, 7)}; waiting for review of ${sha7}`
+                  : `Waiting for review of ${sha7}`];
+              }
+
+              // 5. The highest round decides; any verdict other than pass beats a pass within it.
+              const round = Math.max(...counted.map((x) => x.round));
+              const current = counted.filter((x) => x.round === round);
+              if (current.some((x) => x.verdict === 'escalate')) return ['failure', `Needs the maintainer at ${sha7} (round ${round})`];
+              if (current.some((x) => x.verdict === 'fail')) return ['failure', `Blocking findings at ${sha7} (round ${round})`];
+              return ['success', `Review passed at ${sha7} (round ${round})`];
+            }
+            // END decide

@@ -1,0 +1,49 @@
+# rust-setup: the Rust toolchain and a restored build cache, for every job that runs `scripts/repo`
+# or a Rust stack job. It never saves the cache: a job saves it with actions/cache/save, and only
+# on a push to main (see ci.yml).
+# Editing this file is a governance change.
+
+name: rust-setup
+description: Install the Rust toolchain and restore the cargo build cache.
+
+inputs:
+  cache-name:
+    description: Cache namespace, usually the job name.
+    required: true
+
+outputs:
+  cache-key:
+    description: The exact key to pass to actions/cache/save.
+    value: ${{ steps.key.outputs.key }}
+
+runs:
+  using: composite
+  steps:
+    - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+    # A project that pins its toolchain in rust-toolchain.toml gets that one instead.
+    - name: Pinned toolchain
+      shell: bash
+      run: |
+        if [ -f rust-toolchain.toml ] || [ -f rust-toolchain ]; then rustup toolchain install; fi
+        rustc --version
+    - id: key
+      shell: bash
+      env:
+        NAME: ${{ inputs.cache-name }}
+        LOCKS: ${{ hashFiles('**/Cargo.lock', 'rust-toolchain.toml', 'rust-toolchain') }}
+      run: |
+        echo "prefix=cargo-$RUNNER_OS-$NAME-" >> "$GITHUB_OUTPUT"
+        echo "key=cargo-$RUNNER_OS-$NAME-$LOCKS" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        key: ${{ steps.key.outputs.key }}
+        restore-keys: ${{ steps.key.outputs.prefix }}
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+          tools/repo/target/

@@ -1,0 +1,29 @@
+[package]
+name = "repo"
+version = "0.1.0"
+description = "Repository checks driven by repo.toml: docs, governance, lanes, progress, plans."
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+publish = false
+
+# Standalone: never part of a project's workspace.
+[workspace]
+
+[[bin]]
+name = "repo"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.100"
+blake3 = { version = "1.8.2", default-features = false, features = ["std", "pure"] }
+globset = { version = "0.4.16", default-features = false }
+pulldown-cmark = { version = "0.13.0", default-features = false }
+regex = { version = "1.11.1", default-features = false, features = ["std", "unicode-perl"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+toml = "0.9.5"
+
+[profile.release]
+debug = false
+incremental = true

@@ -1,13 +1,29 @@
+<!-- @doc
+id = "AGENT-PLANNER"
+title = "Planner"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Planner
 
 **Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
 `INTAKE-DONE`.
 
+<a id="purpose"></a>
 ## Purpose
+<!-- @section
+-->
+
 Turns ROADMAP.md into PR-sized rows that can run in parallel, and tracks what each merge
 unblocks. The coordinator launches only rows written here.
 
+<a id="the-row"></a>
 ## The row
+<!-- @section
+-->
+
 One anchored section per item in `ops/launch.md` (`<a id="B4"></a>`), with:
 
 | Field | Meaning |
@@ -24,7 +40,11 @@ One anchored section per item in `ops/launch.md` (`<a id="B4"></a>`), with:
 Two rows that run at the same time never share an `owns` path. `repo plan check` tests this
 against the rows `ops/roster.md` shows as running.
 
+<a id="duties"></a>
 ## Duties
+<!-- @section
+-->
+
 1. **First pass:** from ROADMAP, ARCHITECTURE and the ADRs, write every row, the dependency
    graph and the hot spots. Mark what can start now. Send the coordinator `UNBLOCKED <ids>`.
 2. **On `MERGED`:** answer `UNBLOCKED <ids>`, or nothing. A merge into `wave/<name>` unblocks
@@ -41,13 +61,25 @@ against the rows `ops/roster.md` shows as running.
 7. **Endgame:** a "what's left" view in `ops/roadmap.md`, where each unfinished item names its
    next need: build, wave, hardware or maintainer.
 
+<a id="cadence"></a>
 ## Cadence
+<!-- @section
+-->
+
 Event-driven. One full re-plan per milestone.
 
+<a id="state"></a>
 ## State
+<!-- @section
+-->
+
 `ops/launch.md`, `ops/roadmap.md`. Repo: `docs/progress.toml`, through PRs.
 
+<a id="never"></a>
 ## Never
+<!-- @section
+-->
+
 - Launch threads.
 - Give two concurrent rows the same `owns` path.
 - Decide product scope.

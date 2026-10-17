@@ -1,3 +1,11 @@
+<!-- @doc
+id = "DESIGN"
+title = "Template design"
+kind = "design"
+status = "active"
+review_every = "90d"
+-->
+
 # Template design
 
 How this template works: the repo it gives a project, the agent swarm that builds in it,
@@ -5,7 +13,10 @@ the one-time setup, and the plan for building the template itself. The agent bri
 [docs/agents/](../agents/README.md) are the detailed spec for the swarm. Where this doc and a
 brief differ, the brief wins.
 
+<a id="overview"></a>
 ## 1. Overview
+<!-- @section
+-->
 
 **The template is the swarm.** A fork gets a governed repo and a set of agent roles. The
 project's content comes from an intake agent that questions the maintainer.
@@ -31,7 +42,10 @@ One language-neutral tool (`tools/repo`) does the checking, configured by one fi
 Agents hand off with fixed one-line messages and keep their state in files. An approval contract says exactly which actions need the maintainer's own
 words.
 
+<a id="repo"></a>
 ## 2. The repo
+<!-- @section
+-->
 
 ### 2.1 Layout
 
@@ -108,7 +122,7 @@ The template's own rule groups:
   - an independent reviewer gates every merge;
   - builders answer every blocking finding;
   - maintainer-tier decisions need the maintainer;
-  - actions that need the maintainer cite his own words, naming the object.
+  - actions that need the maintainer cite their own words, naming the object.
 - **Testing:** bug fixes ship a regression test; tests are hermetic; PRs say what wasn't run.
 - **Dependencies:**
   - acceptable licences only;
@@ -130,8 +144,8 @@ so on) are written at intake.
   - spending;
   - the tier rules themselves.
 
-  A maintainer-tier ADR opens as `proposed` with `needs-human`. It is accepted only on his
-  decision: his `/accept ADR-NNNN`, or an agent relaying his quoted words naming that ADR.
+  A maintainer-tier ADR opens as `proposed` with `needs-human`. It is accepted only on their
+  decision: their `/accept ADR-NNNN`, or an agent relaying their quoted words naming that ADR.
 - **Agent tier:** everything else. It lands as `accepted` after review.
 - **The tier follows what the ADR decides.** The reviewer blocks a tier that is too low.
 
@@ -269,14 +283,17 @@ a migration number. An ADR takes its PR's number.
 - Waves stay off until about 15 PRs are open, or runners queue. The wave ruleset is created at
   bootstrap.
 
+<a id="agents"></a>
 ## 3. The agents
+<!-- @section
+-->
 
 The briefs are in [docs/agents/](../agents/README.md).
 
 | Type | Count | Job |
 |---|---|---|
 | Intake | 1, first | questions the maintainer in three rounds; opens the design PR |
-| Coordinator | 1 | the maintainer's only contact; launches rows, relays his words, owns the roster, daily digest |
+| Coordinator | 1 | the maintainer's only contact; launches rows, relays their words, owns the roster, daily digest |
 | Planner | 1 | roadmap rows with owned and forbidden paths; what each merge unblocks |
 | Builder | 6 per reviewer | one roadmap item per PR, driven until merged; ends after merge |
 | Reviewer | 2, then 3 | the merge gate, sharded by PR number, every PR whatever its base |
@@ -309,11 +326,14 @@ The [agents README](../agents/README.md) has the message table and state rules, 
 [project-instructions.md](../agents/project-instructions.md) has the standing permissions and
 the approval contract.
 
+<a id="setup"></a>
 ## 4. One-time setup (`docs/runbooks/bootstrap.md`)
+<!-- @section
+-->
 
 Agents don't change repo settings. `scripts/bootstrap.sh` is idempotent, uses template
-defaults, and runs before intake. The maintainer runs it, or a device session runs it on his
-machine under his `gh` login. `--check` compares the live settings with the desired ones and
+defaults, and runs before intake. The maintainer runs it, or a device session runs it on their
+machine under their `gh` login. `--check` compares the live settings with the desired ones and
 prints the commands to fix any difference; any agent may run it read-only.
 
 1. **Repo:**
@@ -333,7 +353,10 @@ prints the commands to fix any difference; any agent may run it read-only.
 7. **By hand:** install the Claude GitHub App, and paste the project instructions into the
    Claude project.
 
+<a id="build-plan"></a>
 ## 5. Building the template
+<!-- @section
+-->
 
 Each step is one PR, reviewed through the template's own gate once that exists:
 1. Skeleton: docs, rules, ADRs 0001 to 0005, CLAUDE.md, REVIEW.md, the PR template.
@@ -350,7 +373,10 @@ Each step is one PR, reviewed through the template's own gate once that exists:
    - two lane claims conflict, and `lane-guard` fails until the second is renumbered;
    - `Completes:` trailers survive a squash and a wave landing.
 
+<a id="open-questions"></a>
 ## 6. Open questions for the maintainer
+<!-- @section
+-->
 
 Already decided as recommended, since they're agent-tier:
 - the tool is in Rust;

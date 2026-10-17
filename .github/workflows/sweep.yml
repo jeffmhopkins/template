@@ -1,0 +1,207 @@
+# sweep: the weekly sweep. It rewrites one pinned issue, "Weekly sweep", with what it finds.
+# It never fails: each step continues on error and reports its own failure in the issue.
+# Findings never block a PR; each one is fixed in a normal PR.
+# Editing this file is a governance change.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+
+name: sweep
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sweep
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_DENY_VERSION: 0.20.2   # bump together with the same env in ci.yml
+  ISSUE_TITLE: Weekly sweep
+  # [labels].governance and [labels].override in repo.toml.
+  AUDIT_LABELS: governance-approved review-override
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    permissions:
+      contents: read
+      issues: write          # create, edit, reopen and pin the sweep issue
+      pull-requests: read    # the audit list and lane holders
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # review clocks and ledger history
+      - run: mkdir -p "$RUNNER_TEMP/sweep"
+      - id: rust
+        continue-on-error: true
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: sweep
+
+      - name: Build the repo tool
+        continue-on-error: true
+        run: |
+          if ! cargo build --release --locked --manifest-path tools/repo/Cargo.toml > "$RUNNER_TEMP/build.txt" 2>&1; then
+            { echo "**The repo tool did not build:**"; echo; echo '```text'; tail -c 5000 "$RUNNER_TEMP/build.txt"; echo '```'; } > "$RUNNER_TEMP/sweep/build.md"
+            exit 1
+          fi
+
+      - name: Dependency advisories
+        continue-on-error: true
+        run: |
+          out="$RUNNER_TEMP/sweep/deps.md"
+          echo "**Could not run** (see the run log)." > "$out"
+          cargo install --locked "cargo-deny@$CARGO_DENY_VERSION"
+          cargo deny --color never fetch db
+          report() {   # <label> <command…>
+            local label=$1; shift
+            local status=0
+            "$@" > "$RUNNER_TEMP/deny.txt" 2>&1 || status=$?
+            if [ "$status" -eq 0 ]; then
+              echo "- $label: passed. $(tail -n 1 "$RUNNER_TEMP/deny.txt")"
+            else
+              echo "- $label: **failed** (exit $status)."
+              echo
+              echo '  ```text'
+              grep -E '^(error|warning)' -A10 "$RUNNER_TEMP/deny.txt" | head -c 15000 | sed 's/^/  /'
+              echo '  ```'
+            fi
+          }
+          {
+            echo "$(cargo deny --version), advisory DB fetched $(date -u +%Y-%m-%d)."
+            echo
+            report "Project (\`scripts/repo stack run deps\`)" scripts/repo stack run deps
+            report 'Repo tool (advisories)' cargo deny --color never --manifest-path tools/repo/Cargo.toml check advisories
+            echo
+            echo "Each finding needs a fix, or a justified exception in the stack's deny config (a governance change)."
+          } > "$out"
+
+      - name: Available updates
+        continue-on-error: true
+        run: |
+          out="$RUNNER_TEMP/sweep/updates.md"
+          : > "$out"
+          for manifest in Cargo.toml tools/repo/Cargo.toml; do
+            [ -f "$manifest" ] || continue
+            cargo update --dry-run --verbose --manifest-path "$manifest" > "$RUNNER_TEMP/update.txt" 2>&1 || true
+            changes=$(grep -E '^ +(Updating|Adding|Removing|Downgrading) [A-Za-z0-9_-]+ v' "$RUNNER_TEMP/update.txt" | sed 's/^ *//' || true)
+            held=$(grep -E '^ +Unchanged [A-Za-z0-9_-]+ v.*\(available: ' "$RUNNER_TEMP/update.txt" | sed 's/^ *Unchanged //' || true)
+            {
+              echo "**\`$manifest\`**"
+              echo
+              if [ -n "$changes" ]; then
+                echo "Compatible updates the lockfile would take (Dependabot proposes them):"
+                echo; echo '```text'; printf '%s\n' "$changes" | head -c 10000; echo '```'
+              else
+                echo "The lockfile takes every compatible update already."
+              fi
+              if [ -n "$held" ]; then
+                echo; echo "Held back by a version requirement:"
+                echo; echo '```text'; printf '%s\n' "$held" | head -c 10000; echo '```'
+              fi
+              echo
+            } >> "$out"
+          done
+          [ -s "$out" ] || echo "No Cargo manifests." > "$out"
+
+      - name: Docs due for review
+        continue-on-error: true
+        run: |
+          out="$RUNNER_TEMP/sweep/docs.md"
+          status=0
+          scripts/repo docs due > "$RUNNER_TEMP/due.txt" 2>&1 || status=$?
+          {
+            if [ "$status" -ne 0 ]; then
+              echo "**\`scripts/repo docs due\` failed** (exit $status):"
+            elif [ -s "$RUNNER_TEMP/due.txt" ]; then
+              echo "Re-read each one, then \`scripts/repo docs review <DOC> --by … --note \"…\"\` in a PR (URLs: recheck and update \`docs/external.toml\`)."
+            else
+              echo "None."
+            fi
+            if [ -s "$RUNNER_TEMP/due.txt" ]; then
+              echo; echo '```text'; head -c 20000 "$RUNNER_TEMP/due.txt"; echo '```'
+            fi
+          } > "$out"
+
+      - name: Override audit
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          since=$(date -u -d '7 days ago' +%Y-%m-%d)
+          {
+            for label in $AUDIT_LABELS; do
+              echo "**\`$label\`**, merged since $since:"
+              echo
+              gh pr list --repo "$GITHUB_REPOSITORY" --state merged --label "$label" \
+                --search "merged:>=$since" --limit 100 --json number,title,mergedAt \
+                --jq 'sort_by(.mergedAt) | .[] | "- #\(.number) \(.title)"' > "$RUNNER_TEMP/prs.txt"
+              if [ -s "$RUNNER_TEMP/prs.txt" ]; then cat "$RUNNER_TEMP/prs.txt"; else echo "None."; fi
+              echo
+            done
+          } > "$RUNNER_TEMP/sweep/audit.md"
+
+      # Open PRs that change lanes.toml, by the age of their latest commit to it. The heads are
+      # fetched as git objects only.
+      - name: Lane holders older than a day
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          out="$RUNNER_TEMP/sweep/lanes.md"
+          now=$(date -u +%s)
+          : > "$out"
+          gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 200 --json number,title,files \
+            --jq '.[] | select(any(.files[]; .path == "lanes.toml")) | "\(.number)\t\(.title)"' > "$RUNNER_TEMP/lane-prs.txt"
+          while IFS=$'\t' read -r number title; do
+            git fetch --quiet --no-tags origin "+refs/pull/$number/head:refs/sweep/$number" || continue
+            ts=$(git log -1 --format=%ct "origin/main..refs/sweep/$number" -- lanes.toml)
+            [ -n "$ts" ] || continue
+            age=$(( (now - ts) / 3600 ))
+            [ "$age" -ge 24 ] || continue
+            claim=$(git diff "origin/main...refs/sweep/$number" -- lanes.toml | sed -n 's/^+\([A-Za-z0-9_-]\+ *=.*\)$/\1/p' | paste -sd ';' -)
+            echo "- #$number $title: \`$claim\`, ${age}h since its last lane commit" >> "$out"
+          done < "$RUNNER_TEMP/lane-prs.txt"
+          [ -s "$out" ] || echo "None." > "$out"
+
+      - name: Sections re-verified far more than edited
+        continue-on-error: true
+        run: |
+          ledger=docs/verified.toml
+          if [ -f repo.toml ]; then
+            ledger=$(python3 -I -c 'import tomllib; print(tomllib.load(open("repo.toml","rb"))["docs"]["ledger"])')
+          fi
+          git log --since='180 days ago' -p -U1 --no-color --format='@@COMMIT %H' -- "$ledger" \
+            | python3 -I .github/scripts/verify-churn.py > "$RUNNER_TEMP/sweep/churn.md"
+
+      - name: Update the sweep issue
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          s="$RUNNER_TEMP/sweep"
+          part() { if [ -s "$s/$1" ]; then cat "$s/$1"; else echo "**This step did not run to completion** (see the run log)."; fi; }
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          {
+            echo "Rewritten by the weekly [sweep]($run_url) workflow at \`$(git rev-parse --short HEAD)\`."
+            echo "Each item is fixed in a normal PR. This issue never blocks one."
+            echo
+            if [ -s "$s/build.md" ]; then cat "$s/build.md"; echo; fi
+            echo "## Dependency advisories"; echo; part deps.md; echo
+            echo "## Docs and links due for review"; echo; part docs.md; echo
+            echo "## Available updates"; echo; part updates.md; echo
+            echo "## Override audit (last 7 days)"; echo; part audit.md; echo
+            echo "## Lane holders older than a day"; echo; part lanes.md; echo
+            echo "## Sections re-verified far more than edited (last 180 days)"; echo; part churn.md
+          } > "$RUNNER_TEMP/body.md"
+          cat "$RUNNER_TEMP/body.md" >> "$GITHUB_STEP_SUMMARY"
+          bash .github/scripts/pinned-issue.sh "$ISSUE_TITLE" "$RUNNER_TEMP/body.md"

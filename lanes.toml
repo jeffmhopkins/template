@@ -1,0 +1,2 @@
+# Serial lanes: one line per lane. A PR that changes a lane sets value = base + 1 and holder = its PR number.
+# protocol = { value = 21, holder = 512 }

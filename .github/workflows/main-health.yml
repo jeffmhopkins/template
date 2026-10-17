@@ -1,0 +1,108 @@
+# main-health: keeps one pinned "main is red" issue open while a required check fails on main's
+# head, and closes it once every required check that ran there is green. Required checks are
+# repo.toml [checks].required; a check that does not run on main is ignored.
+# Editing this file is a governance change.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+
+name: main-health
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  check_suite:   # suites from other CI apps; GitHub skips this event for Actions' own suites
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: read
+  statuses: read
+  issues: write   # create, edit, pin, close the issue
+
+concurrency:
+  group: main-health
+  cancel-in-progress: false
+
+env:
+  ISSUE_TITLE: main is red
+
+jobs:
+  main-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: repo.toml
+          sparse-checkout-cone-mode: false
+      - name: Required checks from repo.toml
+        run: |
+          python3 -I -c 'import json, tomllib; print("REQUIRED=" + json.dumps(tomllib.load(open("repo.toml", "rb"))["checks"]["required"]))' >> "$GITHUB_ENV"
+      - name: Open, update or close the issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const title = process.env.ISSUE_TITLE;
+            const required = new Set(JSON.parse(process.env.REQUIRED));
+            const { data: branch } = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+            const sha = branch.commit.sha;
+            const sha7 = sha.slice(0, 7);
+
+            // Latest result per check name: check runs, then commit statuses.
+            const results = new Map();
+            const runs = await github.paginate(github.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100, filter: 'latest' });
+            for (const r of runs) {
+              if (!required.has(r.name)) continue;
+              const bad = ['failure', 'timed_out', 'startup_failure', 'action_required'].includes(r.conclusion);
+              results.set(r.name, { done: r.status === 'completed', bad, url: r.html_url });
+            }
+            const { data: combined } = await github.rest.repos.getCombinedStatusForRef({ owner, repo, ref: sha, per_page: 100 });
+            for (const s of combined.statuses) {
+              if (!required.has(s.context) || results.has(s.context)) continue;
+              results.set(s.context, { done: s.state !== 'pending', bad: ['failure', 'error'].includes(s.state), url: s.target_url });
+            }
+            const failing = [...results].filter(([, r]) => r.bad);
+            const running = [...results].filter(([, r]) => !r.done);
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', creator: 'github-actions[bot]', per_page: 100 });
+            let issue = issues.find((i) => i.title === title && !i.pull_request);
+
+            const pin = async (id, on) => {
+              const mutation = on
+                ? 'mutation($id: ID!) { pinIssue(input: { issueId: $id }) { issue { number } } }'
+                : 'mutation($id: ID!) { unpinIssue(input: { issueId: $id }) { issue { number } } }';
+              try { await github.graphql(mutation, { id }); } catch (e) { core.warning(`could not ${on ? 'pin' : 'unpin'} #${issue.number}: ${e.message}`); }
+            };
+
+            if (failing.length) {
+              const lines = failing.map(([name, r]) => `- \`${name}\`: ${r.url || 'no link'}`).join('\n');
+              const body = [
+                `Required checks fail on \`main\` at ${sha} (${context.serverUrl}/${owner}/${repo}/commit/${sha}).`,
+                '',
+                lines,
+                '',
+                'Read this before investigating a failure on a PR. Fix it in a normal PR.',
+                `Updated by the [main-health](${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}) workflow; it closes this issue when main is green.`,
+              ].join('\n');
+              if (issue) {
+                await github.rest.issues.update({ owner, repo, issue_number: issue.number, body });
+              } else {
+                ({ data: issue } = await github.rest.issues.create({ owner, repo, title, body }));
+                await pin(issue.node_id, true);
+              }
+              return core.info(`#${issue.number}: ${failing.length} failing at ${sha7}`);
+            }
+            if (running.length) return core.info(`${running.length} required checks still running at ${sha7}; no change`);
+            if (issue) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: issue.number, body: `Every required check that ran on \`main\` at ${sha} passed.` });
+              await pin(issue.node_id, false);
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: 'closed', state_reason: 'completed' });
+              core.info(`closed #${issue.number}`);
+            } else {
+              core.info(`main is green at ${sha7}`);
+            }

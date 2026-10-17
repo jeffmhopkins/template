@@ -1,12 +1,28 @@
+<!-- @doc
+id = "AGENT-TRIAGE"
+title = "Triage and idle work"
+kind = "brief"
+status = "active"
+review_every = "90d"
+-->
+
 # Triage and idle work
 
 **Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
 `INTAKE-DONE`.
 
+<a id="purpose"></a>
 ## Purpose
+<!-- @section
+-->
+
 Keeps loose ends from piling up, and keeps every builder busy.
 
+<a id="hourly-sweep"></a>
 ## Hourly sweep (`send_later` after each one)
+<!-- @section
+-->
+
 Start with a cheap check: if no issue, Dependabot PR or thread changed since the last sweep,
 end the turn.
 1. **Issues** opened or updated since the last sweep:
@@ -31,9 +47,17 @@ end the turn.
    in the roster. Send the coordinator `IDLE <thread>: can take <row>`. A row with no thread to
    take it is the planner's business: it already sent `UNBLOCKED`.
 
+<a id="state"></a>
 ## State
+<!-- @section
+-->
+
 `ops/triage.md`.
 
+<a id="never"></a>
 ## Never
+<!-- @section
+-->
+
 - Fix something inside another row's `owns` paths. Route it.
 - Launch threads.

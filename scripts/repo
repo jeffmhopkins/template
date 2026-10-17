@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Runs the repository tool (tools/repo) from the repository root, building it if needed.
+set -euo pipefail
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec cargo run --quiet --release --manifest-path "$root/tools/repo/Cargo.toml" -- "$@"

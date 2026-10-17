@@ -1,0 +1,179 @@
+# ci: the required checks that run on the PR's own code. `pr-title`, `lane-guard` and
+# `governance` run from the base commit in governance.yml; `review-gate` is in review-gate.yml.
+# The job names are the check names in repo.toml [checks].required (`scripts/repo config check`
+# compares them). Stack jobs run the stack pack's command (`stacks/<pack>/pack.toml`).
+# Editing this file is a governance change.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+# Dependabot proposes updates. Manual pins: `git ls-remote --tags <repo>`, taking the
+# dereferenced (^{}) SHA of an annotated tag.
+
+name: ci
+
+on:
+  pull_request:
+    # Draft PRs skip every job; ready_for_review runs CI when a draft is marked ready.
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+# Job conditions:
+# - every job: skipped on a draft PR;
+# - `test` and `deps` (the heavy jobs): also skipped on a PR into a `wave/*` branch. The wave's
+#   own PR into main runs them (docs/runbooks/waves.md).
+# The build cache is saved only on a push to main; PR runs restore it and never write it.
+
+jobs:
+  fmt:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: fmt
+      - run: scripts/repo stack run fmt
+      - name: Format the repo tool
+        run: cargo fmt --manifest-path tools/repo/Cargo.toml --all --check
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/
+
+  lint:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: lint
+      - run: scripts/repo stack run lint
+      - name: Lint the repo tool
+        run: cargo clippy --manifest-path tools/repo/Cargo.toml --all-targets --locked -- -D warnings
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/
+
+  test:
+    if: github.event_name != 'pull_request' || (!github.event.pull_request.draft && !startsWith(github.base_ref, 'wave/'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0   # the tool's tests read git history
+      - id: rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: test
+      - name: Test the repo tool
+        run: cargo test --manifest-path tools/repo/Cargo.toml --locked
+      - run: scripts/repo stack run test
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/
+
+  deps:
+    if: github.event_name != 'pull_request' || (!github.event.pull_request.draft && !startsWith(github.base_ref, 'wave/'))
+    runs-on: ubuntu-latest
+    env:
+      CARGO_DENY_VERSION: 0.20.2   # bump together with the same env in sweep.yml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: deps
+      - name: Install cargo-deny
+        run: cargo install --locked "cargo-deny@$CARGO_DENY_VERSION"
+      - run: scripts/repo stack run deps
+      - name: Advisories for the repo tool
+        run: cargo deny --manifest-path tools/repo/Cargo.toml check advisories
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/
+
+  # The doc graph (docs/DOCS.md) and the config schema, including the required-check names.
+  docs:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0   # `docs check` reads history for review clocks and generated drift
+      - id: rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-name: docs
+      - run: scripts/repo config check
+      - run: scripts/repo docs check
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/
+
+  # The review gate's decision function, cut out of the deployed review-gate.yml and tested.
+  gate-test:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: node --test '.github/tests/*.test.mjs'

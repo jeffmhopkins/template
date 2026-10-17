@@ -1,0 +1,38 @@
+# The template's one config. Schema: tools/repo (`scripts/repo config check`).
+
+[template]
+version = "0.1.0"
+
+[stack]
+pack = "rust"              # stacks/<pack>/pack.toml
+
+[docs]
+tracked = ["*.md", "docs/**/*.md", ".claude/skills/**/*.md", "stacks/**/*.md", "tools/repo/README.md"]
+exclude = ["CHANGELOG.md", "docs/adr/TEMPLATE.md"]
+max_cover_files = 12
+ledger = "docs/verified.toml"
+facts = "docs/facts.toml"
+external = "docs/external.toml"
+progress = "docs/progress.toml"
+
+[checks]
+required = ["fmt", "lint", "test", "deps", "docs", "pr-title", "gate-test", "lane-guard", "governance", "review-gate"]
+
+[governance]
+protected = [".github/**", ".claude/settings.json", ".claude/hooks/**", "tools/repo/**", "stacks/**",
+             "scripts/**", "repo.toml", "docs/DOCS.md", "REVIEW.md",
+             "deny.toml", "clippy.toml", "rustfmt.toml", "rust-toolchain.toml"]
+maintainer_only = [".github/workflows/review-gate.yml", "REVIEW.md",
+                   "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]
+
+[labels]
+governance = "governance-approved"
+override = "review-override"
+human = "needs-human"
+hardware = "hardware"
+
+[review]
+marker = "review v1"
+
+[lanes]
+file = "lanes.toml"

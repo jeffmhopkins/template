@@ -1,0 +1,5 @@
+# rustfmt defaults for the Rust stack. Lives at the repo root next to the root Cargo.toml.
+# Editing this file is a governance change.
+edition = "2024"
+max_width = 100
+use_field_init_shorthand = true

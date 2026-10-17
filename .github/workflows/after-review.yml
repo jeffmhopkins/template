@@ -1,0 +1,81 @@
+# after-review: expensive jobs (other OSes, end to end) that run only once `review-gate` passes,
+# each posting a commit status under its own check name. Dormant: it runs only by hand until a
+# project turns on the example below. A check it posts becomes required by adding its name to
+# repo.toml [checks].required.
+# Editing this file is a governance change.
+#
+# Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
+
+name: after-review
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dormant:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "after-review is dormant. Turn it on with the example in .github/workflows/after-review.yml."
+
+# Example: run after review-gate passes, and report under each check name.
+#
+# A status set with the workflow token starts no workflow, so review-gate.yml dispatches this
+# one. To turn it on:
+# 1. In review-gate.yml, add `actions: write` to `permissions`, and after the createCommitStatus
+#    call in the script add:
+#
+#      if (state === 'success' && !pr.base.ref.startsWith('wave/') && pr.head.repo?.full_name === `${owner}/${repo}`) {
+#        await github.rest.actions.createWorkflowDispatch({
+#          owner, repo, workflow_id: 'after-review.yml', ref: pr.head.ref, inputs: { sha: head },
+#        });
+#      }
+#
+# 2. Replace `on:`, `permissions:` and `jobs:` above with the following. The jobs check out
+#    the PR head, so the token keeps only `statuses: write` beyond read access.
+#
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       sha:
+#         description: Head SHA to run on
+#         required: true
+#
+# permissions:
+#   contents: read
+#   statuses: write
+#
+# concurrency:
+#   group: after-review-${{ inputs.sha }}
+#   cancel-in-progress: true
+#
+# jobs:
+#   test-windows:
+#     runs-on: windows-latest
+#     env:
+#       SHA: ${{ inputs.sha }}
+#       CONTEXT: test-windows
+#       GH_TOKEN: ${{ github.token }}
+#     steps:
+#       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#         with:
+#           ref: ${{ inputs.sha }}
+#           persist-credentials: false
+#       - name: Report pending
+#         shell: bash
+#         env:
+#           RESULT: pending
+#         run: bash .github/after-review-status.sh
+#       - uses: ./.github/actions/rust-setup
+#         with:
+#           cache-name: test-windows
+#       - run: scripts/repo stack run test
+#         shell: bash
+#       - name: Report the result
+#         if: always()
+#         shell: bash
+#         env:
+#           RESULT: ${{ job.status }}
+#         run: bash .github/after-review-status.sh
