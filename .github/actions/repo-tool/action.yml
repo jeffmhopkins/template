@@ -1,6 +1,6 @@
 # repo-tool: build `tools/repo` from the checked-out commit and install it as $RUNNER_TEMP/repo.
 # The pull_request_target workflows check out the PR's base, so the checker is the base's.
-# Editing this file is a governance change.
+# Editing this file is a maintainer-only change.
 
 name: repo-tool
 description: Build the repo tool from the checked-out commit.
@@ -14,11 +14,15 @@ outputs:
   path:
     description: Absolute path of the built binary.
     value: ${{ steps.build.outputs.path }}
+  cache-key:
+    description: The exact key to pass to actions/cache/save.
+    value: ${{ steps.rust.outputs.cache-key }}
 
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/rust-setup
+    - id: rust
+      uses: ./.github/actions/rust-setup
       with:
         cache-name: ${{ inputs.cache-name }}
     - id: build

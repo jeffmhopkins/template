@@ -21,10 +21,14 @@ required = ["fmt", "lint", "test", "deps", "docs", "pr-title", "gate-test", "lan
             "dependency-review"]
 
 [governance]
-protected = [".github/**", ".claude/settings.json", ".claude/hooks/**", "tools/repo/**", "stacks/**",
-             "scripts/**", "repo.toml", "docs/DOCS.md", "REVIEW.md", ".gitattributes", ".editorconfig",
+protected = [".github/**", ".claude/settings.json", ".claude/hooks/**", ".claude/skills/**", ".cargo/**",
+             "tools/repo/**", "stacks/**", "scripts/**", "repo.toml", "CLAUDE.md", "REVIEW.md",
+             "docs/DOCS.md", "docs/agents/**", "docs/SECURITY-AGENTS.md", ".gitattributes", ".editorconfig",
              "deny.toml", "clippy.toml", "rustfmt.toml", "rust-toolchain.toml"]
-maintainer_only = [".github/workflows/review-gate.yml", "REVIEW.md",
+# The trust base: what runs with the repository's token, what classifies changes, and the
+# reviewer's instructions. This list protects itself: repo.toml and the governance code are on it.
+maintainer_only = [".github/workflows/**", ".github/actions/**", ".github/scripts/**", ".github/after-review-status.sh",
+                   "repo.toml", "tools/repo/src/**", "REVIEW.md", "docs/agents/review/**",
                    "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]
 
 [labels]

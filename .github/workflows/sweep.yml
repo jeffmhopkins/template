@@ -1,7 +1,7 @@
 # sweep: the weekly sweep. It rewrites one pinned issue, "Weekly sweep", with what it finds.
 # It never fails: each step continues on error and reports its own failure in the issue.
 # Findings never block a PR; each one is fixed in a normal PR.
-# Editing this file is a governance change.
+# Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 

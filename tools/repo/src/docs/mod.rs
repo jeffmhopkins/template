@@ -5,7 +5,7 @@ mod check;
 mod due;
 pub mod generate;
 mod govern;
-mod hash;
+pub mod hash;
 pub mod history;
 pub mod ledger;
 pub mod merge;

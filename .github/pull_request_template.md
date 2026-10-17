@@ -19,9 +19,12 @@
      What `scripts/repo governance` flagged, what is loosened or tightened, and why. -->
 
 ## Review override
-<!-- Only with the `review-override` label, which the maintainer applies; otherwise delete this section.
+<!-- Only with the `review-override` label, which only the maintainer applies; otherwise delete this section.
      Which blocking findings are overridden, and a link to the maintainer's message deciding it. -->
 
-<!-- Trailers: keep the one that applies, with the roadmap item id from docs/progress.toml. Delete both if none applies. -->
+<!-- Trailers. The squash commit's message is this description, so they land on the base branch.
+     Completes / Part-of: keep the one that applies, with the roadmap item id from docs/progress.toml; delete both if none applies.
+     Claude-Session: always kept, naming the session that wrote the PR. review-gate fails a commit without it. -->
 Completes: <id>
 Part-of: <id>
+Claude-Session: <your session URL>

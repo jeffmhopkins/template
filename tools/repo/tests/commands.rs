@@ -246,10 +246,17 @@ fn config_check_compares_required_checks_with_workflows() {
     let r = f.repo(&["config", "check"]);
     assert_eq!(r.code, 1, "{}", r.out);
     assert!(
-        r.out.contains("required check `fmt` is not a job"),
+        r.out.contains("required check `fmt` is not a check name"),
         "{}",
         r.out
     );
+    // A job with a `name:` reports under its name, not its id.
+    f.write(
+        ".github/workflows/ci.yml",
+        "on: push\njobs:\n  fmt:\n    runs-on: x\n  docs:\n    name: Docs build\n    runs-on: x\n",
+    );
+    let r = f.repo(&["config", "check"]);
+    assert!(!r.ok() && r.out.contains("`docs`"), "{}", r.out);
     f.write(".github/workflows/ci.yml", "on: push\njobs:\n  fmt:\n    runs-on: x\n  documentation:\n    name: docs\n    runs-on: x\n");
     let r = f.repo(&["config", "check"]);
     assert!(r.ok(), "{}", r.out);
@@ -280,6 +287,52 @@ fn config_check_compares_required_checks_with_workflows() {
     f.write("lanes.toml", "p = { value = 1 }\n");
     let r = f.repo(&["config", "check"]);
     assert!(!r.ok() && r.out.contains("lane `p`"), "{}", r.out);
+}
+
+#[test]
+fn root_points_at_another_tree() {
+    let f = Fixture::new("root", &[("lanes.toml", "# none\n")]);
+    f.write(
+        ".github/workflows/ci.yml",
+        "on: push\njobs:\n  fmt:\n    runs-on: x\n  docs:\n    runs-on: x\n",
+    );
+    f.commit("workflows");
+    // Run from an unrelated directory, pointed at the fixture.
+    let elsewhere = Fixture::dir("root-elsewhere");
+    let dir = f.path().to_string_lossy().into_owned();
+    let r = elsewhere.repo(&["--root", &dir, "config", "check"]);
+    assert!(r.ok() && r.out.contains("config check: ok"), "{}", r.out);
+    assert_eq!(elsewhere.repo(&["config", "check"]).code, 2);
+    let missing = elsewhere.repo(&["--root", "/nonexistent/tree", "config", "check"]);
+    assert_eq!(missing.code, 2, "{}", missing.out);
+}
+
+#[test]
+fn governance_exempts_dependabot_repins() {
+    let pinned = "on: push\njobs:\n  fmt:\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n";
+    let f = Fixture::new("repin", &[(".github/workflows/ci.yml", pinned)]);
+    f.git(&["tag", "base"]);
+    f.git(&["checkout", "-q", "-b", "dependabot/x"]);
+    f.write(
+        ".github/workflows/ci.yml",
+        &pinned.replace(
+            "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+            "1111111111111111111111111111111111111111 # v7.1.0",
+        ),
+    );
+    f.commit("ci(deps): bump actions/checkout");
+    let args = ["governance", "--base", "base", "--labels", ""];
+    let bot = f.repo(&[&args[..], &["--author", "dependabot[bot]"]].concat());
+    assert!(bot.ok() && bot.out.contains("is exempt"), "{}", bot.out);
+    let agent = f.repo(&[&args[..], &["--author", "someone"]].concat());
+    assert_eq!(agent.code, 1, "{}", agent.out);
+    f.write(
+        ".github/workflows/ci.yml",
+        &format!("{pinned}      - run: echo extra\n"),
+    );
+    f.commit("more");
+    let mixed = f.repo(&[&args[..], &["--author", "dependabot[bot]"]].concat());
+    assert_eq!(mixed.code, 1, "{}", mixed.out);
 }
 
 #[test]

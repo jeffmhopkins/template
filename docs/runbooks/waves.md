@@ -117,9 +117,11 @@ and at least one PR has merged into it. Then:
    it is cut.
 2. Sync the cut wave with `main` if it conflicts ([Syncing](#sync)).
 3. Open the landing PR from the wave into `main`, titled `chore(wave): land wave/<name>`.
-   Its body lists each carried PR with its number and title, then every carried
-   `Completes:` and `Part-of:` line, and the "Governance change" section of every carried
-   PR that had one. Apply `governance-approved` if any did. Turn on auto-merge (squash).
+   Its body lists each carried PR with its number and title, and the "Governance change"
+   section of every carried PR that had one, and ends with one trailer block: every carried
+   `Completes:` and `Part-of:` line, then the integrator's `Claude-Session:`. Apply
+   `governance-approved` if any carried PR had one and none changed a maintainer-only path;
+   otherwise ask the maintainer. Turn on auto-merge (squash).
 4. The reviewer reviews the sync merges and conflict resolutions
    ([REVIEW.md](../../REVIEW.md#gather)). Every check runs.
 5. Fix what the full run finds with fix PRs into the wave. The builder that wrote the

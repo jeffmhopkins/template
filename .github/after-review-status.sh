@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Posts an after-review job's state as a commit status named after its check (CONTEXT) on SHA,
 # so a run outside the PR's own events counts on the PR (after-review.yml).
-# RESULT is `pending` or the job's status (success, failure, cancelled).
+# RESULT is `pending` or the tested job's result (success, failure, cancelled, skipped).
+# It runs from the default branch, in a job that runs nothing from the PR.
 set -euo pipefail
 case "$RESULT" in
   pending | success) state="$RESULT" ;;

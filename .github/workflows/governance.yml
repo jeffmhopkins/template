@@ -1,14 +1,22 @@
 # governance: the checks that read the PR as data and run code from its base only.
 #   governance  `repo governance`: governance changes carry the label and the justification
 #               section; maintainer-only paths also need the label applied by the maintainer.
+#               A Dependabot PR that only re-pins actions is exempt (ADR-0004).
 #   pr-title    `repo pr-title`: the title is a Conventional Commit.
 #   lane-guard  `repo lane-guard`: a serial-lane claim is base + 1 and held by this PR.
+#   head-labels on a push, removes governance-approved: the label counts only for the head
+#               it was applied to. Not a required check; it runs on drafts too.
+#
+# The classification (protected and maintainer-only paths) comes from the base's repo.toml,
+# read by the base's tool. Both are maintainer-only paths, as is this file, so the list
+# protects itself: a PR can't loosen the check that judges it, nor, without the maintainer,
+# the one that judges the next PR.
 #
 # Runs on pull_request_target, so GitHub takes this file from the PR's base branch. Each job
 # checks out the BASE commit, builds the tool from it, and fetches the PR head as git objects
 # only. Nothing from the head is checked out, built or run. The build cache is restored here
-# and never saved (ci.yml saves it on pushes to main).
-# Editing this file is a governance change.
+# and never saved (ci.yml's `base-tool` job saves it on pushes to main).
+# Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 
@@ -34,10 +42,26 @@ env:
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   # [labels].governance in repo.toml.
   GOVERNANCE_LABEL: governance-approved
-  # The account whose label application counts as the maintainer's.
-  MAINTAINER: ${{ vars.MAINTAINER_LOGIN || github.repository_owner }}
+  # The account whose label application counts as the maintainer's; bootstrap sets it.
+  MAINTAINER: ${{ vars.MAINTAINER_LOGIN }}
 
 jobs:
+  head-labels:
+    if: github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write   # removes the label; nothing else
+    steps:
+      - name: Remove governance-approved after a push
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case ",$(jq -r '[.pull_request.labels[].name] | join(",")' "$GITHUB_EVENT_PATH")," in
+            *",$GOVERNANCE_LABEL,"*)
+              gh api --silent -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/$GOVERNANCE_LABEL" || true
+              echo "Removed $GOVERNANCE_LABEL: the head moved to $HEAD_SHA. Examine the new head before applying it again." ;;
+          esac
+
   governance:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
@@ -55,16 +79,28 @@ jobs:
           git fetch --no-tags origin "$HEAD_SHA"
           git cat-file -e "$HEAD_SHA^{commit}"
       - name: PR body and labels from the event
+        env:
+          ACTION: ${{ github.event.action }}
         run: |
           jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/pr-body.md"
-          echo "LABELS=$(jq -r '[.pull_request.labels[].name] | join(",")' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+          # On a push, head-labels removes the label, so this run judges without it.
+          if [ "$ACTION" = synchronize ]; then
+            echo "LABELS=$(jq -r --arg l "$GOVERNANCE_LABEL" '[.pull_request.labels[].name | select(. != $l)] | join(",")' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+          else
+            echo "LABELS=$(jq -r '[.pull_request.labels[].name] | join(",")' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+          fi
       - name: Governance changes are labeled and justified
         env:
           REPO: ${{ steps.tool.outputs.path }}
           GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
+          if [ -z "$MAINTAINER" ]; then
+            echo "::error::MAINTAINER_LOGIN not set; run scripts/bootstrap.sh (docs/GETTING-STARTED.md#github)"
+            exit 1
+          fi
           set +e
-          "$REPO" governance --base "$BASE_SHA" --head "$HEAD_SHA" \
+          "$REPO" governance --base "$BASE_SHA" --head "$HEAD_SHA" --author "$AUTHOR" \
             --pr-body "$RUNNER_TEMP/pr-body.md" --labels "$LABELS" | tee "$RUNNER_TEMP/governance.txt"
           status=${PIPESTATUS[0]}
           set -e

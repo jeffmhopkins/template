@@ -28,16 +28,21 @@ const commit = (o = {}) => ({
   sha: o.sha ?? 'c'.repeat(40),
   parents: o.merge ? [{}, {}] : [{}],
   author: { login: o.author ?? 'builder' },
-  commit: { message: o.message ?? `feat: x\n\nClaude-Session: https://claude.ai/code/${BUILDER}\n` },
+  commit: {
+    message: o.message ?? `feat: x\n\nClaude-Session: https://claude.ai/code/${BUILDER}\n`,
+    verification: { verified: o.verified ?? false },
+  },
 });
 const run = (o = {}) => decide({
   head: H,
   comments: o.comments ?? [],
   commits: o.commits ?? [commit()],
+  onMain: o.onMain ?? [],
+  pushed: o.pushed ?? false,
   labels: o.labels ?? [],
   body: o.body ?? '',
   overrideLabeledBy: o.overrideLabeledBy ?? null,
-  maintainer: 'the-maintainer',
+  maintainer: o.maintainer ?? 'the-maintainer',
   reviewerLogin: o.reviewerLogin ?? LOGIN,
   sessions: o.sessions ?? [REVIEWER, `https://claude.ai/code/${OTHER_REVIEWER}`],
 });
@@ -80,7 +85,44 @@ test('non-merge commit without a trailer: failure', () =>
 test('merge commit without a trailer is fine', () =>
   assert.equal(state({ commits: [commit(), commit({ merge: true, message: "Merge branch 'main'\n" })], comments: [marker('pass', 1)] }), 'success'));
 test('dependabot commit without a trailer is fine', () =>
-  assert.equal(state({ commits: [commit({ author: 'dependabot[bot]', message: 'build(deps): bump x\n' })], comments: [marker('pass', 1)] }), 'success'));
+  assert.equal(state({ commits: [commit({ author: 'dependabot[bot]', verified: true, message: 'build(deps): bump x\n' })], comments: [marker('pass', 1)] }), 'success'));
+test('an unsigned commit attributed to dependabot still needs a trailer', () =>
+  assert.equal(state({ commits: [commit({ author: 'dependabot[bot]', message: 'build(deps): bump x\n' })], comments: [marker('pass', 1)] }), 'failure'));
+
+// A squash commit's message is the PR title and body, so it carries the template's trailer block.
+const squash = (sha, n, session = BUILDER) => commit({
+  sha,
+  message: `feat: item ${n} (#${n})\n\n## Summary\nx\n\nCompletes: M1-${n}\nClaude-Session: https://claude.ai/code/${session}\n`,
+});
+const MAIN1 = '1'.repeat(40);
+const MAIN2 = '2'.repeat(40);
+const fromMain = [
+  commit({ sha: MAIN1, message: 'feat: landed earlier (#7)\n\nCompletes: M1-7\n' }),
+  commit({ sha: MAIN2, message: `fix: by a reviewer session (#8)\n\nClaude-Session: ${REVIEWER}\n` }),
+];
+test('sync PR: main\'s commits need no trailer and recuse nobody', () => {
+  const commits = [...fromMain, commit({ sha: 'd'.repeat(40), merge: true, message: "Merge remote-tracking branch 'origin/main'\n" })];
+  assert.equal(state({ commits, onMain: [MAIN1, MAIN2], comments: [marker('pass', 1)] }), 'success');
+  assert.equal(state({ commits, comments: [marker('pass', 1)] }), 'failure');
+});
+test('landing PR: the wave\'s squash commits carry the trailer from the PR template', () => {
+  const commits = [squash('e'.repeat(40), 1), squash('f'.repeat(40), 2), ...fromMain,
+    commit({ sha: 'd'.repeat(40), merge: true, message: "Merge remote-tracking branch 'origin/main' into sync\n" })];
+  assert.equal(state({ commits, onMain: [MAIN1, MAIN2], comments: [marker('pass', 1)] }), 'success');
+});
+test('landing PR: a squash commit whose body lost the trailer fails', () => {
+  const bare = commit({ sha: 'e'.repeat(40), message: 'feat: item 1 (#1)\n\nCompletes: M1-1\n' });
+  assert.equal(state({ commits: [bare, ...fromMain], onMain: [MAIN1, MAIN2], comments: [marker('pass', 1)] }), 'failure');
+});
+test('landing PR: a reviewer that wrote a squash commit in the wave is recused', () => {
+  const commits = [squash('e'.repeat(40), 1, REVIEWER), ...fromMain];
+  assert.equal(state({ commits, onMain: [MAIN1, MAIN2], comments: [marker('pass', 1)] }), 'pending');
+});
+test('unset MAINTAINER_LOGIN fails loudly', () => {
+  const [st, why] = run({ maintainer: '', comments: [marker('pass', 1)] });
+  assert.equal(st, 'failure');
+  assert.match(why, /MAINTAINER_LOGIN not set/);
+});
 test('unconfigured gate fails', () => {
   assert.equal(state({ reviewerLogin: '', comments: [marker('pass', 1)] }), 'failure');
   assert.equal(state({ sessions: [], comments: [marker('pass', 1)] }), 'failure');
@@ -104,6 +146,12 @@ test('override without the section fails', () =>
   assert.equal(state({ labels: ['review-override'], body: '## Summary\nx\n', overrideLabeledBy: 'the-maintainer' }), 'failure'));
 test('override section without a link fails', () =>
   assert.equal(state({ labels: ['review-override'], body: '## Review override\nBecause I said so, at length.\n', overrideLabeledBy: 'the-maintainer' }), 'failure'));
+test('override does not survive a push: the run for the new head ignores it', () => {
+  const o = { labels: ['review-override'], body: justified, overrideLabeledBy: 'the-maintainer', pushed: true };
+  assert.equal(state({ ...o, comments: [marker('fail', 1)] }), 'failure');
+  assert.equal(state({ ...o, comments: [marker('fail', 1, { sha: OLD })] }), 'pending');
+  assert.equal(state({ ...o, comments: [marker('pass', 2)] }), 'success');
+});
 test('override section holding only the template comment fails', () =>
   assert.equal(state({ labels: ['review-override'], body: '## Review override\n<!-- link https://x -->\n## Docs\n', overrideLabeledBy: 'the-maintainer' }), 'failure'));
 

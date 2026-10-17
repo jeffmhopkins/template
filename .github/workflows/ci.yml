@@ -3,7 +3,7 @@
 # `governance` run from the base commit in governance.yml; `review-gate` is in review-gate.yml.
 # The job names are the check names in repo.toml [checks].required (`scripts/repo config check`
 # compares them). Stack jobs run the stack pack's command (`stacks/<pack>/pack.toml`).
-# Editing this file is a governance change.
+# Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 # Dependabot proposes updates. Manual pins: `git ls-remote --tags <repo>`, taking the
@@ -34,6 +34,7 @@ env:
 # - `test` and `deps` (the heavy jobs): also skipped on a PR into a `wave/*` branch. The wave's
 #   own PR into main runs them (docs/runbooks/waves.md).
 # The build cache is saved only on a push to main; PR runs restore it and never write it.
+# `base-tool` runs only there: it saves the cache governance.yml restores.
 
 jobs:
   fmt:
@@ -160,6 +161,28 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           key: ${{ steps.rust.outputs.cache-key }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            tools/repo/target/
+
+  # The release build of the repo tool, cached under the name governance.yml restores.
+  base-tool:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: tool
+        uses: ./.github/actions/repo-tool
+        with:
+          cache-name: base-tool
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.tool.outputs.cache-key }}
           path: |
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/

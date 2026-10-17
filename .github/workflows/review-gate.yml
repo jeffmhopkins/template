@@ -10,9 +10,13 @@
 #   - in a comment never edited (created_at == updated_at);
 #   - from a session that authored no commit of the PR (recusal by `Claude-Session:` trailer).
 # Among counted markers the highest round decides, and within it a fail beats a pass.
-# The gate fails when a non-merge commit has no `Claude-Session:` trailer (dependabot[bot] aside).
+# The gate fails when a non-merge commit has no `Claude-Session:` trailer. Commits already
+# reachable from the default branch (main's commits in a wave sync PR) and Dependabot's
+# GitHub-signed commits are exempt. A squash commit takes the PR body as its message, so a
+# wave's commits carry the trailer from the PR template.
 # `review-override` passes the gate only with a "## Review override" section that links the
-# maintainer's message, and only when the maintainer applied the label.
+# maintainer's message, and only when the maintainer applied the label. A push removes the
+# label: an override counts only for the head it was applied to.
 #
 # Runs on pull_request_target and issue_comment, so GitHub takes this file from the base branch,
 # and it never checks out PR code. Changing it is maintainer-only (repo.toml [governance]).
@@ -38,8 +42,9 @@ on:
 permissions:
   contents: read
   pull-requests: read
-  issues: read      # comments and label events
-  statuses: write   # the review-gate status; nothing else is written
+  issues: read            # comments and label events
+  pull-requests: write    # removes review-override on a push; nothing else
+  statuses: write         # the review-gate status
 
 concurrency:
   group: review-gate-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr }}
@@ -55,7 +60,7 @@ jobs:
         env:
           REVIEWER_LOGIN: ${{ vars.REVIEWER_LOGIN }}
           REVIEWER_SESSIONS: ${{ vars.REVIEWER_SESSIONS }}
-          MAINTAINER: ${{ vars.MAINTAINER_LOGIN || github.repository_owner }}
+          MAINTAINER: ${{ vars.MAINTAINER_LOGIN }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr }}
         with:
           script: |
@@ -65,9 +70,20 @@ jobs:
             const head = pr.head.sha;
             const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
 
+            const OVERRIDE = 'review-override';   // [labels].override in repo.toml
+            const pushed = context.eventName === 'pull_request_target' && context.payload.action === 'synchronize';
             const labels = pr.labels.map((l) => l.name);
+            if (pushed && labels.includes(OVERRIDE)) {
+              // An override is for the head it was applied to; a push takes it off.
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number: number, name: OVERRIDE });
+                core.info(`Removed ${OVERRIDE}: the head moved to ${head.slice(0, 7)}`);
+              } catch (e) {
+                if (e.status !== 404) throw e;
+              }
+            }
             let overrideLabeledBy = null;
-            if (labels.includes('review-override')) {
+            if (labels.includes(OVERRIDE) && !pushed) {
               const events = await github.paginate(github.rest.issues.listEvents, { owner, repo, issue_number: number, per_page: 100 });
               const applied = events.filter((e) => e.event === 'labeled' && e.label?.name === 'review-override');
               overrideLabeledBy = applied.length ? applied[applied.length - 1].actor?.login ?? null : null;
@@ -75,14 +91,28 @@ jobs:
             const commits = await github.paginate(github.rest.pulls.listCommits, { owner, repo, pull_number: number, per_page: 100 });
             const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: number, per_page: 100 });
 
+            // The PR's commits already reachable from the default branch: everything but the
+            // commits the head has that the default branch lacks.
+            const ahead = new Set();
+            for (let page = 1; ; page++) {
+              const { data } = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: `${pr.base.repo.default_branch}...${head}`, per_page: 100, page,
+              });
+              data.commits.forEach((c) => ahead.add(c.sha));
+              if (data.commits.length < 100) break;
+            }
+            const onMain = commits.map((c) => c.sha).filter((sha) => !ahead.has(sha));
+
             const [state, description] = decide({
               head,
               comments,
               commits,
+              onMain,
+              pushed,
               labels,
               body: pr.body || '',
               overrideLabeledBy,
-              maintainer: process.env.MAINTAINER,
+              maintainer: (process.env.MAINTAINER || '').trim(),
               reviewerLogin: (process.env.REVIEWER_LOGIN || '').trim(),
               sessions: process.env.REVIEWER_SESSIONS || '',
             });
@@ -96,13 +126,21 @@ jobs:
             // BEGIN decide (tested by extracting this block; keep it self-contained)
             function decide(input) {
               const { head, comments, commits, labels, body, overrideLabeledBy, maintainer, reviewerLogin } = input;
+              // onMain: SHAs of the PR's commits already on the default branch, reviewed when they landed there.
+              // pushed: this run is for a push, which removes review-override.
+              const onMain = new Set(input.onMain || []);
+              const pushed = Boolean(input.pushed);
               const MARKER = 'review v1';   // [review].marker in repo.toml
               const OVERRIDE = 'review-override';   // [labels].override in repo.toml
               const norm = (s) => (String(s).match(/session_[A-Za-z0-9]+/) || [String(s).trim()])[0];
               const sha7 = head.slice(0, 7);
 
-              // 1. Override: the maintainer's label plus a justification linking their message.
-              if (labels.includes(OVERRIDE)) {
+              // 0. Configuration that every outcome depends on.
+              if (!maintainer) return ['failure', 'MAINTAINER_LOGIN not set; run scripts/bootstrap.sh (docs/GETTING-STARTED.md#github)'];
+
+              // 1. Override: the maintainer's label plus a justification linking their message,
+              //    applied since the last push.
+              if (labels.includes(OVERRIDE) && !pushed) {
                 const m = body.match(/^##[ \t]+Review override[^\n]*\n([\s\S]*?)(?=^##[ \t]|(?![\s\S]))/m);
                 const text = m ? m[1].replace(/<!--[\s\S]*?-->/g, '').trim() : '';
                 if (!text) return ['failure', `${OVERRIDE} needs a "## Review override" section in the PR description`];
@@ -113,13 +151,16 @@ jobs:
                 return ['success', `Overridden by ${maintainer} (justified in the PR description)`];
               }
 
-              // 2. Authoring sessions; every non-merge commit names its session.
+              // 2. Authoring sessions; every non-merge commit not yet on main names its session.
+              //    Dependabot's commits count only when GitHub verified their signature.
               const authors = new Set();
               for (const c of commits) {
+                if (onMain.has(c.sha)) continue;
                 const found = [...(c.commit?.message || '').matchAll(/^Claude-Session:[ \t]*(\S+)[ \t]*$/gm)].map((x) => norm(x[1]));
                 found.forEach((s) => authors.add(s));
                 const merge = (c.parents || []).length > 1;
-                if (!merge && found.length === 0 && c.author?.login !== 'dependabot[bot]') {
+                const dependabot = c.author?.login === 'dependabot[bot]' && c.commit?.verification?.verified === true;
+                if (!merge && found.length === 0 && !dependabot) {
                   return ['failure', `Commit ${String(c.sha).slice(0, 7)} has no Claude-Session trailer`];
                 }
               }
@@ -129,7 +170,7 @@ jobs:
               const listed = Array.isArray(input.sessions) ? input.sessions : String(input.sessions || '').split(',');
               const sessions = new Set(listed.map((s) => String(s).trim()).filter((s) => s && s.toLowerCase() !== 'none').map(norm));
               if (!reviewerLogin || sessions.size === 0) {
-                return ['failure', 'Gate not configured: set the repo variables REVIEWER_LOGIN and REVIEWER_SESSIONS'];
+                return ['failure', 'Gate not configured: set REVIEWER_LOGIN and REVIEWER_SESSIONS (docs/GETTING-STARTED.md#github)'];
               }
 
               // 4. Markers that count.

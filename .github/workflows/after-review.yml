@@ -2,7 +2,7 @@
 # each posting a commit status under its own check name. Dormant: it runs only by hand until a
 # project turns on the example below. A check it posts becomes required by adding its name to
 # repo.toml [checks].required.
-# Editing this file is a governance change.
+# Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 
@@ -23,18 +23,21 @@ jobs:
 # Example: run after review-gate passes, and report under each check name.
 #
 # A status set with the workflow token starts no workflow, so review-gate.yml dispatches this
-# one. To turn it on:
+# one. It is dispatched on the default branch, so this file and the status script come from
+# there, never from the PR. The PR's code runs only in a job whose token can't write; a
+# separate job, which runs nothing from the PR, holds `statuses: write` and reports.
+# To turn it on:
 # 1. In review-gate.yml, add `actions: write` to `permissions`, and after the createCommitStatus
 #    call in the script add:
 #
 #      if (state === 'success' && !pr.base.ref.startsWith('wave/') && pr.head.repo?.full_name === `${owner}/${repo}`) {
 #        await github.rest.actions.createWorkflowDispatch({
-#          owner, repo, workflow_id: 'after-review.yml', ref: pr.head.ref, inputs: { sha: head },
+#          owner, repo, workflow_id: 'after-review.yml', ref: pr.base.repo.default_branch, inputs: { sha: head },
 #        });
 #      }
 #
-# 2. Replace `on:`, `permissions:` and `jobs:` above with the following. The jobs check out
-#    the PR head, so the token keeps only `statuses: write` beyond read access.
+# 2. Replace `on:`, `permissions:` and `jobs:` above with the following, one test/report pair
+#    per check name.
 #
 # on:
 #   workflow_dispatch:
@@ -45,37 +48,59 @@ jobs:
 #
 # permissions:
 #   contents: read
-#   statuses: write
 #
 # concurrency:
 #   group: after-review-${{ inputs.sha }}
 #   cancel-in-progress: true
 #
+# env:
+#   SHA: ${{ inputs.sha }}
+#
 # jobs:
+#   pending:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       statuses: write
+#     steps:
+#       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#         with:
+#           persist-credentials: false   # the default branch, not the PR
+#       - name: Report pending
+#         env:
+#           GH_TOKEN: ${{ github.token }}
+#           CONTEXT: test-windows
+#           RESULT: pending
+#         run: bash .github/after-review-status.sh
+#
 #   test-windows:
+#     needs: pending
 #     runs-on: windows-latest
-#     env:
-#       SHA: ${{ inputs.sha }}
-#       CONTEXT: test-windows
-#       GH_TOKEN: ${{ github.token }}
+#     permissions:
+#       contents: read   # runs the PR's code: no write access, no token in its steps
 #     steps:
 #       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 #         with:
 #           ref: ${{ inputs.sha }}
 #           persist-credentials: false
-#       - name: Report pending
-#         shell: bash
-#         env:
-#           RESULT: pending
-#         run: bash .github/after-review-status.sh
 #       - uses: ./.github/actions/rust-setup
 #         with:
 #           cache-name: test-windows
 #       - run: scripts/repo stack run test
 #         shell: bash
+#
+#   report-test-windows:
+#     needs: test-windows
+#     if: always()
+#     runs-on: ubuntu-latest
+#     permissions:
+#       statuses: write
+#     steps:
+#       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#         with:
+#           persist-credentials: false   # the default branch, not the PR
 #       - name: Report the result
-#         if: always()
-#         shell: bash
 #         env:
-#           RESULT: ${{ job.status }}
+#           GH_TOKEN: ${{ github.token }}
+#           CONTEXT: test-windows
+#           RESULT: ${{ needs.test-windows.result }}
 #         run: bash .github/after-review-status.sh

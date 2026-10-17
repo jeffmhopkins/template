@@ -127,7 +127,10 @@ depends_on = ["CLAUDE#limits"]
 
 - Post a review marker or verdict, approve through GitHub, or merge by hand.
 - Rebase, force-push, or push to another row's branch.
-- Apply `governance-approved` or `review-override` without the matching section in the PR
-  description and without examining what the check flagged.
+- Apply `review-override`, or apply `governance-approved` on a PR that changes a
+  maintainer-only path. Only the maintainer applies those.
+- Apply `governance-approved` without the "Governance change" section and without examining
+  what the check flagged at the current head. A push removes it; apply it again only after
+  examining the new head.
 - Change repo settings or branch protection.
 - Edit `docs/verified.toml` by hand, or verify a section you didn't re-read.

@@ -218,8 +218,9 @@ project takes later versions through `docs/runbooks/template-upgrade.md`.
 
 **`ci.yml`:**
 - Draft PRs skip every job.
-- `fmt`, `lint`, `test` and `docs` come from the stack pack.
-- `pr-title`, `gate-test` and `lane-guard` are generic.
+- `fmt`, `lint`, `test` and `deps` come from the stack pack.
+- `docs` and `gate-test` are generic.
+- `pr-title`, `lane-guard` and `governance` run in `governance.yml`, from the base.
 - `dependency-review` fails a PR that adds or changes a dependency with a known
   vulnerability of high or critical severity.
 
@@ -233,8 +234,11 @@ project takes later versions through `docs/runbooks/template-upgrade.md`.
   - haven't been edited.
 - The highest round decides, and a fail beats a pass.
 - A reviewer whose session authored a commit is ignored (recusal by the `Claude-Session`
-  trailer), and the gate fails if a non-merge commit lacks that trailer (Dependabot aside).
-- `review-override` needs a justification that links the maintainer's message.
+  trailer), and the gate fails if a non-merge commit lacks that trailer. Commits already on
+  `main` and Dependabot's signed commits are exempt; squash commits carry the trailer from
+  the PR body.
+- `review-override` needs a justification that links the maintainer's message. Only the
+  maintainer applies it, and a push removes it.
 - A node test runs the decision function cut out of the deployed workflow.
 
 **Running checks from base:** `governance`, `lane-guard` and `pr-title` run on
@@ -253,8 +257,10 @@ in the PR description. They are:
   `REVIEW.md`;
 - new lint suppressions.
 
-Agents may self-label after examining what was flagged. Changes to the gate, the tier rules
-or the project instructions always need the maintainer.
+Agents may self-label after examining what was flagged, and a push removes the label.
+Changes to the trust base always need the maintainer, who alone labels them: the workflows
+and actions, `repo.toml`, the tool's source, `REVIEW.md`, the reviewer briefs, the tier rules
+and the project instructions. A Dependabot PR that only re-pins actions is exempt.
 
 **`after-review.yml`** runs expensive jobs (other OSes, end-to-end) only after the review gate
 passes, posting commit statuses under each check name. It stays dormant until a project needs it.

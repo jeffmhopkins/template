@@ -1,7 +1,7 @@
 # progress: rewrites the pinned "Progress" issue from `scripts/repo progress`, which derives
 # each roadmap item's status from the `Completes:` / `Part-of:` / `Verified-on-hardware:`
 # trailers on main (docs/DOCS.md#progress). Runs on every push to main.
-# Editing this file is a governance change.
+# Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 

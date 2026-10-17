@@ -1,7 +1,7 @@
 # rust-setup: the Rust toolchain and a restored build cache, for every job that runs `scripts/repo`
 # or a Rust stack job. It never saves the cache: a job saves it with actions/cache/save, and only
 # on a push to main (see ci.yml).
-# Editing this file is a governance change.
+# Editing this file is a maintainer-only change.
 
 name: rust-setup
 description: Install the Rust toolchain and restore the cargo build cache.

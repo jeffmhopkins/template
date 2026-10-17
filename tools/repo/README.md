@@ -22,8 +22,10 @@ review_every = "180d"
 -->
 
 - **Root.** The tool finds the repository root at run time: the git top level when it holds
-  `repo.toml`, else the nearest ancestor of the current directory that does. Paths in
-  arguments and output are relative to that root.
+  `repo.toml`, else the nearest ancestor of the current directory that does. With
+  `--root <dir>` before the command, it starts from `<dir>` instead, so a build from one
+  tree checks another. Paths in output are relative to that root; file arguments such as
+  `--pr-body` stay relative to the current directory.
 - **Exit codes.** `0`: clean. `1`: findings, printed one per line as `path:line: message`
   (or `<command>: message`). `2`: a usage or runtime error, printed to stderr.
 - **Config.** `repo.toml`, `stacks/<pack>/pack.toml`, `lanes.toml` and
@@ -43,7 +45,7 @@ review_every = "180d"
 
 | Command | Does | Exit |
 |---|---|---|
-| `config check` | schema-checks `repo.toml`, the stack pack and `lanes.toml`; every `[checks].required` name must be a job id or job `name:` in `.github/workflows/*.yml` | 1 on any problem |
+| `config check` | schema-checks `repo.toml`, the stack pack and `lanes.toml`; every `[checks].required` name must be a check name in `.github/workflows/*.yml`: a job's `name:`, else its id (a job whose `name:` is an expression has none) | 1 on any problem |
 | `docs check [--draft]` | every docs finding: metadata, anchors, references, rules, facts, external URLs, `covers` bounds, ledger form and freshness, back-references, ADR banner and index drift, `progress.toml` | 1 on any error; with `--draft`, always 0, and stale sections and drift print as warnings |
 | `docs verify <DOC#anchor> --by <who> --note "<text>"` | writes the section's current input hashes into the ledger; entries whose input changed or is new take this `by` and `note` | 2 on a stock note, a bad `--by`, or untracked covered files |
 | `docs for <path>` | the sections, rules and ADRs that govern a file; the file need not exist | 0 |
@@ -52,7 +54,7 @@ review_every = "180d"
 | `docs review <DOC> --by <who> --note "<text>"` | writes `reviewed = { by, note }` into the `@doc` block | 2 for ADRs and docs without `review_every` |
 | `docs merge-main [--from <branch>]` | merges `origin/<branch>` (default `main`), resolves ledger and generated-block conflicts, lists stale sections with this branch's previous notes | 1 when conflicts remain or sections are stale |
 | `docs due` | docs past `review_every` and external URLs past `recheck_every` | always 0 |
-| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]` | lists governance changes between the merge base and the head, and a `maintainer-only: <path>` line per changed maintainer-only path | listing: 0; with `--pr-body` or `--labels`: 1 when changes exist and the label or the `## Governance change` section is missing |
+| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]` | lists governance changes between the merge base and the head, and a `maintainer-only: <path>` line per changed maintainer-only path; with `--author dependabot[bot]`, a diff of action re-pins only is exempt and lists nothing | listing: 0; with `--pr-body` or `--labels`: 1 when changes exist and the label or the `## Governance change` section is missing |
 | `pr-title "<title>"` | Conventional Commit header check, or `Revert "<title>"` | 1 when it doesn't parse |
 | `lane-guard --base <rev> --head <rev> --pr <n> [--wave]` | checks the lanes this PR changed | 1 on a bad claim |
 | `progress [--format markdown\|json]` | status of each `progress.toml` item from commit trailers | 0; a trailer naming an unknown item is a warning |
@@ -90,11 +92,15 @@ since the merge base.
 -->
 
 `progress` reads every commit reachable from `HEAD`. Lines `Completes: <id>`,
-`Part-of: <id>` and `Verified-on-hardware: <id>` anywhere in a message count; several ids may
-be comma-separated. A commit whose message has `This reverts commit <sha>`, or whose subject
-is `Revert "<subject>"` naming an earlier commit, cancels that commit's trailers; reverting
-the revert restores them. Status: `done` (Completes), `hardware` (done, `hardware = true`,
-no Verified-on-hardware), `in-progress` (Part-of), else `planned`.
+`Part-of: <id>` and `Verified-on-hardware: <id>` count in a trailer paragraph: one whose
+every line is `Key: value`, after HTML comments are removed and outside code fences. Several
+ids may be comma-separated; an id with a space in it is ignored. A commit whose message has
+`This reverts commit <sha>`, or whose subject is `Revert "<subject>"` or
+`revert: <subject>` naming an earlier commit, cancels that commit's trailers. Reverts are
+settled newest first, so a revert that is itself reverted cancels nothing. A
+Verified-on-hardware counts only after the item's latest Completes. Status: `done`
+(Completes), `hardware` (done, `hardware = true`, no Verified-on-hardware since),
+`in-progress` (Part-of), else `planned`.
 
 <a id="lanes"></a>
 ## Lane claims
@@ -139,6 +145,8 @@ fmt = "cargo fmt --all --check"
 patterns = ['#\[allow\(']        # regular expressions; a matching line is a suppression
 reason_required = true           # the line must carry `reason = "..."`
 files = ["**/*.rs"]              # optional; default: every file that is not Markdown
+[protected_tables]               # optional; manifest glob → dotted tables
+"**/Cargo.toml" = ["lints", "workspace.lints"]
 [backrefs]
 roots = ["**/src/lib.rs", "**/src/main.rs"]
 prefix = "//! Docs:"
