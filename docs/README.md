@@ -21,6 +21,7 @@ How these docs are checked is in [DOCS.md](DOCS.md). The project's own pitch is 
 
 | Document | Purpose |
 |---|---|
+| [GETTING-STARTED.md](GETTING-STARTED.md) | For the maintainer: how the template works and how to start a project with it |
 | [CLAUDE.md](../CLAUDE.md) | The builder's entry point: finding the rules for a change, the docs duty, the PR loop |
 | [DOCS.md](DOCS.md) | How docs, sections, the ledger and the repo tool work |
 | [PRODUCT.md](PRODUCT.md) | What the product is, who it is for, and what it must never do |

@@ -13,6 +13,10 @@ review_every = "90d"
 
 > `<from intake>`: one sentence on what the product is and who it is for.
 
+> [!TIP]
+> **New here?** [docs/GETTING-STARTED.md](docs/GETTING-STARTED.md) explains how this works and
+> how to start a project, with no git experience needed.
+
 > [!IMPORTANT]
 > **Agent?** Read [CLAUDE.md](CLAUDE.md) and your brief in [docs/agents/](docs/agents/README.md)
 > first.
