@@ -61,11 +61,12 @@ depends_on = ["DOCS#tool"]
    sections the PR re-verified, with their notes, are its changes to `docs/verified.toml`
    (`git diff <base>... -- docs/verified.toml`).
 4. `<base tool> --root <head worktree> governance --base <base>`: the governance changes and
-   any `maintainer-only:` paths.
+   any `maintainer-only:` paths. For a PR into a wave, add `--into wave/<name>`: a protected
+   path that doesn't come from `main` is then **blocking**, since such changes target `main`.
 5. Enough surrounding code to know the callers and invariants. The diff alone is not
    enough.
-6. **A wave landing PR** (head `wave/*`, base `main`) carries PRs already reviewed into the
-   wave. Review the sync merge commits and their conflict resolutions
+6. **A wave landing PR** (head `wave/*`, base `main`, and the wave named in `ops/waves.md`;
+   otherwise review the whole diff) carries PRs already reviewed into the wave. Review the sync merge commits and their conflict resolutions
    (`git show --remerge-diff <merge>`), and check that the body lists every carried
    `Completes:`/`Part-of:` line and "Governance change" section
    ([waves runbook](docs/runbooks/waves.md)).

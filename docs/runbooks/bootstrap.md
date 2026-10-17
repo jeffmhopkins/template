@@ -44,7 +44,8 @@ covers = ["scripts/bootstrap.sh"]
   Code Security and the dependency graph, and secret scanning needs GitHub Secret
   Protection.
 - **`repo.toml` as committed.** The script reads the required checks from
-  `[checks].required` and the label names from `[labels]`.
+  `[checks].required` and the label names from `[labels]`. With `--also-require <rev>` it
+  also requires the checks in `<rev>`'s `repo.toml` ([Running it](#run)).
 
 The script checks the tools, the Python version and the `gh` login first, and then the
 access and plan: admin rights, and, for a private repo, the owner's plan and GitHub Code
@@ -139,7 +140,8 @@ run it; an agent that finds a difference reports it to the coordinator and chang
 
 Exit 2 means the script could not run, or setup stopped before changing anything: no `git`,
 `gh` or `python3`, Python older than 3.11, no login, no `repo.toml`, a repo it cannot
-resolve, a bad argument, no admin rights (setup only), or a private repo whose plan lacks
+resolve, a bad argument (including an `--also-require` revision with no `repo.toml`), no
+admin rights (setup only), or a private repo whose plan lacks
 rulesets or GitHub Code Security (setup only).
 
 <a id="by-hand"></a>

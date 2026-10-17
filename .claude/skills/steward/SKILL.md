@@ -32,7 +32,8 @@ depends_on = ["AGENT-BUILDER#on-every-wake"]
    every issue filed against it.
 4. Batch what you change into one push. Before it, run the stack's checks
    (`scripts/repo stack run fmt`, `lint`, `test`), `scripts/repo docs check` and
-   `scripts/repo governance --base origin/main`.
+   `scripts/repo governance --base origin/main`, or for a PR into a wave
+   `--base origin/wave/<name> --into wave/<name>`.
 
 <a id="ci"></a>
 ## CI failures

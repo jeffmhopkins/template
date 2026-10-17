@@ -23,8 +23,23 @@ depends_on = ["DOCS#lanes"]
 -->
 
 A lane is added to `lanes.toml` by its own PR, at intake or when the planner names one,
-with its current value and that PR as holder. The planner lists in each row the lanes it
-changes. ADR numbers are not a lane: an ADR takes the next free number
+with its current value and that PR as holder. It also names where the value lives, so a
+change there can't slip past `lane-guard` without a claim:
+
+```toml
+protocol = { value = 21, holder = 512, files = ["src/proto/version.rs"], pattern = 'PROTOCOL_VERSION' }
+migration = { value = 7, holder = 498, files = ["migrations/**"] }
+```
+
+- `files`: globs of the files that hold the value. A PR that changes them without changing
+  the lane's line fails `lane-guard`.
+- `pattern`: optional. A regular expression for the lines that hold the value; only an added
+  or removed line that matches it counts. Without it, any change to the files counts, as
+  suits a directory of numbered migrations.
+- `lane-guard` reads the lanes from the PR's base, so a PR can't narrow `files` to pass its
+  own check. Changing `files` or `pattern` is itself a claim on the lane.
+
+The planner lists in each row the lanes it changes. ADR numbers are not a lane: an ADR takes the next free number
 ([ADR index](../adr/README.md)).
 
 <a id="builder"></a>
@@ -33,8 +48,8 @@ changes. ADR numbers are not a lane: an ADR takes the next free number
 depends_on = ["RULES#R-GIT-006"]
 -->
 
-1. Build and review the change with the lane's value left as it is on the base. Keep
-   auto-merge off.
+1. Build and review the change with the lane's value left as it is on the base, in
+   `lanes.toml` and in the lane's `files`. Keep auto-merge off.
 2. Once review passes, send the integrator `LANE-READY <lane> #<pr>`.
 3. On `LANE-HOLD <lane> <value> #<pr>`, set the lane's line to that value with your PR as
    holder, and set every file that names the value. Push once; the reviewer runs one short
