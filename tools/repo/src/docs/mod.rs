@@ -446,12 +446,12 @@ pub fn run(sub: &str, args: &[String]) -> Outcome {
             }
             if m.committed {
                 println!(
-                    "docs merge-main: merged; {} section(s) to re-read, then `repo docs verify <DOC#anchor> --by <who> --note \"<what you checked>\"`, keeping what the previous note said about this branch and adding what the merge changed",
+                    "docs merge-main: merged; {} section(s) to re-read, then `scripts/repo docs verify <DOC#anchor> --by <who> --note \"<what you checked>\"`, keeping what the previous note said about this branch and adding what the merge changed",
                     m.stale.len()
                 );
             } else {
                 println!(
-                    "docs merge-main: the ledger and @generated conflicts are resolved and staged; resolve the files above, run `repo docs generate`, `git commit`, then `repo docs check`"
+                    "docs merge-main: the ledger and @generated conflicts are resolved and staged; resolve the files above, run `scripts/repo docs generate`, `git commit`, then `scripts/repo docs check`"
                 );
             }
             Ok(m.committed && m.stale.is_empty())

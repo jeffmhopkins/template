@@ -213,7 +213,7 @@ fn check_doc_meta(doc: &Doc, index: &Index<'_>, out: &mut Vec<Diag>) {
             out.push(Diag::error(
                 p,
                 1,
-                "`reviewed` must be `{ by = \"…\", note = \"…\" }`, written by `repo docs review`",
+                "`reviewed` must be `{ by = \"…\", note = \"…\" }`, written by `scripts/repo docs review`",
             ));
         }
     }
@@ -428,7 +428,7 @@ fn check_section(
                     format!("changed since its stamp: {}", changed.join(", "))
                 };
                 let msg = format!(
-                    "section `{anchor}` is stale ({why}): re-read it against the change; if it still holds run `repo docs verify {key} --by <who> --note \"<what you checked>\"`, otherwise edit it"
+                    "section `{anchor}` is stale ({why}): re-read it against the change; if it still holds run `scripts/repo docs verify {key} --by <who> --note \"<what you checked>\"`, otherwise edit it"
                 );
                 out.push(if cx.draft {
                     Diag::warning(p, line, msg)
@@ -810,7 +810,7 @@ pub fn check_ledger(l: &Loaded, out: &mut Vec<Diag>) -> Ledger {
         out.push(Diag::error(
             path,
             1,
-            "not in canonical form: it is written only by `repo docs verify`",
+            "not in canonical form: it is written only by `scripts/repo docs verify`",
         ));
     }
     let keep = super::stamped_sections(&l.docs);
@@ -822,7 +822,7 @@ pub fn check_ledger(l: &Loaded, out: &mut Vec<Diag>) -> Ledger {
         out.push(Diag::warning(
             path,
             1,
-            format!("stamp `{key}` names no section with `covers` or `depends_on`; the next `repo docs verify` drops it"),
+            format!("stamp `{key}` names no section with `covers` or `depends_on`; the next `scripts/repo docs verify` drops it"),
         ));
     }
     ledger

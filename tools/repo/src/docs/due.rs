@@ -43,7 +43,7 @@ pub fn due(l: &Loaded, now: i64) -> Result<Vec<Due>> {
             if since <= now {
                 out.push(Due {
                     what: format!(
-                        "doc {} ({}): review every {}d; run `repo docs review {} --by <who> --note \"<what you re-read>\"`",
+                        "doc {} ({}): review every {}d; run `scripts/repo docs review {} --by <who> --note \"<what you re-read>\"`",
                         doc.id(),
                         doc.path,
                         every,
