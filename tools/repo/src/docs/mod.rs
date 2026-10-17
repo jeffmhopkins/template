@@ -435,6 +435,9 @@ pub fn run(sub: &str, args: &[String]) -> Outcome {
             for s in &m.stamps {
                 println!("resolved ledger conflict: {s}");
             }
+            for (path, cmd) in &m.relocked {
+                println!("relocked: {path}: took the merged side, then ran `{cmd}`");
+            }
             for (path, why) in &m.refused {
                 println!("left for you: {path}: {why}");
             }

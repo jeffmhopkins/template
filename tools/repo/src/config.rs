@@ -143,6 +143,11 @@ pub struct Pack {
     /// governance changes.
     #[serde(default)]
     pub protected_tables: BTreeMap<String, Vec<String>>,
+    /// Lockfile glob → the shell command that relocks it, run in the lockfile's directory.
+    /// `docs merge-main` resolves a conflict in a matching file by taking the merged branch's
+    /// side and running the command.
+    #[serde(default)]
+    pub lockfiles: BTreeMap<String, String>,
     pub backrefs: Backrefs,
 }
 
@@ -433,6 +438,14 @@ pub fn check(root: &Path) -> Vec<String> {
             for (job, cmd) in &pack.jobs {
                 if cmd.trim().is_empty() {
                     out.push(format!("{path}: job `{job}` has an empty command"));
+                }
+            }
+            for (g, cmd) in &pack.lockfiles {
+                if let Err(e) = crate::glob::compile(g) {
+                    out.push(format!("{path}: [lockfiles]: {e:#}"));
+                }
+                if cmd.trim().is_empty() {
+                    out.push(format!("{path}: [lockfiles] `{g}` has an empty command"));
                 }
             }
         }

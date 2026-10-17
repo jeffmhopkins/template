@@ -409,3 +409,48 @@ fn back_references_are_required() {
     let r = f.repo(&["docs", "check"]);
     assert!(r.ok(), "{}", r.out);
 }
+
+#[test]
+fn merge_main_relocks_a_conflicted_lockfile() {
+    let pack = format!(
+        "{}[lockfiles]\n\"**/app.lock\" = \"pwd | sed 's,.*/,relocked in ,' >> app.lock\"\n",
+        common::PACK
+    );
+    let (origin, work) = origin_and_clone(
+        "merge-lock",
+        &[
+            ("stacks/rust/pack.toml", &pack),
+            ("sub/app.lock", "dep a 1\n"),
+        ],
+    );
+    for (f, who) in [(&origin, "main"), (&work, "work")] {
+        f.write("sub/app.lock", &format!("dep a 1\ndep {who} 1\n"));
+        f.git(&["add", "-A"]);
+        f.commit(who);
+    }
+    let m = work.repo(&["docs", "merge-main"]);
+    assert!(m.ok(), "{}", m.out);
+    assert!(m.out.contains("relocked: sub/app.lock"), "{}", m.out);
+    // The merged branch's side, then the relock command, run in the lockfile's directory.
+    assert_eq!(
+        work.read("sub/app.lock"),
+        "dep a 1\ndep main 1\nrelocked in sub\n"
+    );
+    assert!(work.git(&["status", "--porcelain"]).trim().is_empty());
+
+    // With another conflict left open, the lockfile waits and says how to relock it.
+    for (f, who) in [(&origin, "main2"), (&work, "work2")] {
+        f.write("sub/app.lock", &format!("dep {who} 2\n"));
+        f.write("src/a.rs", &format!("{who}\n"));
+        f.git(&["add", "-A"]);
+        f.commit(who);
+    }
+    let m = work.repo(&["docs", "merge-main"]);
+    assert_eq!(m.code, 1, "{}", m.out);
+    assert!(
+        m.out.contains("left for you: sub/app.lock: a lockfile"),
+        "{}",
+        m.out
+    );
+    assert!(m.out.contains("left for you: src/a.rs"), "{}", m.out);
+}

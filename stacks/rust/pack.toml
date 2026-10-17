@@ -21,6 +21,12 @@ reason_required = true   # suppression must carry `reason = "..."`
 [protected_tables]
 "**/Cargo.toml" = ["lints", "workspace.lints"]
 
+# Lockfile glob → the command that relocks it, run in the lockfile's directory. `docs merge-main`
+# resolves a conflict in one by taking the merged branch's side and running the command, which
+# adds this branch's own dependencies back on top.
+[lockfiles]
+"**/Cargo.lock" = "cargo metadata --format-version 1 > /dev/null"
+
 [backrefs]
 roots = ["**/src/lib.rs", "**/src/main.rs"]
 prefix = "//! Docs:"

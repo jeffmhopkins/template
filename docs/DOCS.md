@@ -234,6 +234,10 @@ still match main.rs"`.
   `note`. Otherwise the entry is dropped and the section is stale.
 - **Conflicts inside `@generated` blocks** are resolved by regenerating every block from the
   merged sources.
+- **Conflicts in a lockfile** the stack pack names in `[lockfiles]` are resolved once every
+  other conflict is: the file takes the merged branch's side, and the pack's relock command
+  runs in its directory, which adds this branch's own dependencies back. While another
+  conflict is open, the lockfile is left too, with the command to run.
 - **Any other conflict** is left exactly as git wrote it, and the merge stays open for the
   agent to finish.
 

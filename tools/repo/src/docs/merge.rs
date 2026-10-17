@@ -7,6 +7,9 @@
 //!   inputs on the merged tree: the side whose recorded hash matches the merged input is
 //!   kept, with its note; when neither matches, the entry is dropped and the section is
 //!   reported stale.
+//! - **Lockfiles** the stack pack names in `[lockfiles]`: once every other conflict is
+//!   resolved, the file takes the merged branch's side and the pack's relock command runs in
+//!   its directory, so the branch's own dependencies are added back on top of the merged ones.
 //!
 //! Every other conflict is left for the agent. Afterwards it lists the stale sections, each
 //! with the notes this branch had written on it, for the re-read.
@@ -31,6 +34,8 @@ pub struct Merge {
     pub stamps: Vec<String>,
     /// Files whose conflicts were only inside generated blocks.
     pub generated: Vec<String>,
+    /// Lockfiles resolved by relocking, with the command that ran.
+    pub relocked: Vec<(String, String)>,
     /// Conflicted files left for the agent, with the reason.
     pub refused: Vec<(String, String)>,
     pub committed: bool,
@@ -104,6 +109,13 @@ fn resolve_conflicts(repo: &Repo, ledger_path: &str, report: &mut Merge) -> Resu
         &["diff", "--name-only", "-z", "--diff-filter=U"],
     )?);
     let tracked = super::Tracked::new(&repo.config)?;
+    let lock_globs: Vec<(crate::glob::Globs, &String)> = repo
+        .pack
+        .lockfiles
+        .iter()
+        .map(|(g, cmd)| Ok((crate::glob::Globs::new(&[g])?, cmd)))
+        .collect::<Result<_>>()?;
+    let mut locks: Vec<(String, String)> = Vec::new();
     let mut ledger_conflict = false;
     for path in &unmerged {
         let stages = git::text(root, &["ls-files", "-u", "-z", "--", path])?;
@@ -120,6 +132,10 @@ fn resolve_conflicts(repo: &Repo, ledger_path: &str, report: &mut Merge) -> Resu
         }
         if *path == ledger_path {
             ledger_conflict = true;
+            continue;
+        }
+        if let Some((_, cmd)) = lock_globs.iter().find(|(g, _)| g.is_match(path)) {
+            locks.push((path.clone(), (*cmd).clone()));
             continue;
         }
         if !tracked.is_tracked(path) {
@@ -161,6 +177,37 @@ fn resolve_conflicts(repo: &Repo, ledger_path: &str, report: &mut Merge) -> Resu
         for (path, _, text) in &g.files {
             std::fs::write(root.join(path), text)?;
             git::run(root, &["add", "--", path])?;
+        }
+    }
+    for (path, cmd) in locks {
+        if !report.refused.is_empty() {
+            report.refused.push((
+                path,
+                format!(
+                    "a lockfile: once the rest is resolved, take the merged side (`git checkout --theirs`) and relock with `{cmd}`"
+                ),
+            ));
+            continue;
+        }
+        git::run(root, &["checkout", "--theirs", "--", &path])?;
+        let dir = Path::new(&path)
+            .parent()
+            .map_or_else(|| root.to_path_buf(), |d| root.join(d));
+        let status = std::process::Command::new("sh")
+            .args(["-c", &cmd])
+            .current_dir(&dir)
+            .status();
+        match status {
+            Ok(s) if s.success() => {
+                git::run(root, &["add", "--", &path])?;
+                report.relocked.push((path, cmd));
+            }
+            Ok(s) => report
+                .refused
+                .push((path, format!("relock `{cmd}` failed ({s})"))),
+            Err(e) => report
+                .refused
+                .push((path, format!("relock `{cmd}` could not run: {e}"))),
         }
     }
     if ledger_conflict {

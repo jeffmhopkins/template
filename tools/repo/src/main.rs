@@ -42,7 +42,7 @@ commands:
   docs log <DOC[#anchor]> [--rev <rev>]     a doc's or section's history, from git
   docs review <DOC> --by <who> --note <text>
                                             stamp a doc's time-based review
-  docs merge-main [--from <branch>]         merge origin/<branch> (default main), resolve ledger and @generated conflicts
+  docs merge-main [--from <branch>]         merge origin/<branch> (default main), resolve ledger, @generated and lockfile conflicts
   docs due                                  docs past review_every, external URLs past recheck_every
   governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]
              [--into <branch>] [--main <rev>]

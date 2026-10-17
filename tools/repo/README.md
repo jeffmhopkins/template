@@ -52,7 +52,7 @@ review_every = "180d"
 | `docs generate` | rewrites every `@generated` block: `adr-status`, `adr-index`, `progress` | 1 when a block can't be generated |
 | `docs log <DOC[#anchor]> [--rev <rev>]` | revisions, verifications and reviews from git, with the review clock | 0 |
 | `docs review <DOC> --by <who> --note "<text>"` | writes `reviewed = { by, note }` into the `@doc` block | 2 for ADRs and docs without `review_every` |
-| `docs merge-main [--from <branch>]` | merges `origin/<branch>` (default `main`), resolves ledger and generated-block conflicts, lists stale sections with this branch's previous notes | 1 when conflicts remain or sections are stale |
+| `docs merge-main [--from <branch>]` | merges `origin/<branch>` (default `main`), resolves ledger, generated-block and lockfile conflicts, lists stale sections with this branch's previous notes | 1 when conflicts remain or sections are stale |
 | `docs due` | docs past `review_every` and external URLs past `recheck_every` | always 0 |
 | `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>] [--into <branch>] [--main <rev>]` | lists governance changes between the merge base and the head, and a `maintainer-only: <path>` line per changed maintainer-only path and a `maintainer-only: <path>#<rule id>` line per changed `R-GOV-*` rule; with `--author dependabot[bot]`, a diff of action re-pins only is exempt and lists nothing; with `--into wave/<name>`, skips each file whose head version is the one on `--main` (default `origin/main`) and lists every other protected or maintainer-only path as a problem | listing: 0; with `--pr-body` or `--labels`: 1 when changes exist and the label or the `## Governance change` section is missing, a PR into a wave changes a protected path, or an accepted ADR changes beyond being superseded, whatever the labels |
 | `pr-title "<title>"` | Conventional Commit header check, or `Revert "<title>"` | 1 when it doesn't parse |
@@ -80,6 +80,10 @@ only a stock phrase such as "ok", "lgtm", "verified", "checked" or "re-read", is
   the entry is dropped and its section is stale.
 - **A tracked doc whose conflicts all lie inside `@generated` blocks:** the merged branch's
   side is taken, then every block is regenerated from the merged sources.
+- **A lockfile matching a `[lockfiles]` glob in the stack pack:** once nothing else is left,
+  the merged branch's side is taken and the pack's relock command runs in the file's
+  directory; it prints `relocked: <path>`. While anything else is left, the lockfile is
+  left too, with the command to run.
 - **Anything else** is left as git wrote it; the merge stays open.
 
 When nothing is left, it commits the merge and prints `stale: <DOC#anchor>` for each stale
