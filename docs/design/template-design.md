@@ -374,24 +374,24 @@ Each step is one PR, reviewed through the template's own gate once that exists:
    - `Completes:` trailers survive a squash and a wave landing.
 
 <a id="open-questions"></a>
-## 6. Open questions for the maintainer
+## 6. Decisions
 <!-- @section
 -->
 
-Already decided as recommended, since they're agent-tier:
+Agent tier:
 - the tool is in Rust;
 - docs use the ledger with bounded `covers`;
 - waves stay dormant until needed;
 - 12 builders and 2 reviewers to start;
 - Rust is the first stack pack.
 
-For the maintainer (recommendation in brackets):
-1. A second GitHub identity for the reviewer? [no for now]
-2. Default licence: dual MIT/Apache, or chosen at intake? [dual]
-3. Outside contributions closed until first release? [yes]
-4. Changes to the gate, the tier rules and the project instructions always need you? [yes]
-5. Template repo visibility: private or public? [private]
-6. Daily token budget with auto-pause? [yes]
-7. Daily digest in the project chat? [yes]
-8. Bootstrap run for you by a device session? [yes]
-9. Triage may quarantine a flaky test for up to 24 hours, with a tracking issue? [yes]
+The maintainer's:
+1. The reviewer posts under the maintainer's GitHub login; no second identity for now.
+2. New projects default to dual MIT/Apache licensing; intake can change it.
+3. Outside contributions are closed until a project's first release.
+4. Changes to the gate, the tier rules and the project instructions always need the maintainer.
+5. The template repo is public.
+6. Each project has a daily token budget with auto-pause.
+7. The coordinator posts a daily digest in the project chat.
+8. A device session runs bootstrap on the maintainer's machine.
+9. Triage may quarantine a flaky test for up to 24 hours, with a tracking issue.

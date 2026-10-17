@@ -70,7 +70,8 @@ itself. The questions it must settle on day 0:
 - contributions: closed until first release?;
 - hardware runs: what only their machine can test, how often, and whether merging at risk with a
   tracking issue is fine;
-- flaky tests: may triage quarantine one for up to 24 hours, with a tracking issue?
+- flaky tests: may triage quarantine one for up to 24 hours, with a tracking issue? (template
+  default: yes)
 
 **Round 3: confirm.** One message restating every answer and every agent-tier pick
 ("picked X; strike to change"), plus one card: `Accept ADR-<first>–<last>` (rec: yes), with
