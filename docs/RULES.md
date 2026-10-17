@@ -79,7 +79,7 @@ names `enforced_by` may cite as `ci:<name>`. Every name on it is a job in
 | `fmt`, `lint`, `test`, `deps` | the stack pack's commands (`scripts/repo stack run <job>`) |
 | `docs` | `scripts/repo docs check` |
 | `pr-title` | `scripts/repo pr-title` |
-| `gate-test` | the node test of `review-gate`'s decision function, cut from the workflow |
+| `gate-test` | the node test of `review-gate`'s decision function, cut from the workflow, and a check that every YAML file under `.github/` has no repeated keys or tab indentation |
 | `lane-guard` | `scripts/repo lane-guard` |
 | `governance` | `scripts/repo governance` with the PR's body and labels |
 | `review-gate` | the reviewer's verdict for the head SHA ([R-GOV-003](#R-GOV-003)) |

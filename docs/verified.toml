@@ -226,7 +226,7 @@ stamp = { hash = "b3:7b1db7c0eb713342", by = "agent:trust-fixer", note = "Added 
 stamp = { hash = "b3:eae60e9a93944299", by = "agent:trust-fixer", note = "review-gate.yml now skips commits on main, needs verified signatures for Dependabot, removes review-override on synchronize and fails on unset MAINTAINER_LOGIN; the gate paragraph says so" }
 
 ["REVIEW#output"."file:.github/workflows/review-gate.yml"]
-stamp = { hash = "b3:66efbfb1f9ad65a1", by = "agent:trust-fixer", note = "review-gate.yml now skips commits on main, needs verified signatures for Dependabot, removes review-override on synchronize and fails on unset MAINTAINER_LOGIN; the gate paragraph says so" }
+stamp = { hash = "b3:74ead1181be49d56", by = "agent:template-thread", note = "Only change to review-gate.yml is dropping the duplicate pull-requests: read permission key; the marker format, verdict rules and status posting described here are unchanged" }
 
 ["REVIEW#tiers"."body"]
 stamp = { hash = "b3:1656af2c7e78080b", by = "agent:routing-fixer", note = "Added the card tap rule: source is the card's message id, words the option label, tapper's author_id from the coordinator's decision file; a close_decision is not a tap" }
@@ -421,7 +421,7 @@ stamp = { hash = "b3:50dd88429baca7ae", by = "agent:trust-fixer", note = "REVIEW
 stamp = { hash = "b3:768186a969485129", by = "agent:callout-pass", note = "Moved the review-gate pending bullet into a NOTE alert below the list; wording unchanged, the reproduce and fix guidance still holds" }
 
 ["SKILL-STEWARD#ci"."dep:RULES#R-GIT-003"]
-stamp = { hash = "b3:eb8ad9b825311651", by = "agent:structure-pass", note = "R-GIT-003 gained the dependency-review row; added that it runs only on GitHub and how to fix a finding; the local reproduction commands for the other checks still match" }
+stamp = { hash = "b3:a7ac95a8d51a7f8e", by = "agent:template-thread", note = "R-GIT-003's gate-test row now also covers the YAML repeated-key check; the reproduce command node --test '.github/tests/*.test.mjs' runs both test files, so the step still holds" }
 
 ["SKILL-STEWARD#every-event"."body"]
 stamp = { hash = "b3:ab0bbcce2c9a2415", by = "agent:routing-fixer", note = "Builder's wake now has triage turning off auto-merge while main is red; step 4 adds the wave form of governance (--base origin/wave/<name> --into); steps still match the builder brief" }

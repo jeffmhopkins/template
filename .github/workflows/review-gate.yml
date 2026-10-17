@@ -41,7 +41,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
   issues: read            # comments and label events
   pull-requests: write    # removes review-override on a push; nothing else
   statuses: write         # the review-gate status

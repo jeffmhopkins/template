@@ -190,7 +190,8 @@ jobs:
             target/
             tools/repo/target/
 
-  # The review gate's decision function, cut out of the deployed review-gate.yml and tested.
+  # The review gate's decision function, cut out of the deployed review-gate.yml and tested,
+  # and every YAML file under .github/ checked for repeated keys and tab indentation.
   gate-test:
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
