@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Template upgrade runbook
 
+> Take a newer template version as one governance PR: template-owned paths come over,
+> project-owned content is never overwritten.
+
 How a project made from the template takes a later template version without being reset.
 The project records where it came from in [`repo.toml`](../../repo.toml): `[template].source`
 is the template's GitHub repo and `[template].version` the version the project is on. In the
@@ -66,7 +69,8 @@ lost):
 - ADRs 0006 and up, and the rule groups intake added to `docs/RULES.md`;
 - the values intake set inside template-owned files: `[stack]`, the project's extra
   `[checks].required` names and lanes in `repo.toml`, the licence allow list in the stack
-  pack, the project-instructions additions;
+  pack, the project-instructions additions, and the project's repo in the badge entries of
+  `docs/external.toml`;
 - `lanes.toml`, and the ledger `docs/verified.toml`, which only `docs verify` writes.
 
 `CHANGELOG.md` describes the template; it is read at the new tag and not copied. A template
