@@ -1,5 +1,11 @@
 # Verification stamps: one entry per section input. Written by `repo docs verify`; never edit by hand.
 
+["AGENT-DEVICE#bootstrap"."body"]
+stamp = { hash = "b3:f145710602f206cd", by = "agent:day0-fixer", note = "New section: the bootstrap procedure under the maintainer's gh login, checked against the runbook's run steps (check tools, run, --check must say All settings match, exit 2 stops) and the BOOTSTRAP-RESULT line in the agents README" }
+
+["AGENT-DEVICE#bootstrap"."dep:RUNBOOK-BOOTSTRAP#run"]
+stamp = { hash = "b3:d74b62bbe7652f10", by = "agent:day0-fixer", note = "New section: the bootstrap procedure under the maintainer's gh login, checked against the runbook's run steps (check tools, run, --check must say All settings match, exit 2 stops) and the BOOTSTRAP-RESULT line in the agents README" }
+
 ["CLAUDE#commands"."body"]
 stamp = { hash = "b3:899ff35bb8f5b065", by = "agent:skeleton-verifier", note = "Each row checked against the DOCS#tool table and main.rs: docs check/for/verify/generate/merge-main --from/log, governance --base, pr-title, progress, stack run <job>; all exist with the stated arguments" }
 
@@ -37,7 +43,7 @@ stamp = { hash = "b3:32ed4d1b07ec4bf3", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New first section; template mode by [template].source equal to origin's owner/repo, project mode while PRODUCT.md is draft; product docs match AGENT-INTAKE#outputs" }
 
 ["CLAUDE#which-repo"."dep:AGENT-INTAKE#outputs"]
-stamp = { hash = "b3:02a73ac41e57dd4c", by = "agent:skeleton-lead", note = "Intake output 8 now replaces the template's repo, named by [template].source, in the badges instead of a placeholder. That is still an intake-owned product edit, so template vs project mode and the intake-only rule hold" }
+stamp = { hash = "b3:710fd43a823c10a1", by = "agent:day0-fixer", note = "Intake outputs gained README, LICENSE-MIT, code of conduct, CHANGELOG and security-link items and Completes: M0-1; intake still owns the product docs until its design PR merges, so the template/project test holds" }
 
 ["DOCS#governance"."body"]
 stamp = { hash = "b3:a89bd5838cf02de2", by = "agent:callout-pass", note = "Moved the maintainer-only own-words sentence into an IMPORTANT alert (paths in [governance].maintainer_only), same meaning and R-GOV-007 link" }
@@ -127,28 +133,28 @@ stamp = { hash = "b3:eb152e9aae06f174", by = "agent:callout-pass", note = "Moved
 stamp = { hash = "b3:6d9dce2aef1a66e9", by = "agent:skeleton-verifier", note = "Checked sweep.yml: cron weekly, docs due step, advisories, updates, 7-day label audit, lane holders >24h, churn step, pinned issue; due.rs clock (body or reviewed change) and refusals; said the audit covers the past week" }
 
 ["GETTING-STARTED#intake"."body"]
-stamp = { hash = "b3:b42536627a104668", by = "agent:skeleton-lead", note = "Three rounds match AGENT-INTAKE#the-rounds: a drafted product message corrected in words, a batch of maintainer-tier cards with recommendations, then a restatement and one accept card. The design PR, then the planner and builders, follow AGENTS#day-0-order" }
+stamp = { hash = "b3:bece2edd8816a242", by = "agent:day0-fixer", note = "Intake round 1 now confirms visibility and round 3 has two cards; this summary still holds, and now says the coordinator asks for the re-paste and re-run after the design PR merges" }
 
 ["GETTING-STARTED#intake"."dep:AGENT-INTAKE#the-rounds"]
-stamp = { hash = "b3:e57852df8eb3e21f", by = "agent:skeleton-lead", note = "Three rounds match AGENT-INTAKE#the-rounds: a drafted product message corrected in words, a batch of maintainer-tier cards with recommendations, then a restatement and one accept card. The design PR, then the planner and builders, follow AGENTS#day-0-order" }
+stamp = { hash = "b3:2ba469026bdb3333", by = "agent:day0-fixer", note = "Intake round 1 now confirms visibility and round 3 has two cards; this summary still holds, and now says the coordinator asks for the re-paste and re-run after the design PR merges" }
 
 ["GETTING-STARTED#setup"."body"]
-stamp = { hash = "b3:60bb79a5f6610869", by = "agent:skeleton-lead", note = "Each table row matches RUNBOOK-BOOTSTRAP#settings: squash title from PR, delete-on-merge, auto-merge; main and wave rulesets; read-only token, no PR approval, SHA pins, fork approval; four labels; REVIEWER_LOGIN plus the placeholder session list; Dependabot alerts and fixes, secret scanning, push protection. The can't-do list matches #by-hand plus the private-repo dependency graph note in #before" }
+stamp = { hash = "b3:5318c758c2aee7c5", by = "agent:day0-fixer", note = "Table now says merge commits only into wave branches, MAINTAINER_LOGIN and REVIEWER_LOGIN, REVIEWER_SESSIONS starting as none, private vulnerability reporting; checked against the runbook settings table and bootstrap.sh; by-hand list now points at the runbook and steps 2, 3, 4, 7, 8" }
 
 ["GETTING-STARTED#setup"."dep:RUNBOOK-BOOTSTRAP#by-hand"]
-stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Bootstrap by-hand only moved its no-marker sentence into a WARNING alert; the by-hand list here (app, instructions, reviewer list) still matches" }
+stamp = { hash = "b3:339d1b1afdd901eb", by = "agent:day0-fixer", note = "Table now says merge commits only into wave branches, MAINTAINER_LOGIN and REVIEWER_LOGIN, REVIEWER_SESSIONS starting as none, private vulnerability reporting; checked against the runbook settings table and bootstrap.sh; by-hand list now points at the runbook and steps 2, 3, 4, 7, 8" }
 
 ["GETTING-STARTED#setup"."dep:RUNBOOK-BOOTSTRAP#settings"]
-stamp = { hash = "b3:ad2d61d8436ed56e", by = "agent:skeleton-lead", note = "Each table row matches RUNBOOK-BOOTSTRAP#settings: squash title from PR, delete-on-merge, auto-merge; main and wave rulesets; read-only token, no PR approval, SHA pins, fork approval; four labels; REVIEWER_LOGIN plus the placeholder session list; Dependabot alerts and fixes, secret scanning, push protection. The can't-do list matches #by-hand plus the private-repo dependency graph note in #before" }
+stamp = { hash = "b3:03a291b2425be7d7", by = "agent:day0-fixer", note = "Table now says merge commits only into wave branches, MAINTAINER_LOGIN and REVIEWER_LOGIN, REVIEWER_SESSIONS starting as none, private vulnerability reporting; checked against the runbook settings table and bootstrap.sh; by-hand list now points at the runbook and steps 2, 3, 4, 7, 8" }
 
 ["GETTING-STARTED#start"."body"]
-stamp = { hash = "b3:2c65b6f21fd02b26", by = "agent:callout-pass", note = "Moved 'Until then no PR can merge' out of step 7 into a WARNING alert after the list; bootstrap by-hand step 3 change is presentational too" }
+stamp = { hash = "b3:c879e0cb9a97e5de", by = "agent:day0-fixer", note = "Reordered: Claude app before the project, instructions pasted before bootstrap, re-paste and re-run after intake; matches the new day-0 order and the runbook's five by-hand steps; template link via the template-source fact, concrete jane/photo-sorter clone example" }
 
 ["GETTING-STARTED#start"."dep:AGENTS#day-0-order"]
-stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:skeleton-lead", note = "Steps match AGENTS#day-0-order: template repo, bootstrap by the maintainer or a device session, paste project-instructions from the <PROJECT> line with the name and repo filled in, then the coordinator starts intake. Also matches RUNBOOK-BOOTSTRAP#by-hand: Claude GitHub App install and the gh commands with --check ending in All settings match" }
+stamp = { hash = "b3:c214f0c40137713f", by = "agent:day0-fixer", note = "Reordered: Claude app before the project, instructions pasted before bootstrap, re-paste and re-run after intake; matches the new day-0 order and the runbook's five by-hand steps; template link via the template-source fact, concrete jane/photo-sorter clone example" }
 
 ["GETTING-STARTED#start"."dep:RUNBOOK-BOOTSTRAP#by-hand"]
-stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Moved 'Until then no PR can merge' out of step 7 into a WARNING alert after the list; bootstrap by-hand step 3 change is presentational too" }
+stamp = { hash = "b3:339d1b1afdd901eb", by = "agent:day0-fixer", note = "Reordered: Claude app before the project, instructions pasted before bootstrap, re-paste and re-run after intake; matches the new day-0 order and the runbook's five by-hand steps; template link via the template-source fact, concrete jane/photo-sorter clone example" }
 
 ["HARDWARE#flow"."body"]
 stamp = { hash = "b3:99c98b24cbce4416", by = "agent:template-thread", note = "New section: the four steps match builder#hardware (record PR adds docs/hardware/<item>.md with Verified-on-hardware and Closes), device#each-run (issue left open) and DOCS#progress (done needs the trailer)" }
@@ -238,40 +244,40 @@ stamp = { hash = "b3:38eda9dd7416afd8", by = "agent:style-pass", note = "ADR-000
 stamp = { hash = "b3:f5a2a5866b2b5c68", by = "agent:style-pass", note = "ADR-0002 and ADR-0003 gained summaries and Positive/Negative consequences; R-GOV-001..007 (labels, gate, tiers, approval contract, maintainer-only paths) still match both decisions unchanged" }
 
 ["RUNBOOK-BOOTSTRAP#before"."body"]
-stamp = { hash = "b3:fc3d6da4c341f9d5", by = "agent:structure-pass", note = "Added the private-repo plan needs for secret scanning and dependency-review; gh, python3, admin login and repo.toml prerequisites unchanged in bootstrap.sh" }
+stamp = { hash = "b3:0c81ca9266c9cb4d", by = "agent:day0-fixer", note = "Added git and the bash 3.2 note, the up-front tool, Python, login, admin and private-plan checks with exit 2 before any write, and the skip when the plan is not visible; matches the access-and-plan block in bootstrap.sh" }
 
 ["RUNBOOK-BOOTSTRAP#before"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "Added the private-repo plan needs for secret scanning and dependency-review; gh, python3, admin login and repo.toml prerequisites unchanged in bootstrap.sh" }
+stamp = { hash = "b3:0e2eecfe9ad195e7", by = "agent:day0-fixer", note = "Added git and the bash 3.2 note, the up-front tool, Python, login, admin and private-plan checks with exit 2 before any write, and the skip when the plan is not visible; matches the access-and-plan block in bootstrap.sh" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."body"]
-stamp = { hash = "b3:03517e03b413d745", by = "agent:callout-pass", note = "Moved 'the gate counts no marker' into a WARNING alert after step 3 naming REVIEWER_SESSIONS; same meaning, steps unchanged" }
+stamp = { hash = "b3:339d1b1afdd901eb", by = "agent:day0-fixer", note = "Five steps in the order of AGENTS#day-0-order and the script's footer: app before project, paste before bootstrap, REVIEWER_SESSIONS on each ids card then tell the coordinator, private dependency graph, re-paste and re-run after intake" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."dep:AGENTS#day-0-order"]
-stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:style-pass", note = "AGENTS#day-0-order gained a mermaid flow of the same four steps; pasting project-instructions with the name filled in and the reviewer-sessions step still fit that order" }
+stamp = { hash = "b3:c214f0c40137713f", by = "agent:day0-fixer", note = "Five steps in the order of AGENTS#day-0-order and the script's footer: app before project, paste before bootstrap, REVIEWER_SESSIONS on each ids card then tell the coordinator, private dependency graph, re-paste and re-run after intake" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "bootstrap.sh still prints the Claude app and project-instructions steps at the end; the secret scanning step adds nothing by hand; REVIEWER_SESSIONS step holds" }
+stamp = { hash = "b3:0e2eecfe9ad195e7", by = "agent:day0-fixer", note = "Five steps in the order of AGENTS#day-0-order and the script's footer: app before project, paste before bootstrap, REVIEWER_SESSIONS on each ids card then tell the coordinator, private dependency graph, re-paste and re-run after intake" }
 
 ["RUNBOOK-BOOTSTRAP#check"."body"]
-stamp = { hash = "b3:344d9502c273ec44", by = "agent:structure-pass", note = "--check now also prints skip: when security_and_analysis is hidden and heredoc bodies for the secret scanning PATCH; exit codes 0/1/2 unchanged" }
+stamp = { hash = "b3:bd6943db8df77058", by = "agent:day0-fixer", note = "Skip now also covers features the plan lacks and never counts as a difference; exit 2 list gains git, Python older than 3.11, no admin rights and an unfit private repo, both setup only; matches the script's die calls" }
 
 ["RUNBOOK-BOOTSTRAP#check"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "--check now also prints skip: when security_and_analysis is hidden and heredoc bodies for the secret scanning PATCH; exit codes 0/1/2 unchanged" }
+stamp = { hash = "b3:0e2eecfe9ad195e7", by = "agent:day0-fixer", note = "Skip now also covers features the plan lacks and never counts as a difference; exit 2 list gains git, Python older than 3.11, no admin rights and an unfit private repo, both setup only; matches the script's die calls" }
 
 ["RUNBOOK-BOOTSTRAP#run"."body"]
-stamp = { hash = "b3:8669c7aca4dfab98", by = "agent:skeleton-verifier", note = "Checked flags --check, --repo, --template and the gh repo view default in bootstrap.sh, the ok:/set: output of fix(), and the final 'All settings match.' line with exit 0 in check mode" }
+stamp = { hash = "b3:d74b62bbe7652f10", by = "agent:day0-fixer", note = "Steps unchanged; added the skip: output, which bootstrap.sh now prints for features the login or plan lacks (rulesets on a free private repo, private vulnerability reporting on a private repo)" }
 
 ["RUNBOOK-BOOTSTRAP#run"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "bootstrap.sh adds the secret scanning step; still idempotent, reads before writing, ok:/set: output, --repo and --template flags unchanged" }
+stamp = { hash = "b3:0e2eecfe9ad195e7", by = "agent:day0-fixer", note = "Steps unchanged; added the skip: output, which bootstrap.sh now prints for features the login or plan lacks (rulesets on a free private repo, private vulnerability reporting on a private repo)" }
 
 ["RUNBOOK-BOOTSTRAP#settings"."body"]
-stamp = { hash = "b3:ad2d61d8436ed56e", by = "agent:structure-pass", note = "Security row now lists secret scanning and push protection via security_and_analysis PATCH; skip:/warn: behaviour described; DESIGN#setup item 6 matches; checks still from repo.toml incl dependency-review" }
+stamp = { hash = "b3:03a291b2425be7d7", by = "agent:day0-fixer", note = "Variables row adds MAINTAINER_LOGIN, always set to the gh user and verified by --check; security row and skip paragraph add private vulnerability reporting, skipped on private repos; matches bootstrap.sh and DESIGN#setup items 5 to 7" }
 
 ["RUNBOOK-BOOTSTRAP#settings"."dep:DESIGN#setup"]
-stamp = { hash = "b3:6f5d3bcc849f1816", by = "agent:structure-pass", note = "Security row now lists secret scanning and push protection via security_and_analysis PATCH; skip:/warn: behaviour described; DESIGN#setup item 6 matches; checks still from repo.toml incl dependency-review" }
+stamp = { hash = "b3:9a7daeff8ca5aee3", by = "agent:day0-fixer", note = "Variables row adds MAINTAINER_LOGIN, always set to the gh user and verified by --check; security row and skip paragraph add private vulnerability reporting, skipped on private repos; matches bootstrap.sh and DESIGN#setup items 5 to 7" }
 
 ["RUNBOOK-BOOTSTRAP#settings"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "Security row now lists secret scanning and push protection via security_and_analysis PATCH; skip:/warn: behaviour described; DESIGN#setup item 6 matches; checks still from repo.toml incl dependency-review" }
+stamp = { hash = "b3:0e2eecfe9ad195e7", by = "agent:day0-fixer", note = "Variables row adds MAINTAINER_LOGIN, always set to the gh user and verified by --check; security row and skip paragraph add private vulnerability reporting, skipped on private repos; matches bootstrap.sh and DESIGN#setup items 5 to 7" }
 
 ["RUNBOOK-LANES#builder"."body"]
 stamp = { hash = "b3:8f9386c3da1f35e2", by = "agent:skeleton-verifier", note = "Checked against R-GIT-006: lane line set to base+1 with the PR as holder only after LANE-HOLD, auto-merge off until the slot is granted; LANE-READY/LANE-HOLD/MERGE-MAIN formats match AGENTS#messages" }
@@ -307,13 +313,13 @@ stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:f20fb3eec5516d16", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RUNBOOK-BOOTSTRAP#check"]
-stamp = { hash = "b3:344d9502c273ec44", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
+stamp = { hash = "b3:bd6943db8df77058", by = "agent:day0-fixer", note = "Step 5 still holds: --check now reports features the plan lacks as skip, not as differences, so the differences it sends the coordinator are real ones" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#what"."body"]
-stamp = { hash = "b3:e6a65a1a0ad90223", by = "agent:structure-pass", note = "The never-overwritten list matches intake outputs (PRODUCT, ROADMAP, ARCHITECTURE, ADRs, rule groups, repo.toml choices, project-instructions additions) plus lanes and the ledger. After the merge it adds output 8: the project's repo in the external.toml badge entries is project-owned, and README stays project-owned" }
+stamp = { hash = "b3:385aae2506690a67", by = "agent:day0-fixer", note = "Intake now replaces CHANGELOG.md and fills the security link in .github/ISSUE_TEMPLATE/config.yml; the section says the project's changelog is its own and lists the link among values intake set in template-owned files" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#what"."dep:AGENT-INTAKE#outputs"]
-stamp = { hash = "b3:02a73ac41e57dd4c", by = "agent:skeleton-lead", note = "Intake output 8 now replaces [template].source's repo in the badges. The never-overwritten list already keeps README and the project's repo in the external.toml badge entries project-owned, so it still matches" }
+stamp = { hash = "b3:710fd43a823c10a1", by = "agent:day0-fixer", note = "Intake now replaces CHANGELOG.md and fills the security link in .github/ISSUE_TEMPLATE/config.yml; the section says the project's changelog is its own and lists the link among values intake set in template-owned files" }
 
 ["RUNBOOK-WAVES#current"."body"]
 stamp = { hash = "b3:8aa60d15758aa947", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main --from wave/<name> merges origin/wave/<name>, resolves ledger and generated-block conflicts, lists stale sections; merge never rebase" }
