@@ -14,7 +14,7 @@ review_every = "180d"
 Every decision recorded in `docs/adr/`. The table is generated from each ADR's `@doc` block
 by `scripts/repo docs generate` ([DOCS › Generated blocks](../DOCS.md#generated)). New ADRs
 start from [`TEMPLATE.md`](TEMPLATE.md) and take the next free number; the template's own
-ADRs are 0001 to 0005. The tier rules are in [ADR-0003](0003-decision-tiers.md).
+ADRs are 0001 to 0006. The tier rules are in [ADR-0003](0003-decision-tiers.md).
 
 <!-- @generated begin adr-index -->
 | ADR | Title | Tier | Status |
@@ -24,4 +24,5 @@ ADRs are 0001 to 0005. The tier rules are in [ADR-0003](0003-decision-tiers.md).
 | [ADR-0003](0003-decision-tiers.md) | Decision tiers | maintainer | accepted |
 | [ADR-0004](0004-ci-drafts-platform-pins.md) | CI: drafts skip, platform jobs after review, SHA pins | agent | accepted |
 | [ADR-0005](0005-waves-and-serial-lanes.md) | Wave branches and serial lanes | agent | accepted |
+| [ADR-0006](0006-separate-agent-identities.md) | Separate GitHub identities for agents and the gate | maintainer | proposed |
 <!-- @generated end adr-index -->

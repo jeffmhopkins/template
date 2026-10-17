@@ -75,7 +75,15 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 <!-- @section
 -->
 
-- Recuse if your session id appears in any commit's `Claude-Session` trailer.
+- Recuse if your session id appears in the `Claude-Session` trailer of any commit not
+  already on `main`.
+- **Check every maintainer decision yourself** before posting a round that relies on it:
+  each `source:` the worker lists, read with `fetch_messages`, from a `user` whose
+  `author_id` is in `ops/maintainer.md`, in words that name the ADR, PR or path
+  ([REVIEW › Tier checks](../../../REVIEW.md#tiers)). Your worker can't. If one fails, change
+  the draft's verdict to `escalate` before posting.
+- A worker never runs the PR's code: it builds the tool from the base and points it at the
+  head ([reviewer worker › Steps](reviewer-worker.md#steps)).
 - A blocking finding needs a traced path and a `file:line`. Otherwise it's a question.
 - **Maintainer-tier ADR without a valid decision:** verdict `escalate`, apply `needs-human`,
   and send `NEEDS-MAINTAINER #<pr>: <ADR id> (rec: accept)`.

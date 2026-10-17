@@ -48,8 +48,9 @@ Fix: …
 
 ### Governance, description, CI
 - Governance: <what `repo governance` flagged, and whether the label and section are right>.
+- Maintainer decisions: <each `/accept`, `/reject`, `/approve` or override, and whether its `source:` checked out with `fetch_messages`, or "None">.
 - Security: <anything touching secrets, permissions or untrusted input, or "None">.
-- PR description: <answers the template; trailers `Completes:` / `Part-of:` correct>.
+- PR description: <answers the template; trailers `Completes:` / `Part-of:` correct; ends with `Claude-Session:`>.
 - CI at <sha7>: <green / which checks are red, and whose they are>.
 
 <!-- review v1 verdict=<pass|fail|escalate|recuse> sha=<40-char head SHA> round=<n> reviewer-session=<session id> -->

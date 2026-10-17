@@ -110,6 +110,9 @@ coordinator queues it again.
 > around either.
 
 - Merge by hand, post review markers, or change repo settings.
+- Apply `review-override`, or `governance-approved` on a PR that changes a maintainer-only
+  path. Only the maintainer applies those ([CLAUDE › Limits](../../CLAUDE.md#limits)).
+- Commit without your `Claude-Session:` trailer, or open a PR whose body doesn't end with it.
 - Edit `docs/progress.toml`; the planner owns it.
 - Push to another row's branch.
 - Verify a section you didn't re-read, or claim a test ran when it didn't.

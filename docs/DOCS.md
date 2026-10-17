@@ -166,7 +166,9 @@ stamp = { hash = "b3:…" }
 The inputs, by key:
 1. `body`: the section's text, normalized (metadata blocks and `@generated` blocks
    removed, LF line endings, trailing whitespace stripped);
-2. `file:<path>`: each tracked file its `covers` match, by contents;
+2. `file:<path>`: each tracked file its `covers` match, by contents. In a workflow or
+   composite action under `.github/`, the ref after `@` on a `uses:` line is left out, so
+   an action pin bump doesn't stale the section that describes the file;
 3. `dep:<reference>`: each `depends_on` target, by its normalized body. A rule names its
    own text, up to the next rule or section. A whole ADR leaves out its `adr-status` block.
 
@@ -331,8 +333,13 @@ Roadmap status is derived, never recorded.
   PRs in it. A passed run on hardware is recorded by a record PR that adds
   `docs/hardware/<id>.md` and carries `Verified-on-hardware: <id>`
   ([builder › Hardware](agents/builder.md#hardware)).
-- A `Revert "…"` commit cancels the reverted commit's trailers, and reverting the revert
-  restores them. A trailer naming an unknown item is a warning.
+- A trailer counts only in a trailer paragraph: one whose every line is `Key: value`,
+  outside code fences and HTML comments. A line in prose never counts.
+- A revert cancels the reverted commit's trailers: a `Revert "…"` or `revert: …` subject
+  naming an earlier commit, or a `This reverts commit <sha>` line. A revert that is itself
+  reverted cancels nothing. A trailer naming an unknown item is a warning.
+- A `Verified-on-hardware:` counts only after the item's latest `Completes:`, so an item
+  completed again after a revert needs a new hardware run.
 - `scripts/repo progress` reads the trailers on every commit reachable from `HEAD` and prints
   each item's status: `planned`, `in-progress` (a `Part-of:` seen), `done` (`Completes:`
   seen), or `hardware` (done, `hardware = true`, no `Verified-on-hardware:` yet).
@@ -370,24 +377,37 @@ on it unless the PR carries the `governance-approved` label **and** its descript
 non-empty `## Governance change` section saying what is loosened or tightened, and why:
 
 - edits to `covers`, `applies_to`, `enforced_by` or `status` in any metadata block;
+- edits to an active rule's heading or text;
 - any edit to an accepted ADR, except to its `status`, its `superseded_by` and its
   `adr-status` block;
-- retiring a rule or a doc, or removing a section;
-- edits to the paths in `[governance].protected` in `repo.toml`;
+- retiring a rule or a doc, or removing a section. A doc moved to a new path with the same
+  `id` is not removed; its metadata is compared across the move;
+- edits to the paths in `[governance].protected` or `[governance].maintainer_only` in
+  `repo.toml`;
+- edits to the manifest tables the stack pack protects (`[protected_tables]`, for Rust the
+  `[lints]` and `[workspace.lints]` of every `Cargo.toml`);
 - new lint suppressions, found with the stack pack's suppression patterns.
 
 `scripts/repo governance --base <rev>` lists the changes between the merge base and `HEAD`.
 With `--pr-body` and `--labels` it also fails when the label or the section is missing. It
 prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`.
+With `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
+of the same action to a new full commit SHA, with its release in a trailing comment, is
+exempt ([ADR-0004](adr/0004-ci-drafts-platform-pins.md)).
 
 > [!IMPORTANT]
 > Paths in `[governance].maintainer_only` always need the maintainer's own words
-> ([R-GOV-007](RULES.md#R-GOV-007)).
+> ([R-GOV-007](RULES.md#R-GOV-007)), and only the maintainer applies the label on such a PR.
 
 The workflow runs on `pull_request_target`. It builds the tool from the base commit and
 reads the head only as git objects: a PR's edits to the tool never change how its own
-check runs. Agents may apply the label after examining what was flagged; the weekly sweep
-lists every PR merged with it.
+check runs. `repo.toml`, the tool's source and the workflows are maintainer-only, so the
+list protects itself: no PR loosens it for the next one without the maintainer.
+
+A push removes `governance-approved`, so the label counts only for the head it was applied
+to. An agent applies it again after examining what the check flags at the new head, except
+on maintainer-only paths ([R-GOV-002](RULES.md#R-GOV-002)). The weekly sweep lists every PR
+merged with it.
 
 <a id="backrefs"></a>
 ## Code back-references
@@ -462,11 +482,14 @@ covers = ["tools/repo/src/**"]
 
 `tools/repo` is one standalone Rust binary, configured by `repo.toml` and the stack pack
 named in it, and invoked as `scripts/repo <command>`. It resolves the repo root at run time,
-exits non-zero on any finding, and fails on unknown keys in its config.
+from the current directory or from `--root <dir>` given before the command, exits non-zero
+on any finding, and fails on unknown keys in its config. `--root` lets a build from one tree
+check another, as the reviewer checks a PR head with the base's tool
+([REVIEW › Gather](../REVIEW.md#gather)).
 
 | Command | What it does |
 |---|---|
-| `config check` | schema-check `repo.toml`, `lanes.toml` and the stack pack; compare `[checks].required` with the job names in `.github/workflows/` |
+| `config check` | schema-check `repo.toml`, `lanes.toml` and the stack pack; compare `[checks].required` with the check names in `.github/workflows/`: a job's `name:`, else its id |
 | `docs check [--draft]` | [What the docs check fails on](#gate) |
 | `docs verify <DOC#anchor> --by … --note …` | restamp a section ([The ledger](#ledger)) |
 | `docs for <path>` | what governs a file ([Code back-references](#backrefs)) |
@@ -475,7 +498,7 @@ exits non-zero on any finding, and fails on unknown keys in its config.
 | `docs review <DOC> --by … --note …` | record a doc's time-based review ([Time-based review](#ttl)) |
 | `docs merge-main [--from <branch>]` | [Merging main](#merge) |
 | `docs due` | docs and external URLs due for review; exits 0 |
-| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b]` | [Governance changes](#governance) |
+| `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>]` | [Governance changes](#governance) |
 | `pr-title "<title>"` | check a Conventional Commit title |
 | `lane-guard --base <rev> --head <rev> --pr <n> [--wave]` | [Serial lanes](#lanes); `--wave` for a wave's landing PR |
 | `progress [--format markdown\|json]` | [Progress](#progress) |

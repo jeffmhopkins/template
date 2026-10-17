@@ -45,18 +45,30 @@ Every ADR declares a `tier` in its `@doc` block.
   builder picks it and the reviewer checks it. Too low a tier is blocking; too high is
   non-blocking. An agent-tier ADR that contains one maintainer-level question splits that
   question into its own ADR.
-- **Decision comments**, posted on the PR:
-  - **Direct:** the maintainer comments `/accept ADR-NNNN` or `/reject ADR-NNNN`.
+- **Decision comments**, posted on the PR. Each carries a `source:`: the message id of the
+  maintainer's own message in the project that gives the decision.
+  - **Direct:** the maintainer comments `/accept ADR-NNNN` or `/reject ADR-NNNN`, with
+    `source: <message id>` on the next line.
   - **Proxy:** an agent relays the maintainer's explicit instruction:
     ```
     /accept ADR-NNNN
     on-behalf-of: @<maintainer>
     instruction: "<the maintainer's words, quoted>"
-    source: <link to the maintainer's message, or its message id>
+    source: <the maintainer's message id>
     proxy-session: <the relaying agent's session id>
     ```
-  The instruction names the specific ADR. Standing or blanket instructions are not
-  decisions. An agent never posts a decision the maintainer didn't give.
+  - **Maintainer-only paths:** the same fields, with `/approve <path>` as the first line,
+    one per changed path or `[governance].maintainer_only` glob; the instruction names the
+    PR or the path.
+  The instruction names the specific ADR, or the PR or path. Standing or blanket instructions
+  are not decisions. A decision card's answer counts for an ADR only when the card's
+  question or context lists that ADR's id. An agent never posts a decision the maintainer
+  didn't give.
+- **Checking a decision.** Agents post under the maintainer's GitHub login, so the login
+  proves nothing. The reviewer itself, never a sub-worker, reads each `source:` with
+  `fetch_messages`: the author is a `user` whose `author_id` equals the maintainer's user id
+  recorded on day 0 in `ops/maintainer.md`, and the words name that ADR, PR or path. A
+  decision whose source fails any of these is invalid.
 
 <a id="consequences"></a>
 ## Consequences

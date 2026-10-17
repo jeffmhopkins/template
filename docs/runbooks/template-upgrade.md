@@ -118,10 +118,13 @@ depends_on = ["RULES#R-GOV-001", "RULES#R-GOV-007", "RUNBOOK-BOOTSTRAP#check"]
    (`.claude/skills/verify-docs/SKILL.md`). Then `scripts/repo docs generate`.
 3. The PR is a governance change: `scripts/repo governance --base origin/main` lists the
    protected paths. Write the `## Governance change` section (template version `<old>` to
-   `<new>`, and each check loosened or tightened, from the CHANGELOG) and apply
-   `governance-approved` ([R-GOV-001](../RULES.md#R-GOV-001)).
-4. Any `maintainer-only:` path it prints needs the maintainer's own words on the PR, with
-   `needs-human` until they are there ([R-GOV-007](../RULES.md#R-GOV-007)).
+   `<new>`, and each check loosened or tightened, from the CHANGELOG). Apply
+   `governance-approved` only when it prints no `maintainer-only:` path
+   ([R-GOV-001](../RULES.md#R-GOV-001)).
+4. Any `maintainer-only:` path it prints needs the maintainer's `/approve` decision on the
+   PR, and the maintainer applies the label themselves, with `needs-human` until both are
+   there ([R-GOV-007](../RULES.md#R-GOV-007)). An upgrade that changes workflows or the tool
+   always has such paths.
 5. When `[checks].required` changed, the rulesets must follow it once the PR merges: run
    `scripts/bootstrap.sh --check`, and send its differences to the coordinator for the
    maintainer to apply ([bootstrap runbook](bootstrap.md#check)).

@@ -99,12 +99,15 @@ behaviour changes.
 ### R-GIT-005: The PR description answers the template
 <!-- @rule
 status = "active"
-enforced_by = ["review"]
+enforced_by = ["review", "ci:review-gate"]
 applies_to = []
 -->
 The description covers what changed, why, and what wasn't run, plus each applicable item of
 `.github/pull_request_template.md`. A PR that delivers a roadmap item ends with
-`Completes: <id>` or `Part-of: <id>` ([DOCS › Progress](DOCS.md#progress)).
+`Completes: <id>` or `Part-of: <id>` ([DOCS › Progress](DOCS.md#progress)). Every PR body
+ends with `Claude-Session: <session URL>`, naming the session that wrote it, as every
+commit message does. The squash commit takes the body as its message, and `review-gate`
+fails a commit without that trailer.
 
 <a id="R-GIT-006"></a>
 ### R-GIT-006: A lane PR holds its slot
@@ -273,11 +276,13 @@ status = "active"
 enforced_by = ["ci:governance", "ci:review-gate"]
 applies_to = []
 -->
-An agent applies `governance-approved` only after examining what the check flagged, and
-with the "Governance change" section written. `review-override` needs a "Review override"
-section that links the maintainer's message. The weekly sweep lists every PR merged with
-either label for the maintainer to audit. Agents never change branch protection or
-repository settings.
+An agent applies `governance-approved` only after examining what the check flagged at the
+current head, with the "Governance change" section written, and never on a PR that changes a
+maintainer-only path. Only the maintainer applies `review-override`, with a "Review
+override" section that links their message. A push removes either label, so each counts
+only for the head it was applied to. The weekly sweep lists every PR merged with either
+label for the maintainer to audit. Agents never change branch protection or repository
+settings.
 
 <a id="R-GOV-003"></a>
 ### R-GOV-003: An independent reviewer gates every merge
@@ -314,7 +319,9 @@ Every ADR declares `tier = "maintainer"` or `tier = "agent"` per
 [ADR-0003](adr/0003-decision-tiers.md). A maintainer-tier ADR opens as `proposed` with
 `needs-human`, and becomes `accepted` or `rejected` only on the maintainer's decision: their
 `/accept ADR-NNNN` or `/reject ADR-NNNN`, or an agent's proxy decision quoting their words
-that name that ADR. Every other ADR is agent tier and lands as `accepted` after review.
+that name that ADR. Either carries the `source:` message id the reviewer checks
+([ADR-0003](adr/0003-decision-tiers.md)). Every other ADR is agent tier and lands as
+`accepted` after review.
 
 <a id="R-GOV-006"></a>
 ### R-GOV-006: The approval contract
@@ -324,8 +331,10 @@ enforced_by = ["review", "human"]
 applies_to = []
 -->
 An action that needs the maintainer cites the maintainer's own words, naming the object
-(the ADR, PR, release or account), by a link or message id. A paraphrase, a standing
-instruction or a blanket "go ahead" is not an approval. The list of such actions, and of
+(the ADR, PR, release or account), by its message id. The session that acts on it reads
+that message itself with `fetch_messages`, and checks its author is the maintainer's
+recorded user id ([SECURITY-AGENTS › Approvals](SECURITY-AGENTS.md#approvals)). A
+paraphrase, a standing instruction or a blanket "go ahead" is not an approval. The list of such actions, and of
 the standing permissions that need none, is in
 [project-instructions.md](agents/project-instructions.md). Agents never post a decision the
 maintainer didn't give.
@@ -335,11 +344,12 @@ maintainer didn't give.
 <!-- @rule
 status = "active"
 enforced_by = ["review"]
-applies_to = [".github/workflows/review-gate.yml", "REVIEW.md", "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]
+applies_to = [".github/workflows/**", ".github/actions/**", ".github/scripts/**", ".github/after-review-status.sh", "repo.toml", "tools/repo/src/**", "REVIEW.md", "docs/agents/review/**", "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]
 -->
 A change to a path in `[governance].maintainer_only` in `repo.toml` needs the maintainer's
-own words on the PR ([R-GOV-006](#R-GOV-006)), even with `governance-approved`. The PR
-carries `needs-human` until they are there.
+own words on the PR, as an `/approve` decision whose `source:` the reviewer checks
+([ADR-0003](adr/0003-decision-tiers.md), [R-GOV-006](#R-GOV-006)). Only the maintainer
+applies `governance-approved` on such a PR. It carries `needs-human` until both are there.
 
 <a id="testing"></a>
 ## Testing

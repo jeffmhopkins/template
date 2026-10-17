@@ -81,6 +81,9 @@ depends_on = ["REVIEW#output", "REVIEW#rounds", "RULES#R-GOV-005", "RULES#R-GOV-
 1. Open a **draft** PR early. The title is a Conventional Commit
    ([R-GIT-002](docs/RULES.md#R-GIT-002)) and the body answers
    `.github/pull_request_template.md`. CI skips drafts.
+   Every commit you push ends with a `Claude-Session: <your session URL>` trailer, and so
+   does the PR body: the squash commit takes the body as its message, and `review-gate`
+   fails a commit without the trailer ([R-GIT-005](docs/RULES.md#R-GIT-005)).
 2. When it is ready: merge `main` (never rebase), mark it ready, and turn on **auto-merge
    (squash)**, with the GitHub MCP tool `enable_pr_auto_merge` (`mergeMethod: SQUASH`) or
    `gh pr merge <n> --auto --squash`. It merges by itself once every required check,
@@ -130,9 +133,14 @@ flowchart TD
 > settings. A PR lands only through GitHub auto-merge, once `review-gate` and every other
 > required check is green.
 
-- Apply `governance-approved` or `review-override` without writing the matching
-  justification section in the PR description, or before examining what the check flagged
-  ([R-GOV-002](docs/RULES.md#R-GOV-002)). Every use goes to the maintainer's weekly audit.
+- Apply `review-override`, ever, or `governance-approved` on a PR that changes a
+  maintainer-only path. Only the maintainer applies those. Agents post under the
+  maintainer's login, so the checks can't tell the difference: this rule is what does
+  ([R-GOV-002](docs/RULES.md#R-GOV-002)).
+- Apply `governance-approved` without writing the "Governance change" section in the PR
+  description, or before examining what the check flagged. A push removes the label; apply
+  it again only after examining the new head. Every use goes to the maintainer's weekly
+  audit.
 - Change branch protection or repository settings, merge by hand, or post a review verdict.
 - Weaken a check silently. A lint suppression, narrowed `covers` or `applies_to`, or an edit
   to lint, licence or CI config is always a declared governance change

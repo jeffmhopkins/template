@@ -22,7 +22,9 @@ depends_on = ["DOCS#progress", "AGENT-BUILDER#hardware"]
 3. On a pass, the item's builder (or triage, if the builder has ended) opens the record PR:
    it adds `docs/hardware/<item>.md` and ends its body with
    `Verified-on-hardware: <item>` and `Closes #<issue>`.
-4. Once it merges, `scripts/repo progress` shows the item as `done`.
+4. Once it merges, `scripts/repo progress` shows the item as `done`. A record counts only
+   after the item's latest `Completes:`: if the item is reverted and completed again, it
+   needs a new run.
 
 > [!NOTE]
 > A merged record is never rewritten. A later run on the same item appends its own section
