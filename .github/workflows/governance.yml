@@ -16,10 +16,11 @@
 # protects itself: a PR can't loosen the check that judges it, nor, without the maintainer,
 # the one that judges the next PR.
 #
-# Runs on pull_request_target, so GitHub takes this file from the PR's base branch. Each job
-# checks out the BASE commit, builds the tool from it, and fetches the PR head as git objects
-# only. Nothing from the head is checked out, built or run. The build cache is restored here
-# and never saved (ci.yml's `base-tool` job saves it on pushes to main).
+# Runs on pull_request_target, so GitHub takes this file from the PR's base branch. The `tool`
+# job checks out the BASE commit, builds the tool from it once, and hands the binary to the
+# other jobs as a run artifact. Those jobs check out the base and fetch the PR head as git
+# objects only. Nothing from the head is checked out, built or run. The build cache is
+# restored here and never saved (ci.yml's `base-tool` job saves it on pushes to main).
 # Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
@@ -68,18 +69,45 @@ jobs:
               echo "Removed $GOVERNANCE_LABEL: the head moved to $HEAD_SHA. Examine the new head before applying it again." ;;
           esac
 
-  governance:
+  # The base's tool, built once per run for the three jobs below.
+  tool:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.base.sha }}
-          fetch-depth: 0
+          persist-credentials: false
       - id: tool
         uses: ./.github/actions/repo-tool
         with:
           cache-name: base-tool
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: repo-tool
+          path: ${{ steps.tool.outputs.path }}
+          retention-days: 1
+          if-no-files-found: error
+
+  governance:
+    needs: tool
+    # Not skipped when `tool` fails: a skipped required check counts as passed.
+    if: ${{ !cancelled() && !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: The base's tool was built
+        env:
+          TOOL: ${{ needs.tool.result }}
+        run: '[ "$TOOL" = success ] || { echo "::error::the tool job did not succeed ($TOOL)"; exit 1; }'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: repo-tool
+          path: ${{ runner.temp }}/tool
+      - run: chmod +x "$RUNNER_TEMP/tool/repo"
       - name: Fetch the PR head as git objects
         run: |
           git fetch --no-tags origin "$HEAD_SHA" "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
@@ -97,7 +125,7 @@ jobs:
           fi
       - name: Governance changes are labeled and justified
         env:
-          REPO: ${{ steps.tool.outputs.path }}
+          REPO: ${{ runner.temp }}/tool/repo
           GH_TOKEN: ${{ github.token }}
           AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
@@ -133,42 +161,52 @@ jobs:
           exit "$status"
 
   pr-title:
-    if: ${{ !github.event.pull_request.draft }}
+    needs: tool
+    # Not skipped when `tool` fails: a skipped required check counts as passed.
+    if: ${{ !cancelled() && !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: The base's tool was built
+        env:
+          TOOL: ${{ needs.tool.result }}
+        run: '[ "$TOOL" = success ] || { echo "::error::the tool job did not succeed ($TOOL)"; exit 1; }'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          persist-credentials: false
-      - id: tool
-        uses: ./.github/actions/repo-tool
-        with:
-          cache-name: base-tool
+          name: repo-tool
+          path: ${{ runner.temp }}/tool
+      - run: chmod +x "$RUNNER_TEMP/tool/repo"
       - name: Conventional Commit title
         env:
-          REPO: ${{ steps.tool.outputs.path }}
+          REPO: ${{ runner.temp }}/tool/repo
           TITLE: ${{ github.event.pull_request.title }}
         run: '"$REPO" pr-title "$TITLE"'
 
   lane-guard:
-    if: ${{ !github.event.pull_request.draft }}
+    needs: tool
+    # Not skipped when `tool` fails: a skipped required check counts as passed.
+    if: ${{ !cancelled() && !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
+      - name: The base's tool was built
+        env:
+          TOOL: ${{ needs.tool.result }}
+        run: '[ "$TOOL" = success ] || { echo "::error::the tool job did not succeed ($TOOL)"; exit 1; }'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
-      - id: tool
-        uses: ./.github/actions/repo-tool
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          cache-name: base-tool
+          name: repo-tool
+          path: ${{ runner.temp }}/tool
+      - run: chmod +x "$RUNNER_TEMP/tool/repo"
       - name: Fetch the PR head as git objects
         run: |
           git fetch --no-tags origin "$HEAD_SHA"
           git cat-file -e "$HEAD_SHA^{commit}"
       - name: Serial-lane claims
         env:
-          REPO: ${{ steps.tool.outputs.path }}
+          REPO: ${{ runner.temp }}/tool/repo
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         run: |

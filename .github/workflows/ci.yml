@@ -29,10 +29,10 @@ env:
   CARGO_TERM_COLOR: always
 
 # Job conditions:
-# - every job: skipped on a draft PR;
+# - every job: skipped on a draft PR. PRs into a `wave/*` branch run every job (ADR-0007);
 # - `dependency-review`: runs on PRs only;
-# - `test` and `deps` (the heavy jobs): also skipped on a PR into a `wave/*` branch. The wave's
-#   own PR into main runs them (docs/runbooks/waves.md).
+# - `deps`: on a PR, does its work only when a manifest, lockfile, the deny config or this
+#   file changes; otherwise it passes at once, so the required check still reports.
 # The build cache is saved only on a push to main; PR runs restore it and never write it.
 # `base-tool` runs only there: it saves the cache governance.yml restores.
 
@@ -88,7 +88,7 @@ jobs:
             tools/repo/target/
 
   test:
-    if: github.event_name != 'pull_request' || (!github.event.pull_request.draft && !startsWith(github.base_ref, 'wave/'))
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -114,22 +114,39 @@ jobs:
             tools/repo/target/
 
   deps:
-    if: github.event_name != 'pull_request' || (!github.event.pull_request.draft && !startsWith(github.base_ref, 'wave/'))
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
-    env:
-      CARGO_DENY_VERSION: 0.20.2   # bump together with the same env in sweep.yml
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 2   # the PR's merge commit and its base parent
+      # On a PR, HEAD is GitHub's merge commit; its first parent is the base it merges into.
+      - id: changed
+        name: Manifests, lockfiles or deny config changed
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" != pull_request ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if git diff --quiet HEAD^1 HEAD -- ':(glob)**/Cargo.toml' ':(glob)**/Cargo.lock' \
+              ':(glob)**/deny.toml' ':(glob)stacks/*/pack.toml' ':(glob).github/actions/cargo-deny/**' \
+              .github/workflows/ci.yml; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No manifest, lockfile or deny config changed: deps passes without running."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
       - id: rust
+        if: steps.changed.outputs.run == 'true'
         uses: ./.github/actions/rust-setup
         with:
           cache-name: deps
-      - name: Install cargo-deny
-        run: cargo install --locked "cargo-deny@$CARGO_DENY_VERSION"
-      - run: scripts/repo stack run deps
+      - if: steps.changed.outputs.run == 'true'
+        uses: ./.github/actions/cargo-deny
+      - if: steps.changed.outputs.run == 'true'
+        run: scripts/repo stack run deps
       - name: Advisories for the repo tool
+        if: steps.changed.outputs.run == 'true'
         run: cargo deny --manifest-path tools/repo/Cargo.toml check advisories
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
