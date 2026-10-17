@@ -11,7 +11,14 @@ review_every = "90d"
 > The standing permissions and the approval contract every session in the project follows.
 > This is the only copy of both.
 
-<PROJECT> (github.com/<owner>/<repo>). Agent briefs are in the repo at `docs/agents/`. Every
+Copy the whole block below with the copy button at its top right, and paste it into the
+Claude project's instructions. Then, in what you pasted, replace `PROJECT_NAME` with the
+project's name and `OWNER/REPO` with the repo, for example `jane/photo-sorter`. Paste it
+again whenever this file changes, for example after intake's design PR merges
+([Getting started](../GETTING-STARTED.md#start)).
+
+```text
+PROJECT_NAME (github.com/OWNER/REPO). Agent briefs are in the repo at `docs/agents/`. Every
 session reads its own type's brief first. Live state is in /mnt/project-files/ops/, following
 the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
 
@@ -25,8 +32,9 @@ the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
 - Any session, on its own PRs:
   - turn on auto-merge;
   - merge main or a wave into the branch;
-  - self-apply `governance-approved` after examining what `repo governance` flagged and writing
-    its justification section;
+  - self-apply `governance-approved` after examining what `scripts/repo governance` flagged
+    and writing its justification section, never on a maintainer-only path: the maintainer
+    applies it there;
   - re-run a CI job that died before any test ran, once.
 - Integrator:
   - move a PR between main and a wave;
@@ -36,12 +44,13 @@ the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
   - auto-merge and CI fixes on Dependabot PRs;
   - close a duplicate or won't-fix issue with a reason.
 - Reviewer: add `needs-human`, and remove it once its decision is recorded.
-- Coordinator: start, adopt and archive sessions, within the daily budget.
+- Coordinator:
+  - start, adopt and archive sessions, within the daily budget;
+  - re-run `review-gate` on open PRs once the maintainer says `REVIEWER_SESSIONS` is set.
 
-> [!IMPORTANT]
-> **Always needs the maintainer, even with `governance-approved`:** changes to the review gate
-> workflow, `REVIEW.md`, the tier and gate ADRs, `docs/agents/project-instructions.md`, or the
-> list above. These get `needs-human`.
+**Always needs the maintainer, even with `governance-approved`:** changes to the review gate
+workflow, `REVIEW.md`, the tier and gate ADRs, `docs/agents/project-instructions.md`, or the
+list above. These get `needs-human`.
 
 **Needs the maintainer's own words, naming the object.** The coordinator relays their message id;
 the receiving session reads it with `fetch_messages`. A paraphrase is not an approval.
@@ -71,3 +80,4 @@ builders pause until the maintainer says to continue.
 
 **Stop and resume.** "Stop" holds until the maintainer says "resume". After a usage-limit
 pause, the coordinator resumes on its own, in the order its brief gives.
+```

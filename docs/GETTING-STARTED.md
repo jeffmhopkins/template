@@ -22,16 +22,27 @@ agents does the building, and checks on GitHub stop anything unreviewed from get
 
 - **You are the maintainer.** You own the project and make the big calls: what the product is,
   the licence, what it may cost, anything public.
-- **Claude runs as a team of agents** in a Claude project. Each agent has one job: one asks
-  you questions, one plans, several build, two review, and one keeps everything moving.
+- **Claude runs as a team of agents** in a Claude project. Each agent has one job:
+  - the **coordinator** talks to you and keeps everything moving;
+  - **intake** asks you about the product on day one;
+  - the **planner** splits the plan into small pieces;
+  - several **builders** each build one piece;
+  - two **reviewers** check every change;
+  - the **integrator** keeps merges in order when changes would collide;
+  - **triage** watches for failures, new issues and dependency updates;
+  - the **board** keeps a progress page up to date;
+  - a **device session** runs checks on your own computer, only when you allow it.
 - **The code lives in a GitHub repository** (a "repo"): a shared folder with full history.
   Agents never change it directly. Each change is proposed as a **pull request** (a "PR"),
   checked automatically, reviewed by a reviewer agent, and only then merged.
+- **Agents act under your GitHub login.** The PRs, comments and labels they make show your
+  name ([Things you'll do on GitHub](#github)).
 - **Bootstrap sets up GitHub for you.** A new repo starts with GitHub's default settings,
   which protect nothing. `scripts/bootstrap.sh` is a script you run once, or have Claude run
-  for you. It switches on everything the template relies on: the rules that block unreviewed
-  merges, the required checks, labels, security alerts and secret scanning. You never edit
-  GitHub's settings pages yourself ([what it sets](#setup)).
+  on your computer for you. It switches on everything the template relies on: the rules that
+  block unreviewed merges, the required checks, labels, security alerts and secret scanning
+  ([what it sets](#setup)). The few GitHub tasks left to you are in
+  [Things you'll do on GitHub](#github).
 - **You talk to one agent, the coordinator,** in the project chat. It asks you questions as
   cards you can answer with one tap, and posts a short summary once a day.
 
@@ -61,22 +72,50 @@ flowchart LR
 | check | one of those automatic tests; green passes, red fails |
 | review gate | the check that only turns green when a reviewer agent passes the PR |
 | bootstrap | the one-time setup script, `scripts/bootstrap.sh`, that switches on the repo's GitHub settings for you |
+| ruleset | a GitHub rule on a branch, such as "every change to `main` needs a PR with green checks"; bootstrap creates them |
 | ADR | a short record of a decision and why it stands ("architecture decision record") |
 | label | a tag on a PR; some labels, like `governance-approved`, unlock a check |
+| session | one running Claude agent, with its own conversation |
+| session id | the name GitHub and the agents use for one session, like `session_01AbCdEfGhIjKlMnOpQrStUv` |
+| thread | where one session works in the Claude project; you read the project chat, not the threads |
+| card | a question from the coordinator in the chat, with options to tap and one marked as recommended |
+| coordinator | the agent you talk to in the project chat |
+| intake | the agent that asks you about the product on day one, then stops |
+| wave | a batch of changes collected on a `wave/…` branch and merged together, when changes would collide |
+| Dependabot | GitHub's own bot that proposes updates to the libraries the project uses |
+| terminal | the text window where you type commands: Terminal on macOS, the Ubuntu app on Windows |
+| `gh` | GitHub's command-line tool, used in a terminal; bootstrap uses it to change the settings |
 
 <a id="before"></a>
 ## What you need
 <!-- @section
 -->
 
-1. **A GitHub account.** Free is fine for a public repo. A private repo needs a paid plan for
-   some of the protections.
-2. **A Claude account with Projects**, and the Claude GitHub App installed on your repo
-   (step 3 below).
-3. **For the setup step, one of:**
-   - the Claude desktop app on your computer, so an agent can run the setup there for you; or
-   - the GitHub command-line tool `gh` and Python 3.11 or later, if you'd rather run it
-     yourself.
+1. **A GitHub account.**
+   - **A public repo is free, and everything works.**
+   - **A private repo needs two paid features.** Rulesets, which protect `main`, need a paid
+     plan: GitHub Pro for a personal account, or GitHub Team for an organization. The
+     required `dependency-review` check needs GitHub Code Security. Bootstrap checks both
+     and stops before changing anything if either is missing.
+2. **A Claude plan that includes Projects.** The cost grows with the number of agents
+   running at once. At the start you agree a **daily budget** with intake: a cap on how much
+   agent work runs each day. At 80% of it nothing new starts, and at 100% the builders pause
+   until you say to continue.
+3. **On your computer: `git`, `gh` and Python 3.11 or later.** Bootstrap needs all three,
+   whether you run it yourself or Claude runs it on your computer for you.
+   - **macOS:** install [Homebrew](https://brew.sh/), then run `brew install git gh python`
+     in Terminal. The `python3` that comes with macOS is often too old.
+   - **Windows:** use WSL, which runs Linux inside Windows
+     ([how to install it](https://learn.microsoft.com/en-us/windows/wsl/install)). In the
+     Ubuntu app, install `git` and `python3` with `sudo apt install git python3`, and `gh`
+     by [GitHub's instructions](https://cli.github.com/).
+   - **Linux:** install `git`, `python3` (3.11 or later) and [`gh`](https://cli.github.com/)
+     with your package manager.
+4. **To have Claude run bootstrap for you:** the Claude desktop app on that computer.
+
+> [!IMPORTANT]
+> On a private repo without both paid features, either nothing protects `main` or no PR can
+> merge. Make the repo public, or add them to your plan, before you run bootstrap.
 
 <a id="start"></a>
 ## Starting a new project
@@ -84,40 +123,47 @@ flowchart LR
 depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
 -->
 
-1. **Make your repo from the template.** On the template's GitHub page, click **Use this
-   template**, then **Create a new repository**. Give it a name, and choose public or
-   private. This copies everything into a new repo that is yours.
-2. **Create a Claude project** for it, and add the new repo to the project in its settings.
-3. **Install the Claude GitHub App** on the new repo from the [Claude app page](https://github.com/apps/claude). It lets
-   the agents open PRs and comment.
-4. **Run the one-time setup** (`scripts/bootstrap.sh`, called "bootstrap"). A new repo starts
+1. **Make your repo from the template.** Open the template, jeffmhopkins/template<!--fact:template-source-->
+   ([open it on GitHub](https://github.com/jeffmhopkins/template)), and click **Use this
+   template**, then **Create a new repository**. Leave **Include all branches**
+   unchecked. Give it a name, and choose public or private
+   ([what you need](#before)). This copies everything into a new repo that is yours.
+2. **Install the Claude GitHub App** on the new repo from the
+   [Claude app page](https://github.com/apps/claude). It lets the agents open PRs and
+   comment. Do this before the next step, so the Claude project can see the repo.
+3. **Create a Claude project** for it, and add the new repo to the project in its settings.
+4. **Paste the project instructions.** Open
+   [docs/agents/project-instructions.md](agents/project-instructions.md) on GitHub. Copy the
+   grey block with the copy button at its top right, and paste it into the Claude project's
+   instructions. In what you pasted, replace `PROJECT_NAME` with your project's name and
+   `OWNER/REPO` with your repo, for example `jane/photo-sorter`.
+5. **Run the one-time setup** (`scripts/bootstrap.sh`, called "bootstrap"). A new repo starts
    with GitHub's defaults, which let anyone with access merge anything. Bootstrap changes
    those settings to the ones the template relies on, so you don't have to click through
    GitHub's settings pages yourself. [What the setup does for you](#setup) lists every
    change. Either:
    - **ask Claude to do it:** in the project chat, say "Run the bootstrap on my computer".
-     You'll be asked to allow Claude to work in a folder on your machine; or
-   - **run it yourself** in a terminal:
+     You'll be asked to allow Claude to work in a folder on your machine, which needs the
+     Claude desktop app there ([what you need](#before)); or
+   - **run it yourself** in a terminal. This example uses the repo `jane/photo-sorter`;
+     replace it with yours:
      ```sh
      gh auth login
-     gh repo clone <your-name>/<your-repo>
-     cd <your-repo>
+     gh repo clone jane/photo-sorter
+     cd photo-sorter
      scripts/bootstrap.sh
      scripts/bootstrap.sh --check
      ```
      The last line should end with `All settings match.`
-5. **Paste the project instructions.** Open
-   [docs/agents/project-instructions.md](agents/project-instructions.md), copy everything from
-   the line that starts with `<PROJECT>` to the end, and paste it into the Claude project's
-   instructions. Replace `<PROJECT>` with your project's name and `<owner>/<repo>` with your
-   repo (for example `jane/photo-sorter`).
 6. **Say hello.** In the project chat, write one or two sentences about what you want built,
-   for example "A desktop app that sorts my photos by who's in them". The coordinator takes it
-   from there.
-7. **Turn on the review gate.** Once the coordinator says the reviewers are running, it gives
-   you their session ids. Set them as the repo variable `REVIEWER_SESSIONS` (comma-separated),
-   in **Settings › Secrets and variables › Actions › Variables**, or with
-   `gh variable set REVIEWER_SESSIONS --body "<ids>"`.
+   for example "A desktop app that sorts my photos by who's in them". The coordinator starts
+   intake and the first reviewer.
+7. **Turn on the review gate.** The coordinator posts a card with the reviewers' session
+   ids. Set them as the repo variable `REVIEWER_SESSIONS`, then tap **Done** on the card
+   ([how](#github)).
+8. **After intake's first PR merges,** the coordinator asks you to paste the project
+   instructions again, because intake added your answers to them, and to run bootstrap
+   again, because intake may have changed the required checks.
 
 > [!WARNING]
 > Until the reviewer session ids are set (step 7), no PR can merge.
@@ -133,24 +179,56 @@ any of these by hand:
 
 | Setting | What bootstrap sets | What it means for you |
 |---|---|---|
-| How PRs merge | each PR lands as one tidy commit, titled from the PR; branches are deleted after merging; auto-merge is on | `main` reads as a list of finished changes, and agents don't have to wait for anyone to press Merge |
+| How PRs merge | each PR lands as one tidy commit, titled from the PR; merge commits are allowed only into batch (`wave/…`) branches; branches are deleted after merging; auto-merge is on | `main` reads as a list of finished changes, and agents don't have to wait for anyone to press Merge |
 | Rules on `main` | no deleting it, no rewriting its history, every change through a PR, and every required check green first | nothing reaches `main` without passing the tests and the reviewer |
 | Rules on `wave/*` | the same rules for batch branches | the same protection when work is batched |
 | GitHub Actions | the automation can read but not change the repo or approve PRs; every action used must be pinned to an exact version; outside contributors' PRs wait for approval before running | the automation can't be hijacked into changing your code |
 | Labels | `governance-approved`, `review-override`, `needs-human`, `hardware` | the labels the agents and checks use |
-| Repo variables | `REVIEWER_LOGIN` (your GitHub login) and an empty reviewer list | the review gate knows whose comments to trust |
-| Security | Dependabot alerts and fixes, secret scanning, and blocking pushes that contain a password or key | you hear about vulnerable dependencies, and secrets can't be committed by accident |
+| Repo variables | `MAINTAINER_LOGIN` and `REVIEWER_LOGIN`, both your GitHub login, and the reviewer list `REVIEWER_SESSIONS`, set to `none` until you fill it | the checks know who you are and whose review comments to trust |
+| Security | Dependabot alerts and fixes, private vulnerability reporting (public repos), secret scanning, and blocking pushes that contain a password or key | you hear about vulnerable dependencies, people can report a security problem privately, and secrets can't be committed by accident |
 
 Run it again at any time: it only changes what differs, and `scripts/bootstrap.sh --check`
 shows what would change without changing anything. The full list, with the exact values, is
 in the [bootstrap runbook](runbooks/bootstrap.md#settings).
 
-**What bootstrap can't do**, because it needs your own accounts:
-- install the Claude GitHub App (step 3);
-- paste the project instructions into the Claude project (step 5);
-- fill in the reviewer list once the reviewers start (step 7);
-- on a **private** repo, turn on the dependency graph in **Settings › Code security**, or the
-  `dependency-review` check fails. Public repos have it on already.
+**What bootstrap can't do**, because it needs your own accounts, is in the
+[bootstrap runbook](runbooks/bootstrap.md#by-hand) and in steps 2, 3, 4, 7 and 8 above. On a
+**private** repo, you also turn on the dependency graph ([Things you'll do on GitHub](#github)).
+
+<a id="github"></a>
+## Things you'll do on GitHub
+<!-- @section
+-->
+
+Bootstrap does almost all the setup. These few things need you, on GitHub's website.
+
+**Your name on agent work.** The agents use your GitHub login, so their PRs, comments and
+labels show your name. GitHub doesn't notify you about your own actions, so you won't get an
+email for each one. To keep the rest quiet:
+- on the repo's page, set **Watch** to **Participating and @mentions**;
+- in your [notification settings](https://github.com/settings/notifications), under
+  **Actions**, choose to be notified only about failed workflows. The coordinator tells you
+  about anything that needs you.
+
+**Set the reviewer list.** Each time the coordinator posts a card with reviewer session ids,
+whether the first time, a new reviewer or a replaced one:
+1. Open the repo's **Settings › Secrets and variables › Actions**, then the **Variables** tab.
+2. Edit `REVIEWER_SESSIONS` and set it to the ids from the card, separated by commas, for
+   example `session_01AbCdEfGhIjKlMnOpQrStUv,session_01ZyXwVuTsRqPoNmLkJiHgFe`. Replace the
+   whole value, including `none`.
+3. Tap **Done** on the card. The coordinator then re-runs the review gate on the open PRs,
+   since changing the variable doesn't re-run it.
+
+**Apply a label when a card asks.** Some changes need your own approval, such as a change to
+a file only you may approve. The card says which PR and which label, usually
+`governance-approved`. Open the PR, click **Labels** in the right-hand column, and tick the
+label. Then answer the card.
+
+**Private repo only.** Turn on the dependency graph in **Settings › Code security**, or the
+`dependency-review` check fails. Public repos have it on already.
+
+**After intake's first PR merges.** Paste the project instructions into the Claude project
+again, and run bootstrap again, the same way as the first time.
 
 <a id="intake"></a>
 ## The first conversation
@@ -166,8 +244,10 @@ An intake agent turns your idea into a plan in three short rounds, through the c
    and paid services, the daily budget, how it ships. Tap an option, or answer in words.
 3. **Confirm.** One message restating everything, and one card to accept it.
 
-It then opens the first PR with the product description, the roadmap and your decisions. Once
-that merges, the planner splits the roadmap into small pieces and the builders start.
+It then opens the first PR with the product description, the roadmap and your decisions.
+Once that merges, the coordinator asks you to paste the instructions and run bootstrap again
+([step 8](#start)), then the planner splits the roadmap into small pieces and the builders
+start.
 
 <a id="day-to-day"></a>
 ## Day to day
@@ -178,6 +258,12 @@ that merges, the planner splits the roadmap into small pieces and the builders s
   a daily digest: what merged, what's waiting, what needs you, and the cost so far.
 - **Answer the cards.** Each names exactly what it asks about and marks a recommendation. If
   you don't mind, pick the recommendation.
+- **Look at the pinned issues** on the repo's **Issues** tab now and then:
+  - **Progress**: each milestone and how many of its items are done;
+  - **Weekly sweep**: what needs a look this week. Read its list of PRs merged with
+    `governance-approved` or `review-override`: each one loosened a check or skipped the
+    reviewer, and its PR says why. The coordinator's digest asks whether to revert any;
+  - **main is red**: only while `main` is broken; the agents are fixing it.
 - **Some things always wait for you:** changes to the review gate or the rules about who
   decides what, publishing anything, creating accounts, and spending beyond the budget. The
   full list is in [project-instructions.md](agents/project-instructions.md).
@@ -188,8 +274,9 @@ that merges, the planner splits the roadmap into small pieces and the builders s
   permission.
 
 > [!TIP]
-> You never need to merge, review code or touch git. If you want to look, each PR on GitHub
-> shows what changed and what the reviewer said.
+> You never need to merge, review code or use git. Your only GitHub tasks are in
+> [Things you'll do on GitHub](#github). If you want to look, each PR on GitHub shows what
+> changed and what the reviewer said.
 
 <a id="safety"></a>
 ## What keeps it safe
@@ -214,10 +301,12 @@ that merges, the planner splits the roadmap into small pieces and the builders s
 | You see | What it usually means |
 |---|---|
 | a red CI badge or a red check | a test or a setting failed; the agents fix their own PRs, and a "main is red" issue tracks it if `main` itself breaks |
-| `review-gate`: "Gate not configured" | the reviewer list is still empty; set it once the reviewers are running ([bootstrap runbook, by hand](runbooks/bootstrap.md#by-hand)) |
+| `review-gate`: "Gate not configured" | the reviewer list is still `none`; set it from the coordinator's card ([how](#github)) |
+| a check stuck at "Expected", "Waiting for status to be reported" | the rules require a check that no workflow runs any more, usually because the required checks changed; run bootstrap again. For `review-gate` it can also mean no reviewer has looked yet |
 | `dependency-review` fails with "not supported" | GitHub's dependency graph is off: turn it on in the repo's **Settings › Code security** |
+| bootstrap stops with "is private, and its plan lacks" | the repo is private without the paid features the template needs ([what you need](#before)) |
 | a PR labelled `needs-human` | a decision only you can make; the coordinator has a card for it |
-| nothing happening for hours | a usage limit or the budget pause; the coordinator resumes on its own when the limit lifts |
+| nothing happening for hours | a Claude usage limit: the coordinator resumes on its own when it lifts. Or the daily budget reached 100%: the builders wait until you say "continue" |
 
 <a id="more"></a>
 ## Going further

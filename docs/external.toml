@@ -44,3 +44,33 @@ id = "licence-badge"
 url = "https://img.shields.io/badge/licence-MIT%20OR%20Apache--2.0-blue"
 relied_on = "A static Shields badge whose label and message come from the URL path"
 recheck_every = "365d"
+
+[[external]]
+id = "template-repo"
+url = "https://github.com/jeffmhopkins/template"
+relied_on = "The template's GitHub page, with the Use this template button and the Include all branches option; it stays the template's page in a project"
+recheck_every = "180d"
+
+[[external]]
+id = "homebrew"
+url = "https://brew.sh/"
+relied_on = "Homebrew's install page; `brew install git gh python` installs all three on macOS"
+recheck_every = "365d"
+
+[[external]]
+id = "wsl-install"
+url = "https://learn.microsoft.com/en-us/windows/wsl/install"
+relied_on = "How to install WSL on Windows, which gives an Ubuntu terminal by default"
+recheck_every = "365d"
+
+[[external]]
+id = "gh-cli"
+url = "https://cli.github.com/"
+relied_on = "GitHub CLI's home page, with install instructions for macOS, Windows and Linux"
+recheck_every = "365d"
+
+[[external]]
+id = "github-notification-settings"
+url = "https://github.com/settings/notifications"
+relied_on = "A user's notification settings, with an Actions section that can limit notifications to failed workflows"
+recheck_every = "180d"
