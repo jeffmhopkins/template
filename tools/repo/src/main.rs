@@ -1,6 +1,6 @@
 //! `repo`: the repository's checking tool, configured by `repo.toml` and the stack pack.
 //!
-//! Docs: DOCS#tool
+//! Docs: DOCS#tool, STACKS#pack-toml
 
 #![forbid(unsafe_code)]
 

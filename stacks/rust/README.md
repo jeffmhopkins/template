@@ -84,11 +84,4 @@ The `//! Docs:` line ([R-RUST-012](RULES.md#R-RUST-012)) is the crate-level doc 
 <!-- @section
 -->
 
-A pack for another language is a directory `stacks/<name>/` with:
-- `pack.toml`, with the same keys: its `detect` file, the four job commands, its suppression
-  patterns (`eslint-disable`, `# noqa`, …) and its comment syntax for back-references;
-- `RULES.md`, a tracked doc with id `RULES-<NAME>` and rules `R-<NAME>-NNN`;
-- its lint, format and dependency config.
-
-It also needs a setup step for its toolchain in each CI stack job. Switching packs is
-`[stack].pack` in `repo.toml`, a governance change.
+Adding a pack for another language is covered in [the stacks guide](../README.md#adding).
