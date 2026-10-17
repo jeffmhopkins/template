@@ -8,6 +8,9 @@ review_every = "180d"
 
 # Rust stack pack
 
+> Everything Rust-specific: the commands behind the CI jobs, the lint and licence config,
+> and the patterns the repo tool reads.
+
 A stack pack holds everything language-specific: the commands behind the stack's CI jobs,
 the lint and dependency config, the suppression patterns and the back-reference syntax the
 repo tool reads, and the stack's rules. Everything else in the repo is language-neutral.

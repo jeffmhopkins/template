@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Rust stack rules
 
+> The rules every Rust change follows on top of the engineering rules, once the project has
+> a root `Cargo.toml`.
+
 These rules apply to every Rust change, on top of [the engineering rules](../../docs/RULES.md).
 They take effect once the project has a root `Cargo.toml`. The lint table they rely on is in
 [the pack's README](README.md#lints). Changing a rule's `status`, `enforced_by` or

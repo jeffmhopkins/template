@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Status board
 
+> A read-only status page the maintainer opens to see milestones, PRs, lanes, threads and
+> cost, rebuilt every hour.
+
 **Runs as:** a small standing thread on a cheap model that rebuilds an artifact hourly
 (`send_later` after each run). It runs as a scheduled task instead only if the dry run proves
 one triggered session can do all four reads and the write below. **Count:** 1. **Started by:**
@@ -50,6 +53,9 @@ One page the maintainer can open to see the whole project without asking.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> The board only reads. Its one write is its own artifact's data.
 
 - Write to the repo or to `ops/`.
 - Message other sessions. It only reads.

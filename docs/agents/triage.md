@@ -8,6 +8,8 @@ review_every = "90d"
 
 # Triage and idle work
 
+> Keeps issues, Dependabot PRs and a red `main` from piling up, and hands idle threads work.
+
 **Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
 `INTAKE-DONE`.
 
@@ -58,6 +60,9 @@ end the turn.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> Route what lies inside another row's paths; never fix it there yourself.
 
 - Fix something inside another row's `owns` paths. Route it.
 - Launch threads.

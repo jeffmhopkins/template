@@ -32,3 +32,15 @@ id = "claude-github-app"
 url = "https://github.com/apps/claude"
 relied_on = "The Claude GitHub App's install page, used once at bootstrap"
 recheck_every = "180d"
+
+[[external]]
+id = "ci-badge"
+url = "https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg"
+relied_on = "The status badge GitHub serves for the ci.yml workflow on the default branch; intake replaces <owner>/<repo> here and in the README"
+recheck_every = "365d"
+
+[[external]]
+id = "licence-badge"
+url = "https://img.shields.io/badge/licence-MIT%20OR%20Apache--2.0-blue"
+relied_on = "A static Shields badge whose label and message come from the URL path"
+recheck_every = "365d"

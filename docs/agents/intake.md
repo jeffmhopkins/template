@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Intake: questioning the maintainer about what the project is
 
+> The first thread: it turns the maintainer's idea into the product docs and the decisions
+> only they can make, in at most three rounds of questions.
+
 **Runs as:** the first thread in a new project. **Count:** 1. **Started by:** the coordinator
 on day 0 ([README.md](README.md#day-0-order)), once the repo exists and bootstrap has run.
 It ends when its design PR merges.
@@ -108,6 +111,10 @@ for `ops/pending.md`. The coordinator writes the decision files.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> Intake asks and writes the design PR. Maintainer-tier questions go to the maintainer, and
+> building waits for the builders.
 
 - Start building.
 - Decide a maintainer-tier question yourself.

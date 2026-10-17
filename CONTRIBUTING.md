@@ -8,6 +8,9 @@ review_every = "180d"
 
 # Contributing
 
+> Outside pull requests are closed until the first release; issues are welcome. Agents make
+> every change, and the review gate lands it.
+
 <a id="closed"></a>
 ## Outside contributions
 <!-- @section

@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Serial lanes runbook
 
+> How a PR waits for, holds and gives up the slot that lets it set the next value of a
+> serial lane.
+
 How a PR gets the next value of a serial lane. The decision is
 [ADR-0005](../adr/0005-waves-and-serial-lanes.md); the file format and the check are in
 [DOCS › Serial lanes](../DOCS.md#lanes). The integrator owns the queue

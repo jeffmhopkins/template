@@ -12,6 +12,9 @@ tier = "agent"
 > **Status:** accepted
 <!-- @generated end adr-status -->
 
+> CI skips drafts, runs fast checks on every ready push, runs other platforms only after
+> review, and pins every action to a commit SHA.
+
 <a id="context"></a>
 ## Context
 Many agent PRs are open at once, and each push starts CI. Runner time is shared by all of
@@ -41,8 +44,12 @@ actions run with the repository's token.
 
 <a id="consequences"></a>
 ## Consequences
+
+### Positive
 - Runner time per PR drops to one fast run per ready push, and one expensive run per
   reviewed SHA.
+- An action's tag moving to new code can't change what CI runs.
+
+### Negative
 - A failure only another platform shows surfaces after review; its fix is a new push and a
   new review round.
-- An action's tag moving to new code can't change what CI runs.

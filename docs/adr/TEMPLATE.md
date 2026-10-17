@@ -24,7 +24,12 @@ What is decided, stated plainly.
 
 <a id="consequences"></a>
 ## Consequences
-What gets easier, what gets harder, and what must now be done.
+
+### Positive
+What gets easier.
+
+### Negative
+What gets harder, and what must now be done.
 
 <!-- Copy this file to docs/adr/NNNN-short-title.md and number it after the highest ADR.
      Once accepted, only `status`, `superseded_by` and the generated `adr-status` block

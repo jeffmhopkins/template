@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Planner
 
+> Turns the roadmap into PR-sized rows that can run in parallel, and tracks what each merge
+> unblocks.
+
 **Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
 `INTAKE-DONE`.
 
@@ -79,6 +82,9 @@ Event-driven. One full re-plan per milestone.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> The planner writes rows. The coordinator launches them, and the maintainer decides scope.
 
 - Launch threads.
 - Give two concurrent rows the same `owns` path.
