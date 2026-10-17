@@ -219,6 +219,40 @@ content the coordinator writes on day 0:
 - `triage.md`: `last sweep: none`, then `## Routed` (`#<issue> → <row>`), `## Flakes`
   (`<test> | #<issue>`) and `## Auto-merge off` (`#<pr>`).
 
+<a id="permissions"></a>
+## Shell permissions
+<!-- @section
+covers = [".claude/settings.json"]
+-->
+
+[`.claude/settings.json`](../../.claude/settings.json) sets which shell commands a session
+runs without asking, and which it never runs. It is a maintainer-only path. The lists are a
+second line of defence: the rules in the briefs still apply to every allowed command.
+
+**Allowed without a prompt:**
+- the repo tool, the stack's format, lint, test, build and dependency commands, and
+  `node --test`;
+- `scripts/bootstrap.sh --check` only. Bootstrap's write mode changes repository settings,
+  so it always prompts;
+- reading and writing git history, pushing a branch, and worktrees;
+- reading PRs, issues and runs, and the PR loop's writes: create, edit, comment, ready,
+  `gh pr merge <n> --auto …` and `gh pr merge <n> --disable-auto`, issues, re-runs and the
+  review gate's re-run;
+- `gh api repos/…` reads.
+
+**Denied, whatever the allow list says:**
+- force pushes, pushes that delete a branch or update one with `+`;
+- `gh pr merge --admin`;
+- adding `review-override` with `gh pr edit` or `gh issue edit`. Only the maintainer applies
+  it ([R-GOV-002](../RULES.md#R-GOV-002));
+- `gh api` with a method or a body in any spelling: `-X`, `--method`, `-f`, `-F`, `--field`,
+  `--raw-field` and `--input`, joined to their value or not. What's left is a GET;
+- repository settings, variables, secrets, rulesets, label creation and deletion, and
+  releases.
+
+`governance-approved` on a maintainer-only path can't be told apart by a command pattern;
+the rule in [project-instructions.md](project-instructions.md) covers it.
+
 <a id="lifecycle"></a>
 ## Lifecycle rules every brief assumes
 <!-- @section
