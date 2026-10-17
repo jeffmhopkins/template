@@ -8,6 +8,9 @@ review_every = "180d"
 
 # Bootstrap runbook
 
+> The one-time GitHub setup the maintainer runs before intake: what it needs, what it sets,
+> and what stays by hand.
+
 The one-time GitHub setup for a repo made from this template: who runs it, how, what it
 sets, and what stays by hand. It runs once, before intake. Agents never change repo
 settings; any agent may run the read-only `--check`.

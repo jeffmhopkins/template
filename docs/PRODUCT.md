@@ -8,6 +8,9 @@ review_every = "30d"
 
 # Product
 
+> What `<PROJECT>` is, who it is for, what it must reach and what it must never do. Intake
+> writes it from the maintainer's answers.
+
 What `<PROJECT>` is and what it must never do. Intake writes this doc from the maintainer's
 answers ([intake brief](agents/intake.md)). Every part marked ``<from intake>`` is filled
 before the first build row starts.

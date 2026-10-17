@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Engineering rules
 
+> Every engineering rule, each with a permanent ID, the paths it applies to and what
+> enforces it.
+
 These rules apply to every change, whoever wrote it. Each rule has a permanent ID from the
 first merge to `main`. The format and the `enforced_by` vocabulary are in
 [DOCS › Rules format](DOCS.md#rules). Changing a rule's `status`, `enforced_by` or

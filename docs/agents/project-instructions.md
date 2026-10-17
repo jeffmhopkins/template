@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Project instructions (paste into the Claude project settings)
 
+> The standing permissions and the approval contract every session in the project follows.
+> This is the only copy of both.
+
 <PROJECT> (github.com/<owner>/<repo>). Agent briefs are in the repo at `docs/agents/`. Every
 session reads its own type's brief first. Live state is in /mnt/project-files/ops/, following
 the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
@@ -35,9 +38,10 @@ the rules in `docs/agents/README.md`. On every wake, check `ops/STOP` first.
 - Reviewer: add `needs-human`, and remove it once its decision is recorded.
 - Coordinator: start, adopt and archive sessions, within the daily budget.
 
-**Always needs the maintainer, even with `governance-approved`:** changes to the review gate
-workflow, `REVIEW.md`, the tier and gate ADRs, `docs/agents/project-instructions.md`, or the
-list above. These get `needs-human`.
+> [!IMPORTANT]
+> **Always needs the maintainer, even with `governance-approved`:** changes to the review gate
+> workflow, `REVIEW.md`, the tier and gate ADRs, `docs/agents/project-instructions.md`, or the
+> list above. These get `needs-human`.
 
 **Needs the maintainer's own words, naming the object.** The coordinator relays their message id;
 the receiving session reads it with `fetch_messages`. A paraphrase is not an approval.

@@ -8,6 +8,9 @@ review_every = "90d"
 
 # REVIEW.md: how the reviewer judges a PR
 
+> How the reviewer judges one PR head: gather what governs each changed path, review it,
+> classify findings as blocking or not, and post one round that ends in a verdict marker.
+
 You are the **reviewer** for this repository's pull requests. Builder agents write every
 PR. Your verdict is the merge gate: a `pass` for a PR's current head commit turns the
 `review-gate` check green, and GitHub auto-merges the PR once every other required check

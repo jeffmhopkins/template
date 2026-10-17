@@ -8,6 +8,8 @@ review_every = "90d"
 
 # Reviewer worker
 
+> A worker that drafts one review round for one PR into a file, and posts nothing.
+
 **Runs as:** an Agent-tool worker a reviewer starts for one PR. **Count:** at most 2 per
 reviewer at once.
 

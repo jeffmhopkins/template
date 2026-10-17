@@ -8,15 +8,16 @@ review_every = "90d"
 
 # Documentation system
 
+> Docs are a graph of anchored sections, each bound by hashes to the code and rules it
+> describes. Change an input and the section is stale until an agent re-reads it.
+
 How documentation stays accurate as the code and the outside world change. The binding
 rules are `R-DOC-*` in [RULES](RULES.md#documentation); the decision is
 [ADR-0001](adr/0001-docs-as-checked-graph.md).
 
-**Idea:** docs are a graph of anchored sections. Each section is bound by content hashes to
-the code it describes and to the sections and rules it relies on. When any of those
-inputs changes, the section is stale until an agent re-reads it and restamps it. History,
-revisions and dates come from git and are never stored in files. One tool,
-`scripts/repo` ([The tool](#tool)), checks all of it.
+A section's inputs are its own text, the code it describes, and the sections and rules it
+relies on. History, revisions and dates come from git and are never stored in files. One tool, `scripts/repo` ([The tool](#tool)),
+checks all of it.
 
 <a id="identity"></a>
 ## Document metadata
@@ -146,6 +147,9 @@ A section's **stamps** are entries in [`docs/verified.toml`](verified.toml), one
 Each holds a BLAKE3 digest (16 hex chars, `b3:` prefix) of the input as it was when the
 section was last verified.
 
+<details>
+<summary><b>Ledger entry format</b></summary>
+
 ```toml
 ["DOCS#tool"."body"]
 stamp = { hash = "b3:…", by = "agent:<name>", note = "<what was checked>" }
@@ -156,6 +160,8 @@ stamp = { hash = "b3:…" }
 ["CLAUDE#commands"."dep:DOCS#tool"]
 stamp = { hash = "b3:…" }
 ```
+
+</details>
 
 The inputs, by key:
 1. `body`: the section's text, normalized (metadata blocks and `@generated` blocks
@@ -169,6 +175,17 @@ current hash. It goes stale when the section, a covered file (added, removed or 
 included) or a dependency changes. Staleness is a function of the tree alone, so squash
 merges and merges from `main` behave the same. Propagation is one hop: a dependent hashes
 its target's text, not the target's covered files.
+
+```mermaid
+flowchart LR
+    F["Fresh: stamps name every current input with its current hash"]
+    F -->|"the section, a covered file or a dependency changes"| S["Stale: docs check fails"]
+    S --> R["An agent re-reads the section against the change"]
+    R -->|still holds| V["docs verify --by … --note …"]
+    R -->|wrong| E["Edit the section"]
+    E --> V
+    V -->|"writes the changed and new entries, drops removed ones"| F
+```
 
 `scripts/repo docs verify <DOC#anchor> --by <who> --note "<text>"` restamps a section after
 a re-read. It writes only the entries whose input changed or is new, which take its `by`

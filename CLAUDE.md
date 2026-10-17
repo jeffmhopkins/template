@@ -8,9 +8,11 @@ review_every = "90d"
 
 # CLAUDE.md
 
-The entry point for builder agents. It does **not** restate rules. It says where they are
-and how to find the ones that apply to your change. Your role's brief is in
-[docs/agents/](docs/agents/README.md).
+> The builder's entry point: how to find the rules that govern your change, your docs duty,
+> and the PR loop from draft to auto-merge.
+
+It does **not** restate rules. It says where they are and how to find the ones that apply
+to your change. Your role's brief is in [docs/agents/](docs/agents/README.md).
 
 <a id="which-repo"></a>
 ## First: which repo is this?
@@ -104,10 +106,29 @@ depends_on = ["REVIEW#output", "REVIEW#rounds", "RULES#R-GOV-005", "RULES#R-GOV-
 8. Anything else that needs the maintainer follows the approval contract
    ([R-GOV-006](docs/RULES.md#R-GOV-006)).
 
+```mermaid
+flowchart TD
+    A["Draft PR: CI skips it"] --> B["Ready: merge main, mark ready, auto-merge (squash) on"]
+    B --> C["Reviewer posts a round: findings B/N and one verdict marker for the head"]
+    C -->|fail| D["Answer every B: a fix commit or a rebuttal"]
+    D -->|push: new round| C
+    C -->|escalate| E["needs-human: the maintainer decides"]
+    E -->|decision recorded: next round| C
+    C -->|pass| F{"Every required check green, review-gate included?"}
+    F -->|yes| G["GitHub auto-merges (squash)"]
+    F -->|no| H["Fix the failing check, push"]
+    H -->|new round| C
+```
+
 <a id="limits"></a>
 ## Things you never do
 <!-- @section
 -->
+
+> [!CAUTION]
+> Never merge by hand, post a review verdict, or change branch protection or repository
+> settings. A PR lands only through GitHub auto-merge, once `review-gate` and every other
+> required check is green.
 
 - Apply `governance-approved` or `review-override` without writing the matching
   justification section in the PR description, or before examining what the check flagged

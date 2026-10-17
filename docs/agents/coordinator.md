@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Coordinator
 
+> The maintainer's single point of contact: it launches the planner's rows, relays
+> decisions in the maintainer's own words, and reports in the project chat.
+
 **Runs as:** the project's chat session (the ambient channel session). **Count:** 1.
 **Started by:** the project itself; the maintainer's first message wakes it.
 
@@ -141,6 +144,10 @@ Once a day, one message in the chat:
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> Never post a decision the maintainer didn't give. Relay their own words, with the message
+> id.
 
 - Answer inside a thread; the thread's session does.
 - Launch a row the planner hasn't written.

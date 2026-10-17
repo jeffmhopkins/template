@@ -12,6 +12,9 @@ tier = "maintainer"
 > **Status:** accepted
 <!-- @generated end adr-status -->
 
+> Scope, licensing, security and privacy, public compatibility and spending wait for the
+> maintainer's own decision. Agents decide everything else.
+
 <a id="context"></a>
 ## Context
 Agents make most decisions themselves. A few bind the maintainer: what the product is,
@@ -57,8 +60,12 @@ Every ADR declares a `tier` in its `@doc` block.
 
 <a id="consequences"></a>
 ## Consequences
+
+### Positive
 - The maintainer sees scope, licence, security and privacy, compatibility and spending
   decisions before they bind, and nothing else.
 - Agents revise architecture and process on their own; the review gate is the check on
   them.
+
+### Negative
 - A maintainer-tier ADR blocks its PR until the decision is on it.

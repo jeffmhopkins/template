@@ -8,6 +8,9 @@ review_every = "30d"
 
 # Roadmap
 
+> The milestones of `<PROJECT>`, each with the demo that shows it working. Status is derived
+> from `main`, never written here.
+
 The milestones of `<PROJECT>`, each with the demo that shows it working. Intake writes them;
 the planner turns each into items in [`progress.toml`](progress.toml) and keeps this doc in
 step. Status is derived from `main` ([DOCS › Progress](DOCS.md#progress)) and shown in the

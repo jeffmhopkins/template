@@ -8,10 +8,28 @@ review_every = "90d"
 
 # Wave branches runbook
 
+> When the integrator turns waves on, which branch each PR targets, and how a wave is
+> synced with `main`, cut and landed.
+
 Who does what with wave branches, in what order. The decision is
 [ADR-0005](../adr/0005-waves-and-serial-lanes.md). The integrator owns every wave
 ([integrator brief](../agents/integrator.md)). Whether waves are on, and which wave is
 current, is in `ops/mode.md`.
+
+```mermaid
+flowchart TD
+    off["Waves off: PRs target main"] -->|"more than about 15 open PRs, or runners queue over about 10 minutes"| create["Integrator creates wave/name from main, sets ops/mode.md, moves open PRs onto it"]
+    create --> live["PRs are reviewed and squash-merge into the wave"]
+    live -->|"main moves and conflicts"| sync["Sync PR: main merged into the wave as a merge commit"]
+    sync --> live
+    live -->|"every PR merged, draft or blocked on the maintainer, and at least one merged"| cut["Cut: next wave from main, open PRs moved onto it"]
+    cut -->|"the next wave"| live
+    cut --> land["Landing PR into main, synced first if it conflicts: every check runs, the reviewer reviews the sync merges"]
+    land -->|"the full run finds a failure"| fix["Fix PRs into the wave"]
+    fix --> land
+    land -->|"merges"| gone["GitHub deletes the wave branch"]
+    gone -->|"last wave, ops/mode.md set to off"| off
+```
 
 <a id="when"></a>
 ## When waves are on

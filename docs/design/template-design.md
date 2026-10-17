@@ -8,10 +8,11 @@ review_every = "90d"
 
 # Template design
 
-How this template works: the repo it gives a project, the agent swarm that builds in it,
-the one-time setup, and the plan for building the template itself. The agent briefs in
-[docs/agents/](../agents/README.md) are the detailed spec for the swarm. Where this doc and a
-brief differ, the brief wins.
+> How the template works: the repo it gives a project, the agent swarm that builds in it,
+> the one-time setup, and the plan for building the template itself.
+
+The agent briefs in [docs/agents/](../agents/README.md) are the detailed spec for the swarm.
+Where this doc and a brief differ, the brief wins.
 
 <a id="overview"></a>
 ## 1. Overview
@@ -58,6 +59,7 @@ repo.toml                     the one config: tracked and protected paths, requi
                               serial lanes, label names, review marker prefix, stack pack
 lanes.toml                    one line per serial lane (value and holder)
 docs/
+  README.md                   the docs hub: every doc and what it is for
   DOCS.md                     the docs system
   RULES.md                    the rules
   PRODUCT.md                  written by intake: pitch, users, demos, never-rules

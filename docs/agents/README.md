@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Agent types
 
+> Which agents run and how many, the order they start in on day 0, the one-line messages
+> they send each other, and the shared state each one owns.
+
 There is one brief per agent type. They live at `docs/agents/`. A session starts with its brief's path. Briefs don't
 restate repo rules: they point to CLAUDE.md, REVIEW.md and the runbooks. Standing permissions
 and the approval contract live only in [project-instructions.md](project-instructions.md).
@@ -40,6 +43,15 @@ and the approval contract live only in [project-instructions.md](project-instruc
 4. On `INTAKE-DONE`, the coordinator starts the planner, the second reviewer, the integrator,
    triage and the board, then launches the first builders from the planner's rows.
 
+```mermaid
+flowchart LR
+    A["Repo from the template"] --> B["scripts/bootstrap.sh"]
+    B --> C["Paste project-instructions.md"]
+    C --> D["Coordinator creates ops/, starts intake and one reviewer"]
+    D -->|INTAKE-DONE| E["Planner, second reviewer, integrator, triage, board"]
+    E --> F["First builders, from the planner's rows"]
+```
+
 <a id="messages"></a>
 ## Messages
 <!-- @section
@@ -49,6 +61,33 @@ Agents send each other one-line messages with `send_message`, in these fixed for
 **Role-to-role lines go direct**, addressed through `ops/roster.md`. The coordinator gets only
 the lines marked ★. Forward a
 line verbatim; never rewrite it.
+
+```mermaid
+flowchart LR
+    intake([intake]) -->|INTAKE-DONE| coord([coordinator])
+    coord -->|"ROW?"| planner([planner])
+    triage([triage]) -->|"ROW?"| planner
+    planner -->|"ROW / NO-ROW, UNBLOCKED"| coord
+    planner -->|"ROW / NO-ROW"| triage
+    triage -->|IDLE| coord
+    integrator([integrator]) -->|"IDLE, STALLED"| coord
+    reviewer([reviewer]) -->|STALLED| coord
+    builder([builder]) -->|"REVIEW?"| reviewer
+    builder -->|MERGED| planner
+    builder -->|"MERGED, LANE-READY"| integrator
+    builder -->|"MERGED (milestone), HW"| coord
+    integrator -->|"MERGE-MAIN, LANE-HOLD"| builder
+    triage -->|ROUTE| builder
+    device([device]) -->|HW-RESULT| coord
+    coord -->|HW-RESULT| builder
+    any([any role]) -->|BLOCKED| planner
+    any -->|BLOCKED| integrator
+    any -->|"BLOCKED, NEEDS-MAINTAINER"| coord
+    coord -->|"STOP / RESUME"| all([all roles])
+```
+
+<details>
+<summary><b>All message formats</b> (16)</summary>
 
 | Line | From → to | Receiver does |
 |---|---|---|
@@ -68,6 +107,8 @@ line verbatim; never rewrite it.
 | `HW-RESULT <item> #<pr>: pass/fail/not-run <issue>` | device → coordinator ★ → builder | builder fixes, or closes the tracking issue |
 | `INTAKE-DONE #<pr>` | intake → coordinator ★ | starts the other roles |
 | `STOP` / `RESUME` | coordinator → all | stop at once / pick up from state files |
+
+</details>
 
 <a id="state"></a>
 ## State: `/mnt/project-files/ops/`

@@ -12,6 +12,9 @@ tier = "maintainer"
 > **Status:** accepted
 <!-- @generated end adr-status -->
 
+> A reviewer agent's verdict for the exact head SHA is the merge gate, and a change that
+> could loosen a check needs a label and a justification.
+
 <a id="context"></a>
 ## Context
 Every PR is written by an agent and pushed from one GitHub identity. GitHub never lets a
@@ -48,7 +51,13 @@ could also pass the checks by weakening them.
 
 <a id="consequences"></a>
 ## Consequences
+
+### Positive
 - An outsider's comment can't pass a PR, and a parallel `pass` can't hide a `fail`.
+
+### Negative
+- Every push needs a new review round, since the gate counts only markers for the current
+  head SHA.
 - The gate is a process control against agents holding the maintainer's token: they post
   as the configured login. The session list, the trailer check and the weekly audit make a
   forged verdict visible, not impossible. A separate reviewer identity would close this.

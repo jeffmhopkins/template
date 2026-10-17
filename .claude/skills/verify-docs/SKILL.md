@@ -12,6 +12,9 @@ review_every = "90d"
 
 # Verify docs
 
+> Find the stale sections, re-read each against what changed, and restamp it with a note
+> that names what you checked.
+
 A doc section is stale when its text, a file it covers or a section it depends on changed
 since it was last verified. Restamping it is a claim that it was re-read against that change
 and still holds.

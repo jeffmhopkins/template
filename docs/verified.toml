@@ -10,7 +10,7 @@ stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:60f470f0b966d94b", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
 
 ["CLAUDE#docs-duty"."dep:DOCS#ledger"]
-stamp = { hash = "b3:dc8f4545b1af3663", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
+stamp = { hash = "b3:9c73715a1df8ce11", by = "agent:style-pass", note = "DOCS#ledger only gained a diagram and a details fold around its TOML example; verify, merge-main and never-hand-edit-the-ledger claims here are unchanged against it" }
 
 ["CLAUDE#docs-duty"."dep:DOCS#merge"]
 stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
@@ -19,7 +19,7 @@ stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:7bdc4a98f6464946", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger (only verify and merge-main write the ledger), DOCS#notes (merge notes keep earlier note plus merge change) and DOCS#merge (--from branch, ledger and generated conflicts resolved, others left); progress trailers match DOCS#progress" }
 
 ["CLAUDE#pr-loop"."body"]
-stamp = { hash = "b3:d81271668dce9d22", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
+stamp = { hash = "b3:45a356261dff16ae", by = "agent:style-pass", note = "Added a mermaid flow after step 8: draft skips CI, ready plus auto-merge, review round, fail answered by push, escalate to needs-human then next round, pass plus green checks auto-merges; each edge checked against steps 1-6 and REVIEW#rounds" }
 
 ["CLAUDE#pr-loop"."dep:REVIEW#output"]
 stamp = { hash = "b3:e5b3f3114b2e27a7", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
@@ -43,7 +43,7 @@ stamp = { hash = "b3:b07e39e8c74fc10f", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
 
 ["DOCS#governance"."dep:ADR-0002"]
-stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
+stamp = { hash = "b3:38eda9dd7416afd8", by = "agent:style-pass", note = "ADR-0002 gained a summary and split consequences (plus the every-push-needs-a-round negative); the label, section, base-built tool and maintainer-only claims here are unchanged against its decision" }
 
 ["DOCS#governance"."file:.github/workflows/governance.yml"]
 stamp = { hash = "b3:688aca89b9f23ef9", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
@@ -163,7 +163,7 @@ stamp = { hash = "b3:f20fb3eec5516d16", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:c488f6b2642a2d85", by = "agent:skeleton-verifier", note = "Checked against ADR-0002: instructions read from the base branch, verdict per head SHA, recusal via Claude-Session trailers, comment-only reviewer whose sole label is needs-human; consistent with the gate's session and edit rules" }
 
 ["REVIEW#ground-rules"."dep:ADR-0002"]
-stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "Checked against ADR-0002: instructions read from the base branch, verdict per head SHA, recusal via Claude-Session trailers, comment-only reviewer whose sole label is needs-human; consistent with the gate's session and edit rules" }
+stamp = { hash = "b3:38eda9dd7416afd8", by = "agent:style-pass", note = "ADR-0002 gained a summary line and Positive/Negative consequences, with a negative that each push needs a new round; head-SHA-only review, base-branch instructions and recusal here still match it" }
 
 ["REVIEW#output"."body"]
 stamp = { hash = "b3:e5b3f3114b2e27a7", by = "agent:skeleton-verifier", note = "Compared the marker format and gate rules with review-gate.yml decide(): head SHA, REVIEWER_LOGIN, REVIEWER_SESSIONS, unedited comments, highest round, trailer recusal, dependabot exception; fixed: fail or escalate beats pass, recuse never counts" }
@@ -175,7 +175,7 @@ stamp = { hash = "b3:888760d87186d89c", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:3669073337c93a81", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
 
 ["REVIEW#tiers"."dep:ADR-0003"]
-stamp = { hash = "b3:ebb89a33e45b8749", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
+stamp = { hash = "b3:f5a2a5866b2b5c68", by = "agent:style-pass", note = "ADR-0003 gained a summary line and its consequences split into Positive/Negative with no content change; tier classification, proxy decision format and escalate rules here still match" }
 
 ["REVIEW#tiers"."dep:RULES#R-GOV-005"]
 stamp = { hash = "b3:748df28e389eb0ab", by = "agent:skeleton-verifier", note = "Checked against ADR-0003 tiers, direct /accept and /reject and the proxy format, and R-GOV-005; changed the proxy validity clause to accept a source link or message id as ADR-0003 and R-GOV-006 allow" }
@@ -190,10 +190,10 @@ stamp = { hash = "b3:a2da6e7fc4cb2041", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:54ae6e94f258620b", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
 
 ["RULES#governance"."dep:ADR-0002"]
-stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
+stamp = { hash = "b3:38eda9dd7416afd8", by = "agent:style-pass", note = "ADR-0002 and ADR-0003 gained summaries and Positive/Negative consequences; R-GOV-001..007 (labels, gate, tiers, approval contract, maintainer-only paths) still match both decisions unchanged" }
 
 ["RULES#governance"."dep:ADR-0003"]
-stamp = { hash = "b3:ebb89a33e45b8749", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
+stamp = { hash = "b3:f5a2a5866b2b5c68", by = "agent:style-pass", note = "ADR-0002 and ADR-0003 gained summaries and Positive/Negative consequences; R-GOV-001..007 (labels, gate, tiers, approval contract, maintainer-only paths) still match both decisions unchanged" }
 
 ["RUNBOOK-BOOTSTRAP#before"."body"]
 stamp = { hash = "b3:fc3d6da4c341f9d5", by = "agent:structure-pass", note = "Added the private-repo plan needs for secret scanning and dependency-review; gh, python3, admin login and repo.toml prerequisites unchanged in bootstrap.sh" }
@@ -205,7 +205,7 @@ stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "Add
 stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."dep:AGENTS#day-0-order"]
-stamp = { hash = "b3:6f4c72c42105c91b", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
+stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:style-pass", note = "AGENTS#day-0-order gained a mermaid flow of the same four steps; pasting project-instructions with the name filled in and the reviewer-sessions step still fit that order" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."file:scripts/bootstrap.sh"]
 stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "bootstrap.sh still prints the Claude app and project-instructions steps at the end; the secret scanning step adds nothing by hand; REVIEWER_SESSIONS step holds" }
@@ -253,7 +253,7 @@ stamp = { hash = "b3:0daecde7938a7293", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:feeae5fe103bd9f7", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (lane PRs into the wave, landing PR may advance a lane by more than one) and governance.yml, which passes --wave to lane-guard when the head ref is wave/*" }
 
 ["RUNBOOK-LANES#waves"."dep:ADR-0005"]
-stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (lane PRs into the wave, landing PR may advance a lane by more than one) and governance.yml, which passes --wave to lane-guard when the head ref is wave/*" }
+stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 consequences split into Positive/Negative (lane PR waits for its slot moved to Negative) plus a summary; lane PRs into the current wave and multi-step landing advances still match" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."body"]
 stamp = { hash = "b3:540847c06f9bf60d", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
@@ -283,7 +283,7 @@ stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:40dfcbe01dd47c5b", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (one landing PR running every check, carrying trailers and Governance change sections) and REVIEW#gather step 6 (head wave/*, base main, remerge-diff of sync merges); bootstrap sets delete_branch_on_merge" }
 
 ["RUNBOOK-WAVES#landing"."dep:ADR-0005"]
-stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (one landing PR running every check, carrying trailers and Governance change sections) and REVIEW#gather step 6 (head wave/*, base main, remerge-diff of sync merges); bootstrap sets delete_branch_on_merge" }
+stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and split consequences (landing-PR failures now under Negative); cut condition, landing PR body, review of sync merges and fix PRs still match it and the intro diagram" }
 
 ["RUNBOOK-WAVES#landing"."dep:REVIEW#gather"]
 stamp = { hash = "b3:7f391b4b504eb3b6", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (one landing PR running every check, carrying trailers and Governance change sections) and REVIEW#gather step 6 (head wave/*, base main, remerge-diff of sync merges); bootstrap sets delete_branch_on_merge" }
@@ -298,13 +298,13 @@ stamp = { hash = "b3:82b0a56f5847c8e4", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:46da0e131e4f6b74", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 waves decision: off by default, turned on at about 15 open PRs or queued runners, wave/<name> cut from main; turning off by landing the last wave" }
 
 ["RUNBOOK-WAVES#when"."dep:ADR-0005"]
-stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 waves decision: off by default, turned on at about 15 open PRs or queued runners, wave/<name> cut from main; turning off by landing the last wave" }
+stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and Positive/Negative consequences; the ~15 PRs or runner-queue trigger and turning waves off by landing the last wave still match, as does the new intro diagram" }
 
 ["RUNBOOK-WAVES#which-wave"."body"]
 stamp = { hash = "b3:1148fafdf17884ae", by = "agent:skeleton-verifier", note = "Checked the target table against ADR-0005 (CI, gate and governance changes go to main); 'changing the base alone does not re-run CI' matches ci.yml pull_request types, which omit edited" }
 
 ["RUNBOOK-WAVES#which-wave"."dep:ADR-0005"]
-stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked the target table against ADR-0005 (CI, gate and governance changes go to main); 'changing the base alone does not re-run CI' matches ci.yml pull_request types, which omit edited" }
+stamp = { hash = "b3:a0d96b675bdac610", by = "agent:style-pass", note = "ADR-0005 only gained a summary and split consequences; which PRs target the wave versus main and moving a base with update_pull_request are unchanged against its decision" }
 
 ["SECURITY-AGENTS#approvals"."body"]
 stamp = { hash = "b3:1e97657b5efe8153", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
@@ -382,19 +382,19 @@ stamp = { hash = "b3:d8bd0cf6fe14dee7", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:a42e150b4b73c0e2", by = "agent:skeleton-verifier", note = "Checked against CLAUDE#pr-loop step 2: enable_pr_auto_merge with SQUASH or gh pr merge --auto --squash, say so if it fails, lane PRs keep it off until they hold the slot, merges once every required check is green" }
 
 ["SKILL-STEWARD#merging"."dep:CLAUDE#pr-loop"]
-stamp = { hash = "b3:d81271668dce9d22", by = "agent:skeleton-verifier", note = "Checked against CLAUDE#pr-loop step 2: enable_pr_auto_merge with SQUASH or gh pr merge --auto --squash, say so if it fails, lane PRs keep it off until they hold the slot, merges once every required check is green" }
+stamp = { hash = "b3:45a356261dff16ae", by = "agent:style-pass", note = "CLAUDE#pr-loop gained a mermaid flow of draft, ready, review round, fail/escalate loops and auto-merge; the squash auto-merge steps, the lane-slot exception and the merges-when-green line here still match it" }
 
 ["SKILL-STEWARD#never"."body"]
-stamp = { hash = "b3:5bd4736753d0b7ea", by = "agent:skeleton-verifier", note = "Checked each item against CLAUDE#limits: no verdicts or hand merges, no labels without the justification section and examination, no settings or branch protection changes, no hand-edited ledger or unread verification" }
+stamp = { hash = "b3:3b105643aae4b023", by = "agent:style-pass", note = "Added a WARNING callout above the list; CLAUDE#limits gained a CAUTION callout on merging by hand, verdicts and settings. Every bullet here (markers, rebase, labels, settings, ledger) still matches CLAUDE#limits" }
 
 ["SKILL-STEWARD#never"."dep:CLAUDE#limits"]
-stamp = { hash = "b3:bbc1647679f71521", by = "agent:skeleton-verifier", note = "Checked each item against CLAUDE#limits: no verdicts or hand merges, no labels without the justification section and examination, no settings or branch protection changes, no hand-edited ledger or unread verification" }
+stamp = { hash = "b3:27b15450d2a00b73", by = "agent:style-pass", note = "Added a WARNING callout above the list; CLAUDE#limits gained a CAUTION callout on merging by hand, verdicts and settings. Every bullet here (markers, rebase, labels, settings, ledger) still matches CLAUDE#limits" }
 
 ["SKILL-VERIFY-DOCS#find"."body"]
 stamp = { hash = "b3:f4cc6535b88dd74a", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger: the three input kinds body, file:<path> (added, removed, renamed or edited) and dep:<DOC#anchor>, and that docs check names each stale section by DOC#anchor" }
 
 ["SKILL-VERIFY-DOCS#find"."dep:DOCS#ledger"]
-stamp = { hash = "b3:dc8f4545b1af3663", by = "agent:skeleton-verifier", note = "Checked against DOCS#ledger: the three input kinds body, file:<path> (added, removed, renamed or edited) and dep:<DOC#anchor>, and that docs check names each stale section by DOC#anchor" }
+stamp = { hash = "b3:9c73715a1df8ce11", by = "agent:style-pass", note = "DOCS#ledger gained a staleness/restamp mermaid diagram and folded its TOML example into details; the body/file:/dep: input kinds listed here still match the ledger's inputs" }
 
 ["SKILL-VERIFY-DOCS#merges"."body"]
 stamp = { hash = "b3:13683f9a7c6df592", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main prints each stale section with the notes this branch wrote since the merge base; the two-part fresh note matches the merge rules there and in DOCS#notes" }
