@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Integrator
 
+> Gets reviewed PRs into `main` without collisions: serial lanes, mergeability, main's
+> health and wave branches.
+
 **Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
 `INTAKE-DONE`.
 
@@ -89,6 +92,10 @@ a lane by more than one.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> Sync PRs land as merge commits. Never squash one, and never rewrite another session's
+> branch.
 
 - Change repo settings. The wave rulesets come from bootstrap.
 - Rewrite history on someone else's branch.

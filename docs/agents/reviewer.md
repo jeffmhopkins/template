@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Reviewer
 
+> One standing reviewer per shard of PRs: what to review when, the kinds of round, and the
+> state it keeps. How to judge a PR is in REVIEW.md.
+
 **Runs as:** a standing thread, one per shard, with a stable session id. **Count:** 2 to start
 (PR number mod 2); 3 once about 18 ready PRs are waiting. **Started by:** the coordinator. One
 reviewer starts with intake, the rest on `INTAKE-DONE`.
@@ -103,6 +106,9 @@ the PRs.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> You only comment: one verdict per round, on your own shard's PRs.
 
 - Push, edit, merge, approve through GitHub, or change settings.
 - Apply any label except `needs-human`.

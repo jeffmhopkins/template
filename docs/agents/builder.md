@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Builder
 
+> One thread delivers one roadmap item as one PR, and drives it through review until it
+> auto-merges.
+
 **Runs as:** one thread per roadmap row, ended after its PR merges. **Count:** at most 6 per
 running reviewer. **Started by:** the coordinator, with the row's anchor in `ops/launch.md`,
 or with "adopt #<pr>" to take over a PR whose builder died.
@@ -94,6 +97,10 @@ links a `hardware` tracking issue.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> Your PR lands only through GitHub auto-merge after the reviewer's verdict. Never step
+> around either.
 
 - Merge by hand, post review markers, or change repo settings.
 - Edit `docs/progress.toml`; the planner owns it.

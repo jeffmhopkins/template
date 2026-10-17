@@ -8,6 +8,9 @@ review_every = "180d"
 
 # Architecture decision records
 
+> The index of every decision record, with its tier and status, generated from the ADRs
+> themselves.
+
 Every decision recorded in `docs/adr/`. The table is generated from each ADR's `@doc` block
 by `scripts/repo docs generate` ([DOCS › Generated blocks](../DOCS.md#generated)). New ADRs
 start from [`TEMPLATE.md`](TEMPLATE.md) and take the next free number; the template's own

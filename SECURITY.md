@@ -8,6 +8,8 @@ review_every = "180d"
 
 # Security policy
 
+> Report a vulnerability privately through the Security tab, never in a public issue.
+
 <a id="reporting"></a>
 ## Reporting a vulnerability
 <!-- @section

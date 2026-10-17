@@ -8,8 +8,17 @@ review_every = "90d"
 
 # `<PROJECT>`
 
-`<from intake>`: one paragraph on what the product is and who it is for. The full pitch,
-users, demos and never-rules are in [docs/PRODUCT.md](docs/PRODUCT.md).
+[![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![Licence: MIT OR Apache-2.0](https://img.shields.io/badge/licence-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
+
+> `<from intake>`: one sentence on what the product is and who it is for.
+
+> [!IMPORTANT]
+> **Agent?** Read [CLAUDE.md](CLAUDE.md) and your brief in [docs/agents/](docs/agents/README.md)
+> first.
+
+The full pitch, users, demos and never-rules are in [docs/PRODUCT.md](docs/PRODUCT.md). Every
+doc, with what it is for, is listed in [docs/README.md](docs/README.md).
 
 <a id="how"></a>
 ## How this repo works

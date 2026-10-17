@@ -8,6 +8,9 @@ review_every = "180d"
 
 # The repo tool
 
+> The command reference for `scripts/repo`, the one binary that checks docs, governance,
+> lanes and progress.
+
 `tools/repo` is the repository's checking tool: one standalone Rust binary, configured by
 [`repo.toml`](../../repo.toml) and the stack pack it names. Everyone runs it as
 `scripts/repo <command>`, which builds it on first use. What the checks mean is specified in
@@ -35,6 +38,9 @@ review_every = "180d"
 <!-- @section
 -->
 
+<details>
+<summary><b>All commands</b> (16)</summary>
+
 | Command | Does | Exit |
 |---|---|---|
 | `config check` | schema-checks `repo.toml`, the stack pack and `lanes.toml`; every `[checks].required` name must be a job id or job `name:` in `.github/workflows/*.yml` | 1 on any problem |
@@ -53,6 +59,8 @@ review_every = "180d"
 | `plan check <launch.md> <roster.md> [--row <id>]` | no two running rows own overlapping paths | 1 on an overlap, or a running row without `owns` |
 | `heads-changed --state <file>` | prints `changed` or `unchanged` for `git ls-remote origin`, and stores the listing | always 0 |
 | `stack run <job>` | runs the pack's command for a CI job from the root; prints `skip: no <detect>` when the detect file is absent | the command's status |
+
+</details>
 
 `--by` is `agent:<name>` or `human:<login>`. A note shorter than 20 characters, or one that is
 only a stock phrase such as "ok", "lgtm", "verified", "checked" or "re-read", is refused.

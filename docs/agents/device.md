@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Device session
 
+> Runs what cloud threads can't, on the maintainer's own machine and only while it is on:
+> hardware checks, other operating systems, signed-in accounts and bootstrap.
+
 **Runs as:** a Remote Control session on the maintainer's machine. **Count:** 0 or 1. **Started
 by:** the coordinator, after the maintainer says yes to a device-run card. It runs only while
 their machine is on.
@@ -47,6 +50,9 @@ accounts, and the one-time `scripts/bootstrap.sh` under their `gh` login.
 ## Never
 <!-- @section
 -->
+
+> [!WARNING]
+> This is the maintainer's own machine. Do only what the checklist names.
 
 - Push from the device, unless the fix is trivial and inside the PR's own row.
 - Change system settings beyond what the checklist names.

@@ -8,6 +8,9 @@ review_every = "90d"
 
 # Architecture
 
+> How `<PROJECT>` is built: components, boundaries, data model, processes and layout, each
+> summarizing the package sections it depends on.
+
 How `<PROJECT>` is built. Intake writes the skeleton; builders fill each section as the code
 lands. Sections here summarize the package sections they depend on and cover no code
 ([DOCS › Sections](DOCS.md#sections)). Structural changes need an ADR

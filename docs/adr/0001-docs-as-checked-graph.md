@@ -12,6 +12,9 @@ tier = "agent"
 > **Status:** accepted
 <!-- @generated end adr-status -->
 
+> Docs are anchored sections bound by hashes to what they describe. A stale section blocks
+> its PR until an agent re-reads and restamps it.
+
 <a id="context"></a>
 ## Context
 Many agents change the code in parallel, and each reads the docs to decide what to do. A doc
@@ -43,7 +46,11 @@ Decisions are recorded as ADRs, following the [ADR practice](https://adr.github.
 
 <a id="consequences"></a>
 ## Consequences
+
+### Positive
 - A change that makes a section wrong can't merge until someone re-reads that section.
+
+### Negative
 - Every PR that touches covered code carries restamps, and the reviewer reads each note.
 - Broad `covers` cause re-verification on most PRs; they are narrowed, as a declared
   governance change.

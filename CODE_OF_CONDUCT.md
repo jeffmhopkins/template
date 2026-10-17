@@ -8,6 +8,8 @@ review_every = "365d"
 
 # Code of conduct
 
+> Everyone taking part follows the Contributor Covenant 2.1. The maintainer handles reports.
+
 <a id="pledge"></a>
 ## Our standard
 <!-- @section

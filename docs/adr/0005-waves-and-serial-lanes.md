@@ -12,6 +12,9 @@ tier = "agent"
 > **Status:** accepted
 <!-- @generated end adr-status -->
 
+> Serial lanes let one PR at a time change a sequenced value, and wave branches batch PRs so
+> they stop re-conflicting on `main`.
+
 <a id="context"></a>
 ## Context
 With many PRs open, every merge into `main` re-conflicts the others, and each re-merge
@@ -43,8 +46,13 @@ merge without a git conflict.
 
 <a id="consequences"></a>
 ## Consequences
-- Lane values reach `main` in the order they were granted, and a lane PR waits for its slot.
+
+### Positive
+- Lane values reach `main` in the order they were granted.
 - Inside a wave, PRs conflict only with each other. Heavy jobs run once per wave.
+- PRs straight into `main` work the same whether waves are on or off.
+
+### Negative
+- A lane PR waits for its slot.
 - A failure the full run finds surfaces at the landing PR and blocks the wave until it is
   fixed there.
-- PRs straight into `main` work the same whether waves are on or off.
