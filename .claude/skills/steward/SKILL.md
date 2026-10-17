@@ -40,6 +40,8 @@ depends_on = ["RULES#R-GIT-003"]
 - Reproduce the failing job locally with `scripts/repo stack run <job>`, the matching
   `scripts/repo` command for `docs` (`config check` and `docs check`), `governance`,
   `pr-title` and `lane-guard`, or `node --test '.github/tests/*.test.mjs'` for `gate-test`.
+  `dependency-review` runs only on GitHub: its log names each vulnerable dependency the PR
+  adds or changes; move to a fixed version or drop the dependency.
 - Fix the cause in the PR's own files. Never weaken a check, add a suppression without a
   reason, or edit lint or CI config to get green; any of those is a declared governance
   change.

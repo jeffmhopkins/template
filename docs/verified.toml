@@ -33,6 +33,12 @@ stamp = { hash = "b3:748df28e389eb0ab", by = "agent:skeleton-verifier", note = "
 ["CLAUDE#pr-loop"."dep:RULES#R-GOV-006"]
 stamp = { hash = "b3:32ed4d1b07ec4bf3", by = "agent:skeleton-verifier", note = "Checked against REVIEW#output (B/N findings, marker per round), REVIEW#rounds (new round per head, round-3 escalation), R-GOV-005 and R-GOV-006; draft skip matches ci.yml and governance.yml job conditions, lane auto-merge rule matches R-GIT-006" }
 
+["CLAUDE#which-repo"."body"]
+stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New first section; template mode by [template].source equal to origin's owner/repo, project mode while PRODUCT.md is draft; product docs match AGENT-INTAKE#outputs" }
+
+["CLAUDE#which-repo"."dep:AGENT-INTAKE#outputs"]
+stamp = { hash = "b3:b07e39e8c74fc10f", by = "agent:structure-pass", note = "New first section; template mode by [template].source equal to origin's owner/repo, project mode while PRODUCT.md is draft; product docs match AGENT-INTAKE#outputs" }
+
 ["DOCS#governance"."body"]
 stamp = { hash = "b3:2d35008fc3bd0181", by = "agent:skeleton-verifier", note = "Checked governance.rs classify/doc_meta/adr_edits and governance.yml (pull_request_target, base checkout, head fetched as objects, maintainer-only label actor); fixed ADR exception to include status and superseded_by" }
 
@@ -49,7 +55,7 @@ stamp = { hash = "b3:48cee9d9cca0b9a7", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/config.rs"]
-stamp = { hash = "b3:c144bec611f1dd5e", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+stamp = { hash = "b3:9e72c30ba7b5a114", by = "agent:structure-pass", note = "config.rs adds the required [template].source with an owner/repo check and parse.rs skips fenced code for bare URLs; strict config, root resolution and the command table still hold" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/backrefs.rs"]
 stamp = { hash = "b3:530e42b902d67075", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -82,7 +88,7 @@ stamp = { hash = "b3:ace5182c1b0c7ed9", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:2e6475bfeb188cf4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/parse.rs"]
-stamp = { hash = "b3:d5c2242a45402782", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+stamp = { hash = "b3:d51f6948e01cd38c", by = "agent:structure-pass", note = "config.rs adds the required [template].source with an owner/repo check and parse.rs skips fenced code for bare URLs; strict config, root resolution and the command table still hold" }
 
 ["DOCS#tool"."file:tools/repo/src/git.rs"]
 stamp = { hash = "b3:54cc5e73f0f5d6e4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -190,10 +196,10 @@ stamp = { hash = "b3:49cbbe642b219d43", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:ebb89a33e45b8749", by = "agent:skeleton-verifier", note = "Checked R-GOV-001..007 against ADR-0002 (gate markers, auto-merge, round-3 needs-human, governance label, maintainer-only paths) and ADR-0003 (tiers, /accept and proxy format); R-GOV-002 override section and link match review-gate.yml decide()" }
 
 ["RUNBOOK-BOOTSTRAP#before"."body"]
-stamp = { hash = "b3:7302643aa24139de", by = "agent:skeleton-verifier", note = "Checked prerequisites against bootstrap.sh: gh and python3 presence checks, gh auth status, repo.toml read for [checks].required and [labels] via tomllib (so Python 3.11+), admin-only ruleset and Actions endpoints" }
+stamp = { hash = "b3:fc3d6da4c341f9d5", by = "agent:structure-pass", note = "Added the private-repo plan needs for secret scanning and dependency-review; gh, python3, admin login and repo.toml prerequisites unchanged in bootstrap.sh" }
 
 ["RUNBOOK-BOOTSTRAP#before"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:2a929dca5fb723f3", by = "agent:skeleton-lead", note = "bootstrap.sh change is one comment near line 355 now saying the maintainer lists reviewer sessions; the before section's steps, flags and exit codes still match the script, and by-hand already says the maintainer sets REVIEWER_SESSIONS" }
+stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "Added the private-repo plan needs for secret scanning and dependency-review; gh, python3, admin login and repo.toml prerequisites unchanged in bootstrap.sh" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."body"]
 stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
@@ -202,28 +208,28 @@ stamp = { hash = "b3:093aa1830815289f", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:6f4c72c42105c91b", by = "agent:skeleton-verifier", note = "Checked the closing heredoc of bootstrap.sh, which prints only the app install and project-instructions steps (fixed the claim it prints all three), comma-separated REVIEWER_SESSIONS in review-gate.yml, and AGENTS#day-0-order step 2" }
 
 ["RUNBOOK-BOOTSTRAP#by-hand"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:2a929dca5fb723f3", by = "agent:skeleton-lead", note = "bootstrap.sh change is one comment near line 355 now saying the maintainer lists reviewer sessions; the by-hand section's steps, flags and exit codes still match the script, and by-hand already says the maintainer sets REVIEWER_SESSIONS" }
+stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "bootstrap.sh still prints the Claude app and project-instructions steps at the end; the secret scanning step adds nothing by hand; REVIEWER_SESSIONS step holds" }
 
 ["RUNBOOK-BOOTSTRAP#check"."body"]
-stamp = { hash = "b3:5fe57aaeafa70def", by = "agent:skeleton-verifier", note = "Checked --check output format (differs: plus printf %q command and JSON heredoc), exit 1 on differences, and die() exit 2 cases; added python3 and unresolvable repo to the exit 2 list" }
+stamp = { hash = "b3:344d9502c273ec44", by = "agent:structure-pass", note = "--check now also prints skip: when security_and_analysis is hidden and heredoc bodies for the secret scanning PATCH; exit codes 0/1/2 unchanged" }
 
 ["RUNBOOK-BOOTSTRAP#check"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:2a929dca5fb723f3", by = "agent:skeleton-lead", note = "bootstrap.sh change is one comment near line 355 now saying the maintainer lists reviewer sessions; the check section's steps, flags and exit codes still match the script, and by-hand already says the maintainer sets REVIEWER_SESSIONS" }
+stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "--check now also prints skip: when security_and_analysis is hidden and heredoc bodies for the secret scanning PATCH; exit codes 0/1/2 unchanged" }
 
 ["RUNBOOK-BOOTSTRAP#run"."body"]
 stamp = { hash = "b3:8669c7aca4dfab98", by = "agent:skeleton-verifier", note = "Checked flags --check, --repo, --template and the gh repo view default in bootstrap.sh, the ok:/set: output of fix(), and the final 'All settings match.' line with exit 0 in check mode" }
 
 ["RUNBOOK-BOOTSTRAP#run"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:2a929dca5fb723f3", by = "agent:skeleton-lead", note = "bootstrap.sh change is one comment near line 355 now saying the maintainer lists reviewer sessions; the run section's steps, flags and exit codes still match the script, and by-hand already says the maintainer sets REVIEWER_SESSIONS" }
+stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "bootstrap.sh adds the secret scanning step; still idempotent, reads before writing, ok:/set: output, --repo and --template flags unchanged" }
 
 ["RUNBOOK-BOOTSTRAP#settings"."body"]
-stamp = { hash = "b3:b76c75ba032834d8", by = "agent:skeleton-verifier", note = "Compared each table row with bootstrap.sh (repo booleans, PR_TITLE/PR_BODY, both ruleset bodies incl. app id 15368 and do_not_enforce_on_create, Actions token and SHA pinning, fork policy skip, labels, variables, security) and with DESIGN#setup" }
+stamp = { hash = "b3:ad2d61d8436ed56e", by = "agent:structure-pass", note = "Security row now lists secret scanning and push protection via security_and_analysis PATCH; skip:/warn: behaviour described; DESIGN#setup item 6 matches; checks still from repo.toml incl dependency-review" }
 
 ["RUNBOOK-BOOTSTRAP#settings"."dep:DESIGN#setup"]
-stamp = { hash = "b3:2102226345642dca", by = "agent:skeleton-verifier", note = "Compared each table row with bootstrap.sh (repo booleans, PR_TITLE/PR_BODY, both ruleset bodies incl. app id 15368 and do_not_enforce_on_create, Actions token and SHA pinning, fork policy skip, labels, variables, security) and with DESIGN#setup" }
+stamp = { hash = "b3:6f5d3bcc849f1816", by = "agent:structure-pass", note = "Security row now lists secret scanning and push protection via security_and_analysis PATCH; skip:/warn: behaviour described; DESIGN#setup item 6 matches; checks still from repo.toml incl dependency-review" }
 
 ["RUNBOOK-BOOTSTRAP#settings"."file:scripts/bootstrap.sh"]
-stamp = { hash = "b3:2a929dca5fb723f3", by = "agent:skeleton-lead", note = "bootstrap.sh change is one comment near line 355 now saying the maintainer lists reviewer sessions; the settings section's steps, flags and exit codes still match the script, and by-hand already says the maintainer sets REVIEWER_SESSIONS" }
+stamp = { hash = "b3:1e8bac8f3b036c74", by = "agent:structure-pass", note = "Security row now lists secret scanning and push protection via security_and_analysis PATCH; skip:/warn: behaviour described; DESIGN#setup item 6 matches; checks still from repo.toml incl dependency-review" }
 
 ["RUNBOOK-LANES#builder"."body"]
 stamp = { hash = "b3:8f9386c3da1f35e2", by = "agent:skeleton-verifier", note = "Checked against R-GIT-006: lane line set to base+1 with the PR as holder only after LANE-HOLD, auto-merge off until the slot is granted; LANE-READY/LANE-HOLD/MERGE-MAIN formats match AGENTS#messages" }
@@ -248,6 +254,24 @@ stamp = { hash = "b3:feeae5fe103bd9f7", by = "agent:skeleton-verifier", note = "
 
 ["RUNBOOK-LANES#waves"."dep:ADR-0005"]
 stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked against ADR-0005 (lane PRs into the wave, landing PR may advance a lane by more than one) and governance.yml, which passes --wave to lane-guard when the head ref is wave/*" }
+
+["RUNBOOK-TEMPLATE-UPGRADE#after"."body"]
+stamp = { hash = "b3:540847c06f9bf60d", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
+
+["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RULES#R-GOV-001"]
+stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
+
+["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RULES#R-GOV-007"]
+stamp = { hash = "b3:f20fb3eec5516d16", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
+
+["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RUNBOOK-BOOTSTRAP#check"]
+stamp = { hash = "b3:344d9502c273ec44", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
+
+["RUNBOOK-TEMPLATE-UPGRADE#what"."body"]
+stamp = { hash = "b3:9e50a0412a248ee0", by = "agent:structure-pass", note = "New section; the never-overwritten list matches intake outputs (PRODUCT, ROADMAP, ARCHITECTURE, ADRs, rule groups, repo.toml choices, project-instructions additions) plus lanes and the ledger" }
+
+["RUNBOOK-TEMPLATE-UPGRADE#what"."dep:AGENT-INTAKE#outputs"]
+stamp = { hash = "b3:b07e39e8c74fc10f", by = "agent:structure-pass", note = "New section; the never-overwritten list matches intake outputs (PRODUCT, ROADMAP, ARCHITECTURE, ADRs, rule groups, repo.toml choices, project-instructions additions) plus lanes and the ledger" }
 
 ["RUNBOOK-WAVES#current"."body"]
 stamp = { hash = "b3:8aa60d15758aa947", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main --from wave/<name> merges origin/wave/<name>, resolves ledger and generated-block conflicts, lists stale sections; merge never rebase" }
@@ -282,11 +306,50 @@ stamp = { hash = "b3:1148fafdf17884ae", by = "agent:skeleton-verifier", note = "
 ["RUNBOOK-WAVES#which-wave"."dep:ADR-0005"]
 stamp = { hash = "b3:3029d3df9ff07f60", by = "agent:skeleton-verifier", note = "Checked the target table against ADR-0005 (CI, gate and governance changes go to main); 'changing the base alone does not re-run CI' matches ci.yml pull_request types, which omit edited" }
 
+["SECURITY-AGENTS#approvals"."body"]
+stamp = { hash = "b3:1e97657b5efe8153", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
+
+["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-002"]
+stamp = { hash = "b3:48046577581e5de4", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
+
+["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-005"]
+stamp = { hash = "b3:748df28e389eb0ab", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
+
+["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-006"]
+stamp = { hash = "b3:32ed4d1b07ec4bf3", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
+
+["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-007"]
+stamp = { hash = "b3:f20fb3eec5516d16", by = "agent:structure-pass", note = "New section; each bullet matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 and the project-instructions list, fetch_messages as in the builder and coordinator briefs" }
+
+["SECURITY-AGENTS#secrets"."body"]
+stamp = { hash = "b3:a56c6a79d6ae4994", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
+
+["SECURITY-AGENTS#secrets"."dep:RULES#R-SEC-001"]
+stamp = { hash = "b3:4b001dd704dc4efe", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
+
+["SECURITY-AGENTS#secrets"."dep:RULES#R-SEC-003"]
+stamp = { hash = "b3:398a292664325578", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
+
+["SECURITY-AGENTS#sub-workers"."body"]
+stamp = { hash = "b3:cd27b57f813fccc9", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
+
+["SECURITY-AGENTS#sub-workers"."dep:AGENT-REVIEWER-WORKER#steps"]
+stamp = { hash = "b3:5b6ea5e2c0f38acb", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
+
+["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
+stamp = { hash = "b3:6ca108ebb55d0d9d", by = "agent:structure-pass", note = "New section; matches AGENTS#state rule 5 (sub-workers never write ops/) and the reviewer worker brief's post/push/label/messaging limits and its head re-check" }
+
+["SECURITY-AGENTS#untrusted-text"."body"]
+stamp = { hash = "b3:50ae3d88621d3e93", by = "agent:structure-pass", note = "New section; checked against REVIEW ground-rules (base-branch instructions, PR content is data), R-GOV-004 for findings, and the fixed lines in AGENTS#messages" }
+
+["SECURITY-AGENTS#untrusted-text"."dep:REVIEW#ground-rules"]
+stamp = { hash = "b3:c488f6b2642a2d85", by = "agent:structure-pass", note = "New section; checked against REVIEW ground-rules (base-branch instructions, PR content is data), R-GOV-004 for findings, and the fixed lines in AGENTS#messages" }
+
 ["SKILL-STEWARD#ci"."body"]
-stamp = { hash = "b3:8c9f6729c694b095", by = "agent:skeleton-verifier", note = "Checked against R-GIT-003's check table and ci.yml/review-gate.yml: added config check and the gate-test node command; fixed review-gate as pending until a marker, failing on fail/escalate; R-GIT-003 now says review-gate also runs on drafts" }
+stamp = { hash = "b3:d863487f2d002163", by = "agent:structure-pass", note = "R-GIT-003 gained the dependency-review row; added that it runs only on GitHub and how to fix a finding; the local reproduction commands for the other checks still match" }
 
 ["SKILL-STEWARD#ci"."dep:RULES#R-GIT-003"]
-stamp = { hash = "b3:eb1cd61d4d70afb4", by = "agent:skeleton-verifier", note = "Checked against R-GIT-003's check table and ci.yml/review-gate.yml: added config check and the gate-test node command; fixed review-gate as pending until a marker, failing on fail/escalate; R-GIT-003 now says review-gate also runs on drafts" }
+stamp = { hash = "b3:eb8ad9b825311651", by = "agent:structure-pass", note = "R-GIT-003 gained the dependency-review row; added that it runs only on GitHub and how to fix a finding; the local reproduction commands for the other checks still match" }
 
 ["SKILL-STEWARD#every-event"."body"]
 stamp = { hash = "b3:14f226c6f67353a1", by = "agent:skeleton-verifier", note = "Checked against AGENT-BUILDER#on-every-wake (ops/STOP, ops/mode.md, pinned main-is-red issue from main-health.yml) and the builder loop's pre-push checks: stack run fmt/lint/test, docs check, governance --base origin/main" }

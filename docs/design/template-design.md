@@ -72,7 +72,8 @@ docs/
         0003 decision tiers                              (maintainer tier)
         0004 CI: drafts skip, platform after review, pins (agent tier)
         0005 wave branches and serial lanes              (agent tier)
-  runbooks/  waves.md  serial-lanes.md  bootstrap.md
+  SECURITY-AGENTS.md          the agents' rules on untrusted text, approvals and secrets
+  runbooks/  waves.md  serial-lanes.md  bootstrap.md  template-upgrade.md
   agents/                     one brief per agent type, plus project-instructions.md
   design/                     this document
 .github/
@@ -87,6 +88,7 @@ tools/repo/                   the checking tool
 stacks/rust/                  Rust stack pack: CI steps, language rules, lint and licence
                               defaults, dependency lint, suppression patterns
 scripts/bootstrap.sh          one-time GitHub setup, run by the maintainer
+.editorconfig  .gitattributes editor defaults; LF endings, generated files marked
 ```
 
 The template's ADRs take 0001 to 0005, and each project numbers on from 0006.
@@ -206,7 +208,8 @@ only a toolchain in CI, or a prebuilt release.
   (`#[allow`, `eslint-disable`, `# noqa`), the comment syntax for code back-references, and
   dependency lint.
 
-The template records its version in `repo.toml` and keeps a CHANGELOG.
+The template records its source repo and version in `repo.toml` and keeps a CHANGELOG. A
+project takes later versions through `docs/runbooks/template-upgrade.md`.
 
 ### 2.6 CI and the merge gate
 
@@ -214,6 +217,8 @@ The template records its version in `repo.toml` and keeps a CHANGELOG.
 - Draft PRs skip every job.
 - `fmt`, `lint`, `test` and `docs` come from the stack pack.
 - `pr-title`, `gate-test` and `lane-guard` are generic.
+- `dependency-review` fails a PR that adds or changes a dependency with a known
+  vulnerability of high or critical severity.
 
 **`review-gate.yml`:**
 - The reviewer posts one comment per round ending in
@@ -349,7 +354,8 @@ prints the commands to fix any difference; any agent may run it read-only.
 3. **Actions:** default token read-only; SHA-pinned actions required; fork PRs need approval.
 4. **Labels:** `governance-approved`, `review-override`, `needs-human`, `hardware`.
 5. **The repo variable `REVIEWER_SESSIONS`.**
-6. **Dependabot:** vulnerability alerts and security fixes.
+6. **Security:** Dependabot vulnerability alerts and security fixes; secret scanning and push
+   protection.
 7. **By hand:** install the Claude GitHub App, and paste the project instructions into the
    Claude project.
 

@@ -80,6 +80,7 @@ names `enforced_by` may cite as `ci:<name>`. Every name on it is a job in
 | `lane-guard` | `scripts/repo lane-guard` |
 | `governance` | `scripts/repo governance` with the PR's body and labels |
 | `review-gate` | the reviewer's verdict for the head SHA ([R-GOV-003](#R-GOV-003)) |
+| `dependency-review` | GitHub's dependency review of the PR: fails on a dependency it adds or changes with a known vulnerability of high or critical severity |
 
 <a id="R-GIT-004"></a>
 ### R-GIT-004: One logical change per PR
@@ -422,6 +423,9 @@ and branches are not allowed. Dependabot keeps the pins current
 ## Security
 <!-- @section
 -->
+
+How agents keep to these rules, with the rules on untrusted text, approvals and sub-workers,
+is collected in [SECURITY-AGENTS](SECURITY-AGENTS.md).
 
 <a id="R-SEC-001"></a>
 ### R-SEC-001: Secrets stay in the OS credential store

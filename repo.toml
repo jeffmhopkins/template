@@ -1,6 +1,7 @@
 # The template's one config. Schema: tools/repo (`scripts/repo config check`).
 
 [template]
+source = "jeffmhopkins/template"   # the template's GitHub repo; equal to this repo's own in the template
 version = "0.1.0"
 
 [stack]
@@ -16,11 +17,12 @@ external = "docs/external.toml"
 progress = "docs/progress.toml"
 
 [checks]
-required = ["fmt", "lint", "test", "deps", "docs", "pr-title", "gate-test", "lane-guard", "governance", "review-gate"]
+required = ["fmt", "lint", "test", "deps", "docs", "pr-title", "gate-test", "lane-guard", "governance", "review-gate",
+            "dependency-review"]
 
 [governance]
 protected = [".github/**", ".claude/settings.json", ".claude/hooks/**", "tools/repo/**", "stacks/**",
-             "scripts/**", "repo.toml", "docs/DOCS.md", "REVIEW.md",
+             "scripts/**", "repo.toml", "docs/DOCS.md", "REVIEW.md", ".gitattributes", ".editorconfig",
              "deny.toml", "clippy.toml", "rustfmt.toml", "rust-toolchain.toml"]
 maintainer_only = [".github/workflows/review-gate.yml", "REVIEW.md",
                    "docs/adr/0002-*.md", "docs/adr/0003-*.md", "docs/agents/project-instructions.md"]

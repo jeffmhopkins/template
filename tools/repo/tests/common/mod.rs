@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub const CONFIG: &str = r#"[template]
+source = "owner/template"
 version = "0.1.0"
 
 [stack]

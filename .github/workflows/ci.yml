@@ -1,4 +1,5 @@
-# ci: the required checks that run on the PR's own code. `pr-title`, `lane-guard` and
+# ci: the required checks that run on the PR's own code, and `dependency-review` on what it
+# changes in the dependency graph. `pr-title`, `lane-guard` and
 # `governance` run from the base commit in governance.yml; `review-gate` is in review-gate.yml.
 # The job names are the check names in repo.toml [checks].required (`scripts/repo config check`
 # compares them). Stack jobs run the stack pack's command (`stacks/<pack>/pack.toml`).
@@ -29,6 +30,7 @@ env:
 
 # Job conditions:
 # - every job: skipped on a draft PR;
+# - `dependency-review`: runs on PRs only;
 # - `test` and `deps` (the heavy jobs): also skipped on a PR into a `wave/*` branch. The wave's
 #   own PR into main runs them (docs/runbooks/waves.md).
 # The build cache is saved only on a push to main; PR runs restore it and never write it.
@@ -177,3 +179,16 @@ jobs:
         with:
           node-version: 22
       - run: node --test '.github/tests/*.test.mjs'
+
+  # The dependencies the PR adds or changes, from GitHub's dependency graph: fails on a known
+  # vulnerability of high or critical severity.
+  dependency-review:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high
