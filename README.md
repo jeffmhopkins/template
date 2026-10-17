@@ -13,7 +13,7 @@ review_every = "90d"
 
 > `<from intake>`: one sentence on what the product is and who it is for.
 
-> [!IMPORTANT]
+> [!TIP]
 > **Human?** Read [docs/GETTING-STARTED.md](docs/GETTING-STARTED.md) first. It explains how
 > this works and how to start a project, with no git experience needed.
 
