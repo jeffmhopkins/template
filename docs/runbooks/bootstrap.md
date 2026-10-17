@@ -11,9 +11,15 @@ review_every = "180d"
 > The one-time GitHub setup the maintainer runs before intake: what it needs, what it sets,
 > and what stays by hand.
 
-The one-time GitHub setup for a repo made from this template: who runs it, how, what it
-sets, and what stays by hand. It runs once, before intake. Agents never change repo
-settings; any agent may run the read-only `--check`.
+**Bootstrap is the script that configures GitHub for a repo made from this template.** A new
+repo starts with GitHub's defaults, which require no review and no checks. `scripts/bootstrap.sh`
+changes every setting the template depends on: how PRs merge, the protection rules on `main`
+and `wave/*` with their required checks, what GitHub Actions may do, the labels, the repo
+variables the review gate reads, and the security features. Nobody sets these by hand.
+
+It runs once, before intake, and is safe to run again. This runbook covers who runs it, how,
+exactly what it sets, and the few steps it can't do. Agents never change repo settings; any
+agent may run the read-only `--check`.
 
 <a id="before"></a>
 ## Before you start

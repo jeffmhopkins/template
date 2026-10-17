@@ -27,6 +27,11 @@ agents does the building, and checks on GitHub stop anything unreviewed from get
 - **The code lives in a GitHub repository** (a "repo"): a shared folder with full history.
   Agents never change it directly. Each change is proposed as a **pull request** (a "PR"),
   checked automatically, reviewed by a reviewer agent, and only then merged.
+- **Bootstrap sets up GitHub for you.** A new repo starts with GitHub's default settings,
+  which protect nothing. `scripts/bootstrap.sh` is a script you run once, or have Claude run
+  for you. It switches on everything the template relies on: the rules that block unreviewed
+  merges, the required checks, labels, security alerts and secret scanning. You never edit
+  GitHub's settings pages yourself ([what it sets](#setup)).
 - **You talk to one agent, the coordinator,** in the project chat. It asks you questions as
   cards you can answer with one tap, and posts a short summary once a day.
 
@@ -55,6 +60,7 @@ flowchart LR
 | CI | the automatic checks GitHub runs on every PR (tests, formatting, docs) |
 | check | one of those automatic tests; green passes, red fails |
 | review gate | the check that only turns green when a reviewer agent passes the PR |
+| bootstrap | the one-time setup script, `scripts/bootstrap.sh`, that switches on the repo's GitHub settings for you |
 | ADR | a short record of a decision and why it stands ("architecture decision record") |
 | label | a tag on a PR; some labels, like `governance-approved`, unlock a check |
 
