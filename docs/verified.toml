@@ -133,7 +133,7 @@ stamp = { hash = "b3:b42536627a104668", by = "agent:skeleton-lead", note = "Thre
 stamp = { hash = "b3:e57852df8eb3e21f", by = "agent:skeleton-lead", note = "Three rounds match AGENT-INTAKE#the-rounds: a drafted product message corrected in words, a batch of maintainer-tier cards with recommendations, then a restatement and one accept card. The design PR, then the planner and builders, follow AGENTS#day-0-order" }
 
 ["GETTING-STARTED#start"."body"]
-stamp = { hash = "b3:f54b2e646eb9a460", by = "agent:skeleton-lead", note = "Steps match AGENTS#day-0-order: template repo, bootstrap by the maintainer or a device session, paste project-instructions from the <PROJECT> line with the name and repo filled in, then the coordinator starts intake. Also matches RUNBOOK-BOOTSTRAP#by-hand: Claude GitHub App install and the gh commands with --check ending in All settings match" }
+stamp = { hash = "b3:e3ff4d838933f8ad", by = "agent:skeleton-lead", note = "Added step 7: set REVIEWER_SESSIONS from the ids the coordinator posts, matching RUNBOOK-BOOTSTRAP#by-hand step 3 and the coordinator's day-0 line. Added a note that bootstrap sets every listed setting (RUNBOOK-BOOTSTRAP#settings) and that private repos need the dependency graph on. Steps 1-6 still match AGENTS#day-0-order" }
 
 ["GETTING-STARTED#start"."dep:AGENTS#day-0-order"]
 stamp = { hash = "b3:4a360a3e7306fa77", by = "agent:skeleton-lead", note = "Steps match AGENTS#day-0-order: template repo, bootstrap by the maintainer or a device session, paste project-instructions from the <PROJECT> line with the name and repo filled in, then the coordinator starts intake. Also matches RUNBOOK-BOOTSTRAP#by-hand: Claude GitHub App install and the gh commands with --check ending in All settings match" }

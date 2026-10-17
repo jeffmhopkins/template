@@ -30,6 +30,9 @@ words attached, and reports to them in the project chat. It doesn't plan, build 
 
 Follow the day 0 order in [README.md](README.md#day-0-order). Create `ops/` and its files,
 each with its owner on the first line. Pin the board artifact once the board role exists.
+Each time a reviewer starts or is replaced, post the reviewer session ids in the chat for the
+maintainer to set as `REVIEWER_SESSIONS`
+([bootstrap runbook, by hand](../runbooks/bootstrap.md#by-hand)).
 
 <a id="maintainer-messages"></a>
 ## Every message from the maintainer

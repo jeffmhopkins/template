@@ -105,6 +105,16 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
 6. **Say hello.** In the project chat, write one or two sentences about what you want built,
    for example "A desktop app that sorts my photos by who's in them". The coordinator takes it
    from there.
+7. **Turn on the review gate.** Once the coordinator says the reviewers are running, it gives
+   you their session ids. Set them as the repo variable `REVIEWER_SESSIONS` (comma-separated),
+   in **Settings › Secrets and variables › Actions › Variables**, or with
+   `gh variable set REVIEWER_SESSIONS --body "<ids>"`. Until then no PR can merge.
+
+> [!NOTE]
+> Step 4 sets every repo setting the template needs; [the bootstrap
+> runbook](runbooks/bootstrap.md#settings) lists each one. On a **private** repo, also turn
+> on the dependency graph in **Settings › Code security**, or the `dependency-review` check
+> fails.
 
 <a id="intake"></a>
 ## The first conversation
