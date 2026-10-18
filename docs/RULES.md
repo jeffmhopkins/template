@@ -274,13 +274,15 @@ section in its description.
 ### R-GOV-002: Overrides are declared, justified and audited
 <!-- @rule
 status = "active"
-enforced_by = ["ci:governance", "ci:review-gate"]
+enforced_by = ["ci:governance", "ci:review-gate", "review"]
 applies_to = []
 -->
 An agent applies `governance-approved` only after examining what the check flagged at the
 current head, with the "Governance change" section written, and never on a PR that changes a
 maintainer-only path. Only the maintainer applies `review-override`, with a "Review
-override" section that links their message. A push removes either label, so each counts
+override" section that links their message. `review-gate` checks only that the section holds
+a link; the reviewer judges that it points to the maintainer's own message about that PR. A
+push removes either label, so each counts
 only for the head it was applied to. The weekly sweep lists every PR merged with either
 label for the maintainer to audit. Agents never change branch protection or repository
 settings.

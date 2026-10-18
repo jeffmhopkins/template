@@ -25,6 +25,11 @@ each kind of event.
 depends_on = ["AGENT-BUILDER#on-every-wake"]
 -->
 
+0. **Act only on events that need you:** a check suite that completed (every check of one
+   workflow run has finished), a new review comment, review round or reply on the PR, a
+   merge conflict, or a message from another session or the maintainer. On anything else,
+   such as one check run starting or finishing while others in its suite still run, end the
+   turn at once without reading further. The suite's completion wakes you again.
 1. Check `ops/STOP` (stop if present), `ops/PAUSE-builders` if you are a builder (end the
    turn while it is present), and `ops/mode.md` (waves, main's health).
 2. If `main` is red, read its pinned "main is red" issue before investigating any failure.

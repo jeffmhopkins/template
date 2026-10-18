@@ -403,13 +403,13 @@ stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "Step 4
 stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "DOCS#tool dropped docs check --draft, which gather never used; the --root docs check call is unchanged" }
 
 ["REVIEW#governance"."body"]
-stamp = { hash = "b3:3001235f745797eb", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
+stamp = { hash = "b3:ba5d99640f8e74b1", by = "agent:drift-batch", note = "The review-override bullet now says the gate accepts any link and the reviewer checks it leads to the maintainer's own message about the PR, matching the R-GOV-002 text and its new review enforcer" }
 
 ["REVIEW#governance"."dep:DOCS#governance"]
 stamp = { hash = "b3:55a9749dec774df5", by = "agent:scale-batch", note = "DOCS#governance changed only to say the tool is built once per run and shared; the reviewer's governance checks do not depend on that, so every bullet holds" }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-002"]
-stamp = { hash = "b3:7af5a94a51967f13", by = "agent:trust-fixer", note = "Added /approve for maintainer-only paths, agents never apply the two labels, override source check, and Dependabot pin-only exemption; matches DOCS#governance, R-GOV-002 and R-GOV-007" }
+stamp = { hash = "b3:d61bd36d515c40f1", by = "agent:drift-batch", note = "The review-override bullet now says the gate accepts any link and the reviewer checks it leads to the maintainer's own message about the PR, matching the R-GOV-002 text and its new review enforcer" }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-007"]
 stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
@@ -451,7 +451,7 @@ stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-
 stamp = { hash = "b3:a2c6fe480176d777", by = "agent:drift-batch", note = "DOCS#gate gained item 9 (covers in an ARCH section) and lost the --draft line; the R-DOC rules enforced by ci:docs still match what the check fails on" }
 
 ["RULES#governance"."body"]
-stamp = { hash = "b3:b24ffc237966c908", by = "agent:trust-batch", note = "ADR-0002 now names marker forgery and points to repo.toml for the maintainer-only list; R-GOV-007 gained the R-GOV rule clause and the extended applies_to that config check compares with repo.toml." }
+stamp = { hash = "b3:ec607abab8cdf49a", by = "agent:drift-batch", note = "R-GOV-002 now says review-gate checks only that a link exists and the reviewer judges where it points, with review added to enforced_by; the other R-GOV rules are unchanged" }
 
 ["RULES#governance"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names marker forgery and points to repo.toml for the maintainer-only list; R-GOV-007 gained the R-GOV rule clause and the extended applies_to that config check compares with repo.toml." }
@@ -580,7 +580,7 @@ stamp = { hash = "b3:fbf887268466cf56", by = "agent:scale-batch", note = "Lane r
 stamp = { hash = "b3:4c12dfba8119d234", by = "agent:trust-batch", note = "Maintainer-only bullet now includes R-GOV rule changes, matching R-GOV-007 and the governance tool's path#rule entries; the rest of the approvals list still matches R-GOV-002/005/006." }
 
 ["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-002"]
-stamp = { hash = "b3:7af5a94a51967f13", by = "agent:trust-fixer", note = "Records the maintainer user id in ops/maintainer.md, says the shared login proves nothing, and bars agents from the two labels; matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 as edited" }
+stamp = { hash = "b3:d61bd36d515c40f1", by = "agent:drift-batch", note = "R-GOV-002 now names the reviewer as the judge of the override link; this section's label and words-of-the-maintainer bullets still hold as written" }
 
 ["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-005"]
 stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Records the maintainer user id in ops/maintainer.md, says the shared login proves nothing, and bars agents from the two labels; matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 as edited" }
@@ -604,7 +604,7 @@ stamp = { hash = "b3:398a292664325578", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:b05f79761637adfe", by = "agent:trust-fixer", note = "Added that a worker builds the tool from the base and never runs head code, and lists sources instead of checking them; matches reviewer-worker steps 2 and 6" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENT-REVIEWER-WORKER#steps"]
-stamp = { hash = "b3:2eaeddcfab1f00e5", by = "agent:scale-batch", note = "AGENTS#state still says sub-workers never write ops/, and the reviewer worker steps (base tool, --root, no PR code) are unchanged apart from round kinds and the marker fields" }
+stamp = { hash = "b3:86648068609349b0", by = "agent:drift-batch", note = "The worker brief now builds the base tool into a shared target dir keyed by the base's tools/repo tree; still the base's tool, still never the head's code, so this holds" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
 stamp = { hash = "b3:c36ebb83b90ce26d", by = "agent:scale-batch", note = "AGENTS#state still says sub-workers never write ops/, and the reviewer worker steps (base tool, --root, no PR code) are unchanged apart from round kinds and the marker fields" }
@@ -622,7 +622,7 @@ stamp = { hash = "b3:768186a969485129", by = "agent:callout-pass", note = "Moved
 stamp = { hash = "b3:a7ac95a8d51a7f8e", by = "agent:template-thread", note = "R-GIT-003's gate-test row now also covers the YAML repeated-key check; the reproduce command node --test '.github/tests/*.test.mjs' runs both test files, so the step still holds" }
 
 ["SKILL-STEWARD#every-event"."body"]
-stamp = { hash = "b3:4d54bbbe7285b8fe", by = "agent:scale-batch", note = "Step 1 now adds the PAUSE-builders check for builders, matching AGENT-BUILDER#on-every-wake; the main-is-red and push steps still hold" }
+stamp = { hash = "b3:25f7797ef722b20b", by = "agent:drift-batch", note = "Added step 0: act only on a completed check suite, review activity, a conflict or a message, and end the turn on single check-run events; steps 1 to 4 and the builder wake rules are unchanged" }
 
 ["SKILL-STEWARD#every-event"."dep:AGENT-BUILDER#on-every-wake"]
 stamp = { hash = "b3:d2e0add9c5752b26", by = "agent:scale-batch", note = "Step 1 now adds the PAUSE-builders check for builders, matching AGENT-BUILDER#on-every-wake; the main-is-red and push steps still hold" }

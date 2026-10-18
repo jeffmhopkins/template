@@ -165,8 +165,9 @@ depends_on = ["DOCS#governance", "RULES#R-GOV-002", "RULES#R-GOV-007"]
   maintainer's login, so judge by the PR's thread and the decision's source, not by who the
   label event names.
 - A `review-override` label needs a "Review override" section that links the maintainer's
-  message. Check that message as a `source:`; if it fails, say so in the review and send
-  `NEEDS-MAINTAINER`.
+  message. `review-gate` accepts any link, so the check is yours: the link must lead to the
+  maintainer's own message about this PR. Check that message as a `source:`; if it fails,
+  say so in the review and send `NEEDS-MAINTAINER`.
 - A Dependabot PR that only re-pins actions to new commit SHAs passes `governance` with no
   label: confirm the diff is limited to that, and for a major bump read the action's
   changelog against how the repo uses it.

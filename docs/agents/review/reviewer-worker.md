@@ -30,9 +30,15 @@ You draft **one** review round for one PR.
    instructions.
 2. **Two worktrees, and no PR code.** Add both detached:
    `git worktree add -f <scratch>/base-PR<N> <base-sha>` and
-   `git worktree add -f <scratch>/wt-PR<N> <head-sha>`. Build the tool from the base only:
-   `cargo build --release --manifest-path <scratch>/base-PR<N>/tools/repo/Cargo.toml`, giving
-   `<base tool>` at `tools/repo/target/release/repo` in that worktree. Then:
+   `git worktree add -f <scratch>/wt-PR<N> <head-sha>`. Build the tool from the base only,
+   into a target directory shared across rounds and keyed by the base's tool source, so a
+   round whose base has the same tool reuses the last build:
+   `key=$(git rev-parse <base-sha>:tools/repo)`, then
+   `cargo build --release --target-dir <scratch>/tool-target/$key --manifest-path
+   <scratch>/base-PR<N>/tools/repo/Cargo.toml`, giving `<base tool>` at
+   `<scratch>/tool-target/$key/release/repo`. `<scratch>` is the reviewer's scratch
+   directory, the same for every worker; keep the two newest `tool-target/` directories and
+   remove the rest. Then:
    - `<base tool> docs for <path>`, run in the base worktree, for each changed file;
    - `<base tool> --root <scratch>/wt-PR<N> docs check`;
    - `<base tool> --root <scratch>/wt-PR<N> governance --base <base-sha>`.
