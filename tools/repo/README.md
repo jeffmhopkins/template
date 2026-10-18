@@ -58,6 +58,7 @@ review_every = "180d"
 | `pr-title "<title>"` | Conventional Commit header check, or `Revert "<title>"` | 1 when it doesn't parse |
 | `lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]` | checks the lanes this PR changed, and changes to a lane's `files` without a claim | 1 on a bad or missing claim; 2 when `--wave` is given for anything but a `wave/*` branch on `origin` into `main` |
 | `progress [--format markdown\|json]` | status of each `progress.toml` item from commit trailers | 0; a trailer naming an unknown item is a warning |
+| `progress --trailers <range>` | the `Completes:`, `Part-of:` and `Verified-on-hardware:` lines of the commits in a git range, oldest first, each once, leaving out commits a later revert in the range cancels | 0 |
 | `plan check <launch.md> <roster.md> [--row <id>]` | no two running rows own overlapping paths | 1 on an overlap, or a running row without `owns` |
 | `heads-changed --state <file>` | prints `changed` or `unchanged` for `git ls-remote origin`, and stores the listing | always 0 |
 | `stack run <job>` | runs the pack's command for a CI job from the root; prints `skip: no <detect>` when the detect file is absent | the command's status |

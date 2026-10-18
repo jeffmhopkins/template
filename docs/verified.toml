@@ -28,10 +28,10 @@ stamp = { hash = "b3:84867e33001421e6", by = "agent:scale-batch", note = "New op
 stamp = { hash = "b3:ea6665c00cae7188", by = "agent:scale-batch", note = "New ops brief section: takes the role per AGENTS#lifecycle, heads-changed cheap step against ops/heads/ops.txt, then main health, lanes, mergeability, waves, issues; lines handled between fires match the message table" }
 
 ["AGENT-OPS#waves"."body"]
-stamp = { hash = "b3:c6dcb51942274c90", by = "agent:scale-batch", note = "New ops waves section: turns on by MERGE-MAIN rate or runner queue as RUNBOOK-WAVES#when says, MERGE-MAIN only to PRs left dirty after a sync, no BASE on sync, ops fixes landing breakage as RUNBOOK-WAVES#landing step 5 now says" }
+stamp = { hash = "b3:963c8e4ef9874a1c", by = "agent:drift-batch", note = "Landing bullet now names progress --trailers as the source of the landing PR's trailers, matching RUNBOOK-WAVES#landing step 3" }
 
 ["AGENT-OPS#waves"."dep:RUNBOOK-WAVES#landing"]
-stamp = { hash = "b3:becb7b9986716da4", by = "agent:scale-batch", note = "New ops waves section: turns on by MERGE-MAIN rate or runner queue as RUNBOOK-WAVES#when says, MERGE-MAIN only to PRs left dirty after a sync, no BASE on sync, ops fixes landing breakage as RUNBOOK-WAVES#landing step 5 now says" }
+stamp = { hash = "b3:fd59049830728d61", by = "agent:drift-batch", note = "Landing bullet now names progress --trailers as the source of the landing PR's trailers, matching RUNBOOK-WAVES#landing step 3" }
 
 ["AGENT-OPS#waves"."dep:RUNBOOK-WAVES#when"]
 stamp = { hash = "b3:47003c8eb9fe7da4", by = "agent:scale-batch", note = "New ops waves section: turns on by MERGE-MAIN rate or runner queue as RUNBOOK-WAVES#when says, MERGE-MAIN only to PRs left dirty after a sync, no BASE on sync, ops fixes landing breakage as RUNBOOK-WAVES#landing step 5 now says" }
@@ -52,7 +52,7 @@ stamp = { hash = "b3:e26320717bd7b6a7", by = "agent:routing-fixer", note = "Rewr
 stamp = { hash = "b3:32f7c60931767b32", by = "agent:scale-batch", note = "The DOCS#tool table only changed the governance sentence and merge-main lockfile handling; the commands table now says merge-main resolves lockfile conflicts too, and every other row holds" }
 
 ["CLAUDE#commands"."dep:DOCS#tool"]
-stamp = { hash = "b3:677c7c7cc6e78384", by = "agent:drift-batch", note = "DOCS#tool gained stack setup and stack sweep rows; this table lists builder commands and stack run, which still matches; CI-only commands need no row here" }
+stamp = { hash = "b3:8c02548c1c05720d", by = "agent:drift-batch", note = "DOCS#tool added progress --trailers for wave landings; the builder table's progress row (derived status) still holds, and builders never land waves" }
 
 ["CLAUDE#docs-duty"."body"]
 stamp = { hash = "b3:96a7dbc05e26bee8", by = "agent:scale-batch", note = "DOCS#merge gained lockfile relocking; the merge-main bullet now says it resolves ledger, @generated and stack lockfile conflicts, and the rest of the duty list holds" }
@@ -97,7 +97,7 @@ stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "Added 
 stamp = { hash = "b3:d083490d135de41c", by = "agent:scale-batch", note = "governance.yml now builds the base tool once in a tool job and hands it to governance, pr-title and lane-guard by artifact; the section now says it builds once per run and shares the binary; head-labels and the rest of the list hold" }
 
 ["DOCS#tool"."body"]
-stamp = { hash = "b3:677c7c7cc6e78384", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
+stamp = { hash = "b3:8c02548c1c05720d", by = "agent:drift-batch", note = "progress row now names --trailers <range>, matching the new branch in progress::run and the main.rs usage line" }
 
 ["DOCS#tool"."file:tools/repo/src/args.rs"]
 stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -154,7 +154,7 @@ stamp = { hash = "b3:d92d274f38a43615", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:c2e8bca7bbe0a31b", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/main.rs"]
-stamp = { hash = "b3:d5e097a5249dabce", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
+stamp = { hash = "b3:2532da2f131d153d", by = "agent:drift-batch", note = "progress row now names --trailers <range>, matching the new branch in progress::run and the main.rs usage line" }
 
 ["DOCS#tool"."file:tools/repo/src/plan.rs"]
 stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
@@ -163,7 +163,7 @@ stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Comm
 stamp = { hash = "b3:44eca1529fc85545", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/progress.rs"]
-stamp = { hash = "b3:ed464d2cd0687466", by = "agent:trust-fixer", note = "Table now has governance --author and the config check name-over-id rule, and the intro the global --root; checked main.rs, git.rs set_root, config.rs job_names, governance.rs, progress.rs and hash.rs" }
+stamp = { hash = "b3:ba6b42dee85a3f9a", by = "agent:drift-batch", note = "progress row now names --trailers <range>, matching the new branch in progress::run and the main.rs usage line" }
 
 ["DOCS#tool"."file:tools/repo/src/stack.rs"]
 stamp = { hash = "b3:a9b2b35404894380", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
@@ -241,7 +241,7 @@ stamp = { hash = "b3:2402370eff262188", by = "agent:scale-batch", note = "Step 3
 stamp = { hash = "b3:c63237876fb8b1d4", by = "agent:scale-batch", note = "Step 3 now says ops, not triage, opens the record PR when the builder has ended, matching AGENT-BUILDER#hardware and the ops brief's issues section" }
 
 ["HARDWARE#flow"."dep:DOCS#progress"]
-stamp = { hash = "b3:e74e673b63ece4d2", by = "agent:trust-fixer", note = "DOCS#progress now counts Verified-on-hardware only after the latest Completes; step 4 now says a re-completed item needs a new run" }
+stamp = { hash = "b3:2eef1fe93ffde3ba", by = "agent:drift-batch", note = "DOCS#progress gained the --trailers command for wave landings; it also prints Verified-on-hardware lines, and the record PR flow here is unchanged" }
 
 ["REVIEW#checks"."body"]
 stamp = { hash = "b3:a44461568994e466", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
@@ -262,7 +262,7 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
 
 ["REVIEW#gather"."dep:DOCS#tool"]
-stamp = { hash = "b3:677c7c7cc6e78384", by = "agent:drift-batch", note = "DOCS#tool only added stack setup and stack sweep; the base tool commands gather uses (docs for, docs check, governance with --root) are unchanged" }
+stamp = { hash = "b3:8c02548c1c05720d", by = "agent:drift-batch", note = "DOCS#tool only added progress --trailers to the progress row; gather's base tool commands are unchanged" }
 
 ["REVIEW#governance"."body"]
 stamp = { hash = "b3:3001235f745797eb", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
@@ -412,7 +412,7 @@ stamp = { hash = "b3:8aa60d15758aa947", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:597604ce263fb9fa", by = "agent:scale-batch", note = "DOCS#merge gained lockfile relocking; keeping a PR current by merge-main --from wave/<name> still holds and now also relocks lockfiles" }
 
 ["RUNBOOK-WAVES#landing"."body"]
-stamp = { hash = "b3:becb7b9986716da4", by = "agent:scale-batch", note = "Ops owns landing and fixes what the landing run finds since builders end on merge into the wave; every check runs as on every wave PR; ADR-0007 replaces ADR-0005" }
+stamp = { hash = "b3:fd59049830728d61", by = "agent:drift-batch", note = "Step 3 now takes the landing PR's trailer block from progress --trailers over origin/main..origin/wave/<name>, which prints Completes, Part-of and Verified-on-hardware lines with reverts dropped" }
 
 ["RUNBOOK-WAVES#landing"."dep:ADR-0007"]
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:scale-batch", note = "Ops owns landing and fixes what the landing run finds since builders end on merge into the wave; every check runs as on every wave PR; ADR-0007 replaces ADR-0005" }

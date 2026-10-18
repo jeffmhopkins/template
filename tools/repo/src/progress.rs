@@ -297,9 +297,9 @@ pub struct Derived {
 }
 
 /// Applies `messages` (oldest first), honouring reverts.
-pub fn derive(messages: &[Message]) -> Derived {
-    // Newest first: a commit is cancelled when a revert that is not itself cancelled names
-    // it, so a chain of reverts settles by its length.
+/// The commits a later revert cancels. Newest first: a commit is cancelled when a revert that
+/// is not itself cancelled names it, so a chain of reverts settles by its length.
+fn cancelled(messages: &[Message]) -> BTreeSet<&str> {
     let mut cancelled: BTreeSet<&str> = BTreeSet::new();
     for k in (0..messages.len()).rev() {
         let m = &messages[k];
@@ -310,6 +310,32 @@ pub fn derive(messages: &[Message]) -> Derived {
             cancelled.insert(&t.sha);
         }
     }
+    cancelled
+}
+
+/// The trailer lines of `messages` that still count, oldest first, each once:
+/// `Completes: <id>`, `Part-of: <id>` and `Verified-on-hardware: <id>`. A commit a later
+/// revert in the list cancels contributes nothing, and neither does the revert.
+pub fn trailer_lines(messages: &[Message]) -> Vec<String> {
+    let cancelled = cancelled(messages);
+    let mut seen = BTreeSet::new();
+    let mut out = Vec::new();
+    for (k, m) in messages.iter().enumerate() {
+        if cancelled.contains(m.sha.as_str()) || reverted(m, &messages[..k]).is_some() {
+            continue;
+        }
+        for (kind, id) in trailers(&m.body) {
+            let line = format!("{kind}: {id}");
+            if seen.insert(line.clone()) {
+                out.push(line);
+            }
+        }
+    }
+    out
+}
+
+pub fn derive(messages: &[Message]) -> Derived {
+    let cancelled = cancelled(messages);
     let mut d = Derived::default();
     for m in messages
         .iter()
@@ -499,11 +525,21 @@ pub fn block_for(l: &crate::docs::Loaded, revs: &[&str]) -> Result<Option<String
     Ok(Some(markdown(&report(&plan, &derive(&msgs)))))
 }
 
-/// `repo progress [--format markdown|json]`.
+/// `repo progress [--format markdown|json]`, or `repo progress --trailers <range>`.
 pub fn run(args: &[String]) -> Outcome {
-    let a = Args::parse(args, &["format"], &[])?;
-    a.exactly(0, "repo progress [--format markdown|json]")?;
+    let usage = "repo progress [--format markdown|json] | progress --trailers <range>";
+    let a = Args::parse(args, &["format", "trailers"], &[])?;
+    a.exactly(0, usage)?;
     let repo = Repo::open()?;
+    if let Some(range) = a.value("trailers") {
+        if a.value("format").is_some() {
+            bail!("`--trailers` takes no `--format`\nusage: {usage}");
+        }
+        for line in trailer_lines(&messages(&repo.root, &[range])?) {
+            println!("{line}");
+        }
+        return Ok(true);
+    }
     let plan = Plan::load(&repo.root, &repo.config.docs.progress)?;
     let r = report(&plan, &derive(&messages(&repo.root, &["HEAD"])?));
     match a.value("format").unwrap_or("markdown") {
@@ -667,6 +703,25 @@ mod tests {
         assert_eq!(statuses(&plan, &again)[1], Status::Hardware);
         again.push(msg("v2", "chore: hw (#6)\n\nVerified-on-hardware: B"));
         assert_eq!(statuses(&plan, &again)[1], Status::Done);
+    }
+
+    #[test]
+    fn trailer_lines_drop_reverted_commits_and_repeats() {
+        let msgs = vec![
+            msg("a1", "feat: a (#1)\n\nCompletes: A"),
+            msg(
+                "b1",
+                "feat: b part (#2)\n\nPart-of: B\nClaude-Session: https://x",
+            ),
+            msg("c1", "feat: c (#3)\n\nCompletes: C, A"),
+            msg("d1", "chore: hw (#4)\n\nVerified-on-hardware: A"),
+            msg("r1", "Revert \"feat: c (#3)\"\n\nThis reverts commit c1."),
+            msg("e1", "fix: prose only (#5)\n\nCompletes: E is next."),
+        ];
+        assert_eq!(
+            trailer_lines(&msgs),
+            vec!["Completes: A", "Part-of: B", "Verified-on-hardware: A"]
+        );
     }
 
     #[test]

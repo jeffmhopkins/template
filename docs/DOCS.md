@@ -353,7 +353,8 @@ Roadmap status is derived, never recorded.
 
 - A PR's body ends with `Completes: <id>` or `Part-of: <id>`. The squash message is the PR
   body, and carries the trailer onto `main`. A wave's landing PR carries every trailer of the
-  PRs in it. A passed run on hardware is recorded by a record PR that adds
+  PRs in it: `scripts/repo progress --trailers origin/main..origin/wave/<name>` prints them,
+  oldest first, each once, without those a later revert in the wave cancels. A passed run on hardware is recorded by a record PR that adds
   `docs/hardware/<id>.md` and carries `Verified-on-hardware: <id>`
   ([builder › Hardware](agents/builder.md#hardware)).
 - A trailer counts only in a trailer paragraph: one whose every line is `Key: value`,
@@ -541,7 +542,7 @@ check another, as the reviewer checks a PR head with the base's tool
 | `governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>] [--into <branch>] [--main <rev>]` | [Governance changes](#governance) |
 | `pr-title "<title>"` | check a Conventional Commit title |
 | `lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]` | [Serial lanes](#lanes); `--wave` for a wave's landing PR |
-| `progress [--format markdown\|json]` | [Progress](#progress) |
+| `progress [--format markdown\|json]`, `progress --trailers <range>` | [Progress](#progress) |
 | `plan check <launch.md> <roster.md> [--row <id>]` | no `owns` overlap between running rows |
 | `heads-changed --state <file>` | print `changed` or `unchanged` for a sweep, and update the state file |
 | `stack run <job>` | run the stack pack's command for a CI job; skip when the pack's detect file is absent |

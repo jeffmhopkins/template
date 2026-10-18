@@ -313,6 +313,19 @@ fn progress_from_trailers_with_reverts() {
         "-m",
         "chore: run (#5)\n\nVerified-on-hardware: M0-2",
     ]);
+    // A range's trailers, for a wave's landing PR: the reverted M0-3 completion is gone.
+    let r = f.repo(&["progress", "--trailers", "HEAD~5..HEAD"]);
+    assert!(r.ok(), "{}", r.out);
+    assert_eq!(
+        r.out, "Completes: M0-2\nPart-of: M0-3\nVerified-on-hardware: M0-2\n",
+        "{}",
+        r.out
+    );
+    assert_eq!(
+        f.repo(&["progress", "--trailers", "x", "--format", "json"])
+            .code,
+        2
+    );
     let md = f.repo(&["progress"]);
     assert!(
         md.ok() && md.out.contains("| M0: Start | 2 of 3 | 1 | 0 | 0 |"),

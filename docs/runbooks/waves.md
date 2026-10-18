@@ -132,8 +132,9 @@ and at least one PR has merged into it. Then:
 2. Sync the cut wave with `main` if it conflicts ([Syncing](#sync)).
 3. Open the landing PR from the wave into `main`, titled `chore(wave): land wave/<name>`.
    Its body lists each carried PR with its number and title, and the "Governance change"
-   section of every carried PR that had one, and ends with one trailer block: every carried
-   `Completes:` and `Part-of:` line, then ops's `Claude-Session:`. Apply
+   section of every carried PR that had one, and ends with one trailer block: the output of
+   `scripts/repo progress --trailers origin/main..origin/wave/<name>`, run after a fresh
+   `git fetch`, then ops's `Claude-Session:`. Never copy the lines by hand. Apply
    `governance-approved` if any carried PR had one and none changed a maintainer-only path;
    otherwise ask the maintainer. Turn on auto-merge (squash).
 4. The reviewer reviews the sync merges and conflict resolutions

@@ -128,8 +128,9 @@ depends_on = ["RUNBOOK-WAVES#landing", "RUNBOOK-WAVES#when"]
     never sends `BASE`;
   - cut the wave: create the next wave from the cut wave's tip, move its open PRs onto it,
     and send each `BASE #<pr> wave/<next>`;
-  - open the landing PR, with every carried PR's `Completes:`/`Part-of:` lines and
-    "Governance change" sections in its body;
+  - open the landing PR, with the trailers `scripts/repo progress --trailers
+    origin/main..origin/wave/<name>` prints and every carried PR's "Governance change"
+    section in its body;
   - fix what the landing PR's checks find yourself, with fix PRs into the cut wave, each
     listed under `fixes:` in `ops/waves.md` and in the landing PR's body. Builders end when
     their PR merges into the wave. Nothing else merges into a cut wave.

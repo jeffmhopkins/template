@@ -53,6 +53,7 @@ commands:
   lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]
                                             check a PR's serial-lane claims and lane files
   progress [--format markdown|json]         status derived from trailers on HEAD's history
+  progress --trailers <range>               the Completes/Part-of/Verified-on-hardware lines in <range>
   plan check <launch.md> <roster.md> [--row <id>]
                                             no `owns` overlap between running rows
   heads-changed --state <file>              print `changed` or `unchanged` for origin's refs
