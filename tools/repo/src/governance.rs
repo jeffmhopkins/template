@@ -17,7 +17,9 @@
 //! is reported as maintainer-only, as `maintainer-only: <path>#<rule id>`.
 //!
 //! With `--pr-body` or `--labels` it enforces: when there are changes, the PR needs the
-//! `[labels].governance` label and a non-empty `## Governance change` section. An accepted
+//! `[labels].governance` label and a non-empty `## Governance change` section. When the PR
+//! changes a maintainer-only path and the label is all it lacks, it also prints
+//! `governance: only the maintainer's label is missing`. An accepted
 //! ADR edited beyond `status = "superseded"` with a `superseded_by` and its status banner
 //! fails whatever the labels (R-DOC-008). With
 //! `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
@@ -663,6 +665,25 @@ pub fn problems(changes: &[Change], labels: &[String], body: &str, label: &str) 
     out
 }
 
+/// The line `governance` prints when a PR that changes a maintainer-only path lacks only the
+/// label, which on such a PR only the maintainer applies. Reviewers treat that red check as
+/// expected (`REVIEW.md#governance`).
+pub const AWAITING_MAINTAINER: &str = "only the maintainer's label is missing";
+
+/// Whether the one thing blocking a PR is the label, on a PR that changes a maintainer-only
+/// path or `R-GOV-*` rule.
+pub fn awaits_maintainer(
+    changes: &[Change],
+    maintainer: &[String],
+    labels: &[String],
+    body: &str,
+    label: &str,
+) -> bool {
+    !maintainer.is_empty()
+        && !labels.iter().any(|l| l == label)
+        && problems(changes, labels, body, label).len() == 1
+}
+
 pub fn run(args: &[String]) -> Outcome {
     let usage = "repo governance --base <rev> [--head <rev>] [--pr-body <file>] [--labels a,b] [--author <login>] [--into <branch>] [--main <rev>]";
     let a = Args::parse(
@@ -732,6 +753,14 @@ pub fn run(args: &[String]) -> Outcome {
     let found = problems(&changes, &labels, &body, &label);
     for p in &found {
         println!("governance: {p}");
+    }
+    if wave.is_empty()
+        && hard.is_empty()
+        && awaits_maintainer(&changes, &maintainer, &labels, &body, &label)
+    {
+        println!(
+            "governance: {AWAITING_MAINTAINER}: `{label}` on a maintainer-only path, applied on the \"ready to land\" card once review passes"
+        );
     }
     if found.is_empty() && wave.is_empty() && hard.is_empty() && !changes.is_empty() {
         println!("governance: ok (labeled `{label}` and justified)");
@@ -1124,5 +1153,22 @@ mod tests {
         assert_eq!(problems(&c, &[label.into()], empty, label).len(), 1);
         assert!(problems(&[], &[], "", label).is_empty());
         assert_eq!(section("## governance changes\nwhy\n", SECTION), "why");
+    }
+
+    #[test]
+    fn only_the_maintainer_label_missing() {
+        let c = vec![Change {
+            path: "REVIEW.md".into(),
+            what: "edits a maintainer-only path".into(),
+        }];
+        let m = vec!["REVIEW.md".to_owned()];
+        let label = "governance-approved";
+        let body = "## Governance change\nTightens the marker rule.\n";
+        assert!(awaits_maintainer(&c, &m, &[], body, label));
+        // Labeled: nothing is missing. Unjustified: more than the label is missing.
+        assert!(!awaits_maintainer(&c, &m, &[label.into()], body, label));
+        assert!(!awaits_maintainer(&c, &m, &[], "## Summary\nx\n", label));
+        // No maintainer-only path: an agent applies the label, so the red check is the PR's.
+        assert!(!awaits_maintainer(&c, &[], &[], body, label));
     }
 }

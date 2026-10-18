@@ -69,6 +69,14 @@ fn governance_lists_and_enforces() {
         "{}",
         unlabeled.out
     );
+    // REVIEW.md is maintainer-only and the section is there: only the label is missing.
+    assert!(
+        unlabeled
+            .out
+            .contains("governance: only the maintainer's label is missing"),
+        "{}",
+        unlabeled.out
+    );
     let ok = f.repo(&[
         "governance",
         "--base",
