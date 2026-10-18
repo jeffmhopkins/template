@@ -7,16 +7,19 @@
 #   - in a comment by the login in the repo variable REVIEWER_LOGIN;
 #   - from a reviewer role listed in the repo variable REVIEWER_ROLES (comma-separated,
 #     trimmed; bootstrap sets `reviewer-0,reviewer-1,reviewer-2`; empty lists no role);
-#   - in a comment never edited (created_at == updated_at);
 #   - from a session that authored no commit of the PR (recusal by `Claude-Session:` trailer,
-#     against the marker's reviewer-session).
+#     against the marker's reviewer-session);
+#   - the only marker line in a comment never edited (created_at == updated_at).
+# A comment by that login that was edited, or holds more than one marker line, counts as a
+# fail at the highest round its marker lines name, whatever their SHA, role or session.
 # Among counted markers the highest round decides, and within it a fail beats a pass.
 # The gate fails when a non-merge commit has no `Claude-Session:` trailer. Commits already
 # reachable from the default branch (main's commits in a wave sync PR) and Dependabot's
 # GitHub-signed commits are exempt. A squash commit takes the PR body as its message, so a
 # wave's commits carry the trailer from the PR template.
-# `review-override` passes the gate only with a "## Review override" section that links the
-# maintainer's message, and only when the maintainer applied the label. A push removes the
+# `review-override` passes the gate only with a "## Review override" section that holds a
+# link other than a session URL, and only when the maintainer applied the label. The section
+# ends at the next heading or the first trailer line; the reviewer judges where the link points. A push removes the
 # label: an override counts only for the head it was applied to.
 #
 # Runs on pull_request_target and issue_comment, so GitHub takes this file from the base branch,
@@ -141,10 +144,13 @@ jobs:
               // 1. Override: the maintainer's label plus a justification linking their message,
               //    applied since the last push.
               if (labels.includes(OVERRIDE) && !pushed) {
-                const m = body.match(/^##[ \t]+Review override[^\n]*\n([\s\S]*?)(?=^##[ \t]|(?![\s\S]))/m);
+                // The section ends at the next heading or at the trailer block, so the trailers'
+                // URLs are never its link. A session URL is an agent's, never the maintainer's message.
+                const m = body.match(/^##[ \t]+Review override[^\n]*\n([\s\S]*?)(?=^##[ \t]|^(?:Completes|Part-of|Verified-on-hardware|Claude-Session):|(?![\s\S]))/m);
                 const text = m ? m[1].replace(/<!--[\s\S]*?-->/g, '').trim() : '';
                 if (!text) return ['failure', `${OVERRIDE} needs a "## Review override" section in the PR description`];
-                if (!/https:\/\/\S+/.test(text)) return ['failure', `The "## Review override" section must link the maintainer's message`];
+                const links = (text.match(/https:\/\/\S+/g) || []).filter((u) => !/^https:\/\/claude\.ai\/code\/session_/.test(u));
+                if (links.length === 0) return ['failure', `The "## Review override" section must link the maintainer's message`];
                 if (!overrideLabeledBy || overrideLabeledBy !== maintainer) {
                   return ['failure', `${OVERRIDE} counts only when ${maintainer} applies it (last applied by ${overrideLabeledBy || 'nobody'})`];
                 }
@@ -173,15 +179,29 @@ jobs:
                 return ['failure', 'Gate not configured: run scripts/bootstrap.sh to set REVIEWER_LOGIN and REVIEWER_ROLES (docs/runbooks/bootstrap.md#settings)'];
               }
 
-              // 4. Markers that count.
+              // 4. Markers that count. A marker line starts a line; a comment holding more than one,
+              //    or edited after posting, can't be trusted to say what the reviewer posted: it
+              //    takes part in round order as a fail, whatever its SHA, role or session, so a
+              //    tampered higher round never brings back a lower round's pass.
               const esc = MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const markerRe = new RegExp(`^<!-- ${esc} verdict=(pass|fail|escalate|recuse) sha=([0-9a-f]{40}) round=(\\d+) reviewer=(\\S+) reviewer-session=(\\S+) -->[ \\t]*$`, 'm');
+              const markerRe = new RegExp(`^<!-- ${esc} verdict=(pass|fail|escalate|recuse) sha=([0-9a-f]{40}) round=(\\d+) reviewer=(\\S+) reviewer-session=(\\S+) -->[ \\t]*$`, 'gm');
+              const lineRe = new RegExp(`^<!-- ${esc}\\b[^\\n]*$`, 'gm');
               const counted = [];
+              const tainted = [];
               let older = null;
               for (const c of comments) {
                 if (c.user?.login !== reviewerLogin) continue;
-                if (c.created_at !== c.updated_at) continue;
-                const m = (c.body || '').match(markerRe);
+                const lines = (c.body || '').match(lineRe) || [];
+                if (lines.length === 0) continue;
+                const edited = c.created_at !== c.updated_at;
+                if (edited || lines.length > 1) {
+                  const rounds = lines.map((l) => /\bround=(\d+)\b/.exec(l)).filter(Boolean).map((r) => Number(r[1]));
+                  if (rounds.length) {
+                    tainted.push({ round: Math.max(...rounds), id: c.id, why: edited ? 'was edited' : 'has more than one marker line' });
+                  }
+                  continue;
+                }
+                const m = [...(c.body || '').matchAll(markerRe)][0];
                 if (!m) continue;
                 const marker = { verdict: m[1], sha: m[2], round: Number(m[3]), role: m[4], session: norm(m[5]) };
                 if (!roles.has(marker.role)) continue;
@@ -190,14 +210,16 @@ jobs:
                 if (marker.sha !== head) { older = marker; continue; }
                 counted.push(marker);
               }
-              if (counted.length === 0) {
+              if (counted.length === 0 && tainted.length === 0) {
                 return ['pending', older
                   ? `Last review was of ${older.sha.slice(0, 7)}; waiting for review of ${sha7}`
                   : `Waiting for review of ${sha7}`];
               }
 
               // 5. The highest round decides; any verdict other than pass beats a pass within it.
-              const round = Math.max(...counted.map((x) => x.round));
+              const round = Math.max(...counted.map((x) => x.round), ...tainted.map((x) => x.round));
+              const bad = tainted.find((x) => x.round === round);
+              if (bad) return ['failure', `Marker comment ${bad.id ?? '?'} (round ${round}) ${bad.why}; the reviewer posts a new round`];
               const current = counted.filter((x) => x.round === round);
               if (current.some((x) => x.verdict === 'escalate')) return ['failure', `Needs the maintainer at ${sha7} (round ${round})`];
               if (current.some((x) => x.verdict === 'fail')) return ['failure', `Blocking findings at ${sha7} (round ${round})`];

@@ -20,7 +20,8 @@
 
 ## Review override
 <!-- Only with the `review-override` label, which only the maintainer applies; otherwise delete this section.
-     Which blocking findings are overridden, and a link to the maintainer's message deciding it. -->
+     Which blocking findings are overridden, and a link to the maintainer's message deciding it.
+     A session URL is not that link, and the section ends at the trailer block below. -->
 
 <!-- Trailers. The squash commit's message is this description, so they land on the base branch.
      Completes / Part-of: keep the one that applies, with the roadmap item id from docs/progress.toml; delete both if none applies.

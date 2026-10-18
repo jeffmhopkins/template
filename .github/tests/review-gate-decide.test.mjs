@@ -22,11 +22,15 @@ const roleOf = (session) => (session === OTHER_REVIEWER ? OTHER_ROLE : ROLE);
 const BUILDER = 'session_BUILDER1';
 const T0 = '2026-01-01T00:00:00Z';
 
+let nextId = 1;
+const markerLine = (verdict, round, o = {}) =>
+  `<!-- review v1 verdict=${verdict} sha=${o.sha ?? H} round=${round} reviewer=${o.role ?? roleOf(o.session ?? REVIEWER)} reviewer-session=${o.session ?? REVIEWER} -->`;
 const marker = (verdict, round, o = {}) => ({
+  id: o.id ?? nextId++,
   user: { login: o.login ?? LOGIN },
   created_at: T0,
   updated_at: o.edited ? '2026-01-01T00:05:00Z' : T0,
-  body: `Round ${round}\n\nB1: …\n\n<!-- review v1 verdict=${verdict} sha=${o.sha ?? H} round=${round} reviewer=${o.role ?? roleOf(o.session ?? REVIEWER)} reviewer-session=${o.session ?? REVIEWER} -->\n`,
+  body: `Round ${round}\n\nB1: …\n\n${o.extra ?? ''}${markerLine(verdict, round, o)}\n`,
 });
 const commit = (o = {}) => ({
   sha: o.sha ?? 'c'.repeat(40),
@@ -63,10 +67,40 @@ test('any session of a listed role counts: a fresh session per fire', () =>
   assert.equal(state({ comments: [marker('pass', 1, { session: 'session_FRESHFIRE7' })] }), 'success'));
 test('a marker without the reviewer field does not count', () =>
   assert.equal(state({ comments: [{ ...marker('pass', 1), body: marker('pass', 1).body.replace(/ reviewer=\S+/, '') }] }), 'pending'));
-test('edited marker comment is ignored', () =>
-  assert.equal(state({ comments: [marker('pass', 1, { edited: true })] }), 'pending'));
+test('an edited marker comment counts as a fail', () => {
+  const [st, why] = run({ comments: [marker('pass', 1, { edited: true, id: 77 })] });
+  assert.equal(st, 'failure');
+  assert.match(why, /comment 77 \(round 1\) was edited; the reviewer posts a new round/);
+});
 test('edited pass does not mask an unedited fail', () =>
   assert.equal(state({ comments: [marker('fail', 1), marker('pass', 2, { edited: true })] }), 'failure'));
+test('an edited higher-round fail does not bring back a lower-round pass on the same head', () => {
+  assert.equal(state({ comments: [marker('pass', 1), marker('fail', 2, { edited: true })] }), 'failure');
+  // Edited to name another SHA or an unlisted role: still a fail in round order.
+  assert.equal(state({ comments: [marker('pass', 1), marker('fail', 2, { edited: true, sha: OLD })] }), 'failure');
+  assert.equal(state({ comments: [marker('pass', 1), marker('fail', 2, { edited: true, role: 'reviewer-9' })] }), 'failure');
+});
+test('a later round outranks an edited comment', () =>
+  assert.equal(state({ comments: [marker('fail', 2, { edited: true }), marker('pass', 3)] }), 'success'));
+test('an edited comment by another login is ignored', () =>
+  assert.equal(state({ comments: [marker('pass', 1), marker('fail', 2, { edited: true, login: 'someone' })] }), 'success'));
+test('a deleted higher round is invisible to the gate: the reviewer\'s sweep catches it', () =>
+  // The comment list simply lacks the deleted round 2 fail.
+  assert.equal(state({ comments: [marker('pass', 1)] }), 'success'));
+test('a pass that quotes an earlier fail marker counts as a fail, not as the quoted one', () => {
+  const quoting = marker('pass', 2, { extra: `Round 1 said:\n\n\`\`\`\n${markerLine('fail', 1)}\n\`\`\`\n\n` });
+  const [st, why] = run({ comments: [marker('fail', 1), quoting] });
+  assert.equal(st, 'failure');
+  assert.match(why, /\(round 2\) has more than one marker line/);
+});
+test('a pass that quotes a marker for an older SHA does not leave the gate pending', () => {
+  const quoting = marker('pass', 2, { extra: `${markerLine('fail', 1, { sha: OLD })}\n` });
+  assert.equal(state({ comments: [quoting] }), 'failure');
+});
+test('a marker quoted with > or indented is not a marker line', () => {
+  const quoted = marker('pass', 2, { extra: `> ${markerLine('fail', 1)}\n    ${markerLine('fail', 1)}\n` });
+  assert.equal(state({ comments: [marker('fail', 1), quoted] }), 'success');
+});
 test('marker for an older SHA only: pending', () =>
   assert.equal(state({ comments: [marker('pass', 1, { sha: OLD })] }), 'pending'));
 test('a reviewer-session given as a URL is still recused by a bare-id trailer', () => {
@@ -161,6 +195,26 @@ test('override does not survive a push: the run for the new head ignores it', ()
   assert.equal(state({ ...o, comments: [marker('fail', 1)] }), 'failure');
   assert.equal(state({ ...o, comments: [marker('fail', 1, { sha: OLD })] }), 'pending');
   assert.equal(state({ ...o, comments: [marker('pass', 2)] }), 'success');
+});
+test('override: the trailer block is not the section, and a session URL is not the maintainer\'s link', () => {
+  const o = { labels: ['review-override'], overrideLabeledBy: 'the-maintainer', comments: [marker('fail', 1)] };
+  const trailers = 'Completes: M1-1\nClaude-Session: https://claude.ai/code/session_BUILDER1\n';
+  assert.equal(state({ ...o, body: `## Review override\nB1 is fine.\n\n${trailers}` }), 'failure');
+  assert.equal(state({ ...o, body: '## Review override\nB1 is fine, see https://claude.ai/code/session_BUILDER1\n' }), 'failure');
+  assert.equal(state({ ...o, body: `## Review override\nB1 is fine: https://claude.ai/project/p/message/cmsg_1\n\n${trailers}` }), 'success');
+});
+const template = fs.readFileSync(new URL('../pull_request_template.md', import.meta.url), 'utf8');
+test('the real PR template, trailers filled in, gives an override no link', () => {
+  const body = template
+    .replace('Completes: <id>', 'Completes: M1-1')
+    .replace('Part-of: <id>\n', '')
+    .replace('Claude-Session: <your session URL>', 'Claude-Session: https://claude.ai/code/session_BUILDER1');
+  assert.match(body, /^## Review override$/m);
+  const [st, why] = run({ labels: ['review-override'], body, overrideLabeledBy: 'the-maintainer', comments: [marker('fail', 1)] });
+  assert.equal(st, 'failure');
+  assert.match(why, /needs a "## Review override" section/);
+  const filled = body.replace(/(## Review override\n<!--[\s\S]*?-->\n)/, '$1Overrides B1: https://claude.ai/project/p/message/cmsg_1\n');
+  assert.equal(run({ labels: ['review-override'], body: filled, overrideLabeledBy: 'the-maintainer' })[0], 'success');
 });
 test('override section holding only the template comment fails', () =>
   assert.equal(state({ labels: ['review-override'], body: '## Review override\n<!-- link https://x -->\n## Docs\n', overrideLabeledBy: 'the-maintainer' }), 'failure'));
