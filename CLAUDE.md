@@ -65,9 +65,10 @@ depends_on = ["DOCS#ledger", "DOCS#notes", "DOCS#merge"]
 - Never edit `docs/verified.toml` by hand. Only `docs verify` writes it, and
   `docs merge-main` keeps entries that still match.
 - To bring `main` into your branch, run `scripts/repo docs merge-main`. It resolves
-  conflicts in the ledger and inside `@generated` blocks, and leaves every other conflict
-  to you. Then re-read and verify each section it lists as stale, each with its own note:
-  what the earlier note it prints said about your change, plus what the merge changed
+  conflicts in the ledger, inside `@generated` blocks and in the stack's lockfiles, and
+  leaves every other conflict to you. Then re-read and verify each section it lists as
+  stale, each with its own note: what the earlier note it prints said about your change,
+  plus what the merge changed
   ([DOCS › Notes](docs/DOCS.md#notes)). A PR into a wave branch merges its wave instead:
   `scripts/repo docs merge-main --from wave/<name>`
   ([waves runbook](docs/runbooks/waves.md)).
@@ -165,7 +166,7 @@ The stack's own commands (format, lint, test, dependency check) are in its pack 
 | `docs for <path>` | the rules, sections and ADRs that govern a file |
 | `docs verify <DOC#anchor> --by … --note "…"` | restamp a section after a re-read |
 | `docs generate` | rewrite `@generated` blocks |
-| `docs merge-main [--from wave/<name>]` | merge main or a wave, resolving ledger and generated conflicts |
+| `docs merge-main [--from wave/<name>]` | merge main or a wave, resolving ledger, generated and lockfile conflicts |
 | `docs log <DOC[#anchor]>` | history, from git |
 | `governance --base origin/main` | list your PR's governance changes |
 | `pr-title "<title>"` | check a Conventional Commit title |

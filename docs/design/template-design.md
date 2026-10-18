@@ -36,8 +36,9 @@ One language-neutral tool (`tools/repo`) does the checking, configured by one fi
 
 **The agent side:**
 - intake runs first;
-- then five standing roles: coordinator, planner, reviewers, integrator, and triage;
-- a small board thread keeps a status page;
+- then four standing roles: the coordinator, the planner, the reviewers and ops. All but
+  the coordinator wake from scheduled triggers, a fresh session per fire;
+- a small board role keeps a status page;
 - builders: 6 per reviewer, 12 to start.
 
 Agents hand off with fixed one-line messages and keep their state in files. An approval contract says exactly which actions need the maintainer's own
@@ -73,7 +74,9 @@ docs/
         0002 review gate and governance                  (maintainer tier)
         0003 decision tiers                              (maintainer tier)
         0004 CI: drafts skip, platform after review, pins (agent tier)
-        0005 wave branches and serial lanes              (agent tier)
+        0005 wave branches and serial lanes              (agent tier, superseded by 0007)
+        0006 separate agent identities                   (maintainer tier, proposed)
+        0007 swarm operating model at scale              (agent tier)
   SECURITY-AGENTS.md          the agents' rules on untrusted text, approvals and secrets
   runbooks/  waves.md  serial-lanes.md  bootstrap.md  template-upgrade.md
   agents/                     one brief per agent type, plus project-instructions.md
@@ -94,7 +97,7 @@ scripts/bootstrap.sh          one-time GitHub setup, run by the maintainer
 .editorconfig  .gitattributes editor defaults; LF endings, generated files marked
 ```
 
-The template's ADRs take 0001 to 0005, and each project numbers on from 0006.
+The template's ADRs take 0001 to 0007, and each project numbers on from 0008.
 
 The cloud harness reads `.claude/skills/steward/SKILL.md` from a PR's head branch before it
 acts on CI or review events. It holds the merge, restamp and merge-only round rules.
@@ -227,15 +230,16 @@ project takes later versions through `docs/runbooks/template-upgrade.md`.
 
 **`review-gate.yml`:**
 - The reviewer posts one comment per round ending in
-  `<!-- review v1 verdict=… sha=… round=… reviewer-session=… -->`.
+  `<!-- review v1 verdict=… sha=… round=… reviewer=… reviewer-session=… -->`.
 - The gate counts only markers that:
   - are for the current head SHA;
   - are posted by the configured login;
-  - come from a session listed in the `REVIEWER_SESSIONS` repo variable;
+  - name a reviewer role listed in the `REVIEWER_ROLES` repo variable, which bootstrap sets
+    once to `reviewer-0,reviewer-1,reviewer-2`;
   - haven't been edited.
 - The highest round decides, and a fail beats a pass.
-- A reviewer whose session authored a commit is ignored (recusal by the `Claude-Session`
-  trailer), and the gate fails if a non-merge commit lacks that trailer. Commits already on
+- A marker whose `reviewer-session` authored a commit is ignored (recusal by the
+  `Claude-Session` trailer), and the gate fails if a non-merge commit lacks that trailer. Commits already on
   `main` and Dependabot's signed commits are exempt; squash commits carry the trailer from
   the PR body.
 - `review-override` needs a justification that links the maintainer's message. Only the
@@ -288,15 +292,18 @@ a migration number. ADRs take the next free number instead ([ADR index](../adr/R
 - Each lane is one line in `lanes.toml`: `protocol = { value = 21, holder = 512 }`.
 - Two claims on the same lane conflict in git.
 - `lane-guard` passes only when `value` is the base's plus one and `holder` is this PR.
-- The integrator hands out one slot at a time, to the first ready PR
-  ([integrator.md](../agents/integrator.md)).
+- Ops hands out one slot at a time, to the first ready PR
+  ([ops.md](../agents/ops.md#serial-lanes)). A lane PR is reviewed before it holds the slot,
+  so its `lane-guard` is red until then.
 
 **Waves** batch PRs into a branch that lands in `main` as one PR.
-- PRs target `wave/<name>` and skip the heavy CI jobs.
-- The integrator syncs `main` into the wave with merge commits.
-- The wave lands in `main` as one PR that runs everything.
-- Waves stay off until about 15 PRs are open, or runners queue. The wave ruleset is created at
-  bootstrap.
+- PRs target `wave/<name>` and run every check.
+- Ops syncs `main` into the wave with merge commits, then asks only the PRs left in conflict
+  to merge it.
+- The wave lands in `main` as one PR that runs everything; ops fixes what it finds.
+- Waves stay off until re-merging costs more than they do: more than one `MERGE-MAIN` for
+  every two merges over a day, or runners queue. The wave ruleset is created at bootstrap
+  ([ADR-0007](../adr/0007-swarm-operating-model.md)).
 
 <a id="agents"></a>
 ## 3. The agents
@@ -308,14 +315,13 @@ The briefs are in [docs/agents/](../agents/README.md).
 | Type | Count | Job |
 |---|---|---|
 | Intake | 1, first | questions the maintainer in three rounds; opens the design PR |
-| Coordinator | 1 | the maintainer's only contact; launches rows, relays their words, owns the roster, daily digest |
+| Coordinator | 1 | the maintainer's only contact; launches rows, relays their words, rebuilds the roster from GitHub, owns the triggers, daily digest |
 | Planner | 1 | roadmap rows with owned and forbidden paths; what each merge unblocks |
 | Builder | 6 per reviewer | one roadmap item per PR, driven until merged; ends after merge |
-| Reviewer | 2, then 3 | the merge gate, sharded by PR number, every PR whatever its base |
+| Reviewer | 2, then 3 | the merge gate, as stable roles `reviewer-0` to `reviewer-2`, sharded by PR number, every PR whatever its base |
 | Reviewer worker | at most 2 per reviewer | drafts one PR's review round |
-| Integrator | 1 | serial lanes, mergeability, main's health, waves |
-| Triage | 1 | issues, Dependabot, main is red, idle threads |
-| Board | 1 small thread | the status page |
+| Ops | 1 | main's health (revert first), serial lanes, mergeability, waves, issues, Dependabot |
+| Board | 1 small role | the status page |
 | Device session | 0 or 1 | hardware runs and bootstrap on the maintainer's machine |
 
 **Phases.**
@@ -325,17 +331,19 @@ The briefs are in [docs/agents/](../agents/README.md).
    skeleton, the maintainer-tier ADRs and `repo.toml`.
 3. **Build:** the other standing roles start, then builders, in batches chosen from rows with
    disjoint paths.
-4. **Scale-up:** waves turn on, and a third reviewer joins, as load requires.
+4. **Scale-up:** waves turn on, and a third reviewer joins, as measured load requires.
 5. **Endgame:** the planner keeps a "what's left" view.
 
 **How they work together:**
-- One-line messages, mostly role to role; the coordinator gets only what the maintainer needs.
-- State files under `ops/`, one writer each.
-- A roster mapping roles to live sessions, with adoption when a session dies.
-- A stop flag that every routine checks first.
-- Automatic, tiered resume after a usage limit.
+- Scheduled triggers, not self-armed timers: each fire starts a fresh, short session that
+  takes its role from its state file, so a usage limit costs one missed fire.
+- One-line messages, mostly role to role; the coordinator gets only what the maintainer
+  needs, and reads PRs and merges from GitHub.
+- State files under `ops/`, one writer each, naming the session that holds the role.
+- A roster rebuilt from GitHub, with adoption when a session dies.
+- A stop flag that every session checks first, and that turns auto-merge off.
 - A daily digest with cost against a budget: nothing new launches at 80%, and builders pause
-  at 100%.
+  at 100% until the budget day resets.
 
 The [agents README](../agents/README.md) has the message table and state rules, and
 [project-instructions.md](../agents/project-instructions.md) has the standing permissions and
@@ -364,12 +372,11 @@ prints the commands to fix any difference; any agent may run it read-only.
      creation, and no deletion rule, so a landed wave is deleted.
 3. **Actions:** default token read-only; SHA-pinned actions required; fork PRs need approval.
 4. **Labels:** `governance-approved`, `review-override`, `needs-human`, `hardware`.
-5. **Repo variables:** `REVIEWER_SESSIONS`, `REVIEWER_LOGIN` and `MAINTAINER_LOGIN`.
+5. **Repo variables:** `REVIEWER_ROLES`, `REVIEWER_LOGIN` and `MAINTAINER_LOGIN`.
 6. **Security:** Dependabot vulnerability alerts and security fixes; private vulnerability
    reporting; secret scanning and push protection.
 7. **By hand:** install the Claude GitHub App, paste the project instructions into the
-   Claude project, set `REVIEWER_SESSIONS` each time the reviewers change, and on a private
-   repo turn on the dependency graph.
+   Claude project, and on a private repo turn on the dependency graph.
 
 <a id="build-plan"></a>
 ## 5. Building the template
@@ -385,7 +392,8 @@ Each step is one PR, reviewed through the template's own gate once that exists:
 5. `stacks/rust`, `scripts/bootstrap.sh` and the runbooks.
 6. A dry run in a scratch fork: run bootstrap and land one item end to end. It must prove:
    - a hand-posted `review-gate` status doesn't unblock a PR;
-   - a session woken by `send_later` keeps its tools;
+   - a session started by a trigger fire keeps its tools and connectors, and a trigger
+     keeps firing through a usage limit;
    - the board can read GitHub, the thread list and `ops/`, and write its artifact;
    - each standing permission works across sessions without a prompt;
    - two lane claims conflict, and `lane-guard` fails until the second is renumbered;
@@ -412,14 +420,12 @@ The maintainer's:
 6. Each project has a daily token budget with auto-pause.
 7. The coordinator posts a daily digest in the project chat.
 8. A device session runs bootstrap on the maintainer's machine.
-9. Triage may quarantine a flaky test for up to 24 hours, with a tracking issue.
+9. Ops may quarantine a flaky test for up to 24 hours, with a tracking issue.
 
 Open follow-ups:
 - **A merge queue.** Required checks aren't strict, so two PRs that are each green against
-  an older `main` can merge into a red `main`. For now, triage turns off auto-merge on open
-  PRs while the "main is red" issue is open ([triage](../agents/triage.md#hourly-sweep)). A
-  merge queue would test each PR on top of the ones ahead of it, but every required check
-  would then have to report on the queue's `merge_group` commit. `review-gate` and
-  `governance` run on `pull_request_target` and post for the PR head, so supporting it means
-  a `merge_group` path in both that carries the head's verdict to the queue commit. That is
-  more than a settings change, so it waits for its own ADR.
+  an older `main` can merge into a red `main`. For now, ops reverts the merge that broke it
+  and holds auto-merge on the other PRs while the "main is red" issue is open
+  ([ops](../agents/ops.md#main-health)). [ADR-0007](../adr/0007-swarm-operating-model.md)
+  keeps the queue off and records its design: GitHub offers it only to organization-owned
+  repositories, and its `merge_group` runs need their own review of what code they run.

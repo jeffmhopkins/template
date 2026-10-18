@@ -53,6 +53,7 @@ covers = ["tools/repo/src/config.rs", "tools/repo/src/stack.rs"]
 | `[suppressions].reason_required` | no | when `true`, a matching line must also contain `reason =`, or it is a finding |
 | `[suppressions].files` | no | globs of the files to scan for suppressions; empty means every file that isn't Markdown |
 | `[protected_tables]` | no | manifest glob → list of dotted table names, such as `"**/Cargo.toml" = ["lints", "workspace.lints"]`. Any edit to one of those tables, including adding or removing it, is a governance change. A manifest whose new version doesn't parse is one too |
+| `[lockfiles]` | no | lockfile glob → the shell command that relocks it, run in the lockfile's directory, such as `"**/Cargo.lock" = "cargo metadata --format-version 1 > /dev/null"`. `scripts/repo docs merge-main` resolves a conflict in a matching file by taking the merged branch's side and running the command |
 | `[backrefs].roots` | yes | globs of package root files. A root whose package a doc section covers carries one back-reference line |
 | `[backrefs].prefix` | yes | the text that starts that line, such as `//! Docs:` or `# Docs:` |
 
@@ -88,7 +89,8 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
    - `deps` audits dependencies for advisories and licences.
 
    Add the suppression patterns, the manifest tables that set lint levels
-   (`[protected_tables]`), and the back-reference prefix and roots (examples below).
+   (`[protected_tables]`), the lockfiles and the command that relocks each (`[lockfiles]`),
+   and the back-reference prefix and roots (examples below).
 3. **Add the config files** the four commands read: formatter, linter, licence allow list.
    Licences follow [R-DEP-001](../docs/RULES.md#R-DEP-001).
 4. **Write `RULES.md`**, a tracked doc with id `RULES-<NAME>` and one `@rule` block per rule.
@@ -102,7 +104,8 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
    `.github/actions/<name>-setup/action.yml`, with every third-party action pinned to a full
    commit SHA. Call it in the `fmt`, `lint`, `test` and `deps` jobs of
    `.github/workflows/ci.yml`, after `rust-setup`. `rust-setup` stays in every job, because
-   the repo tool itself is written in Rust.
+   the repo tool itself is written in Rust. Add the stack's manifests and lockfiles to the
+   paths the `deps` job watches: on a PR it runs only when one of them changes.
 7. **Add Dependabot** for the stack's package manager in `.github/dependabot.yml`, for
    directory `/`.
 8. **Add the pack to the table** in [What a pack contains](#layout).

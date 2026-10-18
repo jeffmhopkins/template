@@ -25,7 +25,8 @@ each kind of event.
 depends_on = ["AGENT-BUILDER#on-every-wake"]
 -->
 
-1. Check `ops/STOP` (stop if present) and `ops/mode.md` (waves, main's health).
+1. Check `ops/STOP` (stop if present), `ops/PAUSE-builders` if you are a builder (end the
+   turn while it is present), and `ops/mode.md` (waves, main's health).
 2. If `main` is red, read its pinned "main is red" issue before investigating any failure.
    Never push a fix for a failure that issue already covers.
 3. Read everything new on the PR: every comment, every review thread, every check run and
@@ -64,13 +65,13 @@ depends_on = ["DOCS#merge", "DOCS#notes"]
 
 - **Merge, never rebase**, and never force-push. Use `scripts/repo docs merge-main`, or
   `scripts/repo docs merge-main --from wave/<name>` for a PR into a wave.
-- It resolves ledger and `@generated` conflicts itself. Resolve every other conflict by
+- It resolves ledger, `@generated` and stack lockfile conflicts itself. Resolve every other conflict by
   hand, then finish the merge commit.
 - It prints the sections the merge made stale, each with the notes this branch wrote on it.
   Re-read each one against the merged tree and verify it with a **fresh note**: what the
   earlier note said about this PR's change, plus what the merge changed. Never paste the
   old note back. How to verify is in the `verify-docs` skill.
-- Merge when the integrator sends `MERGE-MAIN`, when GitHub reports a conflict, or when a
+- Merge when ops sends `MERGE-MAIN`, when GitHub reports a conflict, or when a
   required check needs the newer base. Otherwise leave the base alone.
 
 <a id="merge-only"></a>
@@ -84,8 +85,8 @@ After review has passed, a merge of the base gets its own round:
 1. Push the merge commit and its restamps alone, with no other change in the push.
 2. Comment on the PR in one line that the round is merge-only: the base merged, the
    conflicts resolved, and the sections restamped.
-3. A real change found during the merge goes in a separate, later push, and that push gets a
-   full round.
+3. A real change found during the merge goes in a separate, later push, and that push gets
+   its own round: incremental, or full when it changes a commit already reviewed.
 
 <a id="findings"></a>
 ## Review findings

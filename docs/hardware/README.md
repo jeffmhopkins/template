@@ -20,7 +20,7 @@ depends_on = ["DOCS#progress", "AGENT-BUILDER#hardware"]
 1. A PR with `hardware = true` merges at risk, linking a `hardware` tracking issue that holds
    the checklist.
 2. The device session follows that checklist and records the result on the same issue.
-3. On a pass, the item's builder (or triage, if the builder has ended) opens the record PR:
+3. On a pass, the item's builder (or ops, if the builder has ended) opens the record PR:
    it adds `docs/hardware/<item>.md` and ends its body with
    `Verified-on-hardware: <item>` and `Closes #<issue>`.
 4. Once it merges, `scripts/repo progress` shows the item as `done`. A record counts only

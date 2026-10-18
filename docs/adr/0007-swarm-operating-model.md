@@ -97,9 +97,10 @@ owned by an organization, and runs `merge_group` workflows from the queue's own 
 - **Red `main`:** ops first reverts the merge that broke it, whatever paths it touched. The
   PR that fixes `main`, a revert or a fix, keeps auto-merge on; ops turns it off only on the
   other PRs.
-- **Maintainer labels:** the maintainer is asked to apply `governance-approved` or
-  `review-override` only when review has passed and CI is green at the final head, on a
-  "ready to land" card. When a push removes the label, the author asks again for the new
+- **Maintainer labels:** the maintainer is asked to apply a label only when the PR is
+  ready to land at its final head, on a "ready to land" card: for `governance-approved`,
+  once review has passed and CI is green; for `review-override`, once their override
+  decision is recorded and every other required check is green. When a push removes the label, the author asks again for the new
   head. The coordinator keeps one card per PR and head SHA.
 - **STOP** turns off auto-merge on every open PR and records which. Resume turns it back on
   for those. `STOP` is sent with priority `now`.

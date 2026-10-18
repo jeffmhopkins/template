@@ -117,7 +117,7 @@ enforced_by = ["ci:lane-guard"]
 applies_to = ["lanes.toml"]
 -->
 A PR that changes a serial lane sets its line in `lanes.toml` to the base's value plus one,
-with itself as holder, and keeps auto-merge off until the integrator grants it the slot
+with itself as holder, and keeps auto-merge off until ops grants it the slot
 ([DOCS › Serial lanes](DOCS.md#lanes), [runbook](runbooks/serial-lanes.md)).
 
 <a id="R-GIT-007"></a>

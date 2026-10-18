@@ -29,8 +29,8 @@ and a reviewer agent's verdict ([what keeps it safe](#safety)).
   - the **planner** splits the plan into small pieces;
   - several **builders** each build one piece;
   - two **reviewers** check every change;
-  - the **integrator** keeps merges in order when changes would collide;
-  - **triage** watches for failures, new issues and dependency updates;
+  - **ops** keeps merges in order when changes would collide, puts `main` right when it
+    breaks, and handles new issues and dependency updates;
   - the **board** keeps a progress page up to date;
   - a **device session** runs checks on your own computer, only when you allow it.
 - **The code lives in a GitHub repository** (a "repo"): a shared folder with full history.
@@ -98,11 +98,18 @@ flowchart LR
      plan: GitHub Pro for a personal account, or GitHub Team for an organization. The
      required `dependency-review` check needs GitHub Code Security. Bootstrap checks both
      and stops before changing anything if either is missing.
-2. **A Claude plan that includes Projects.** The cost grows with the number of agents
+2. **GitHub Actions minutes.** The checks run on GitHub Actions. On a **public** repo they
+   are free. On a **private** repo they come out of a monthly allowance of minutes that
+   depends on your plan, and past it they are billed
+   ([GitHub's billing page](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions)).
+   A busy swarm runs CI on every push, about 15 to 30 runner-minutes each, so a private
+   repo with many builders can use a month's allowance in a few days. Check your usage in
+   your GitHub account's **Settings › Billing**, and set a spending limit there.
+3. **A Claude plan that includes Projects.** The cost grows with the number of agents
    running at once. At the start you agree a **daily budget** with intake: a cap on how much
    agent work runs each day. At 80% of it nothing new starts, and at 100% the builders pause
    until you say to continue.
-3. **On your computer: `git`, `gh` and Python 3.11 or later.** Bootstrap needs all three,
+4. **On your computer: `git`, `gh` and Python 3.11 or later.** Bootstrap needs all three,
    whether you run it yourself or Claude runs it on your computer for you.
    - **macOS:** install [Homebrew](https://brew.sh/), then run `brew install git gh python`
      in Terminal. The `python3` that comes with macOS is often too old.
@@ -112,7 +119,7 @@ flowchart LR
      by [GitHub's instructions](https://cli.github.com/).
    - **Linux:** install `git`, `python3` (3.11 or later) and [`gh`](https://cli.github.com/)
      with your package manager.
-4. **To have Claude run bootstrap for you:** the Claude desktop app on that computer.
+5. **To have Claude run bootstrap for you:** the Claude desktop app on that computer.
 
 > [!IMPORTANT]
 > On a private repo without both paid features, either nothing protects `main` or no PR can
@@ -159,16 +166,11 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
 6. **Say hello.** In the project chat, write one or two sentences about what you want built,
    for example "A desktop app that sorts my photos by who's in them". The coordinator records
    who you are from this first message, so it can check every approval against you, then
-   starts intake and the first reviewer.
-7. **Turn on the review gate.** The coordinator posts a card with the reviewers' session
-   ids. Set them as the repo variable `REVIEWER_SESSIONS`, then tap **Done** on the card
-   ([how](#github)).
-8. **After intake's first PR merges,** the coordinator asks you to paste the project
+   starts intake and the first reviewer. Bootstrap already told the review gate which
+   reviewers to trust, so there is nothing to set when reviewers start or are replaced.
+7. **After intake's first PR merges,** the coordinator asks you to paste the project
    instructions again, because intake added your answers to them, and to run bootstrap
    again, because intake may have changed the required checks.
-
-> [!WARNING]
-> Until the reviewer session ids are set (step 7), no PR can merge.
 
 <a id="setup"></a>
 ## What the setup does for you
@@ -186,7 +188,7 @@ any of these by hand:
 | Rules on `wave/*` | the same rules for batch branches, except that GitHub deletes one once it has landed in `main` | the same protection when work is batched, and nothing slips into a batch after it lands |
 | GitHub Actions | the automation can read but not change the repo or approve PRs; every action used must be pinned to an exact version; outside contributors' PRs wait for approval before running | the automation can't be hijacked into changing your code |
 | Labels | `governance-approved`, `review-override`, `needs-human`, `hardware` | the labels the agents and checks use |
-| Repo variables | `MAINTAINER_LOGIN` and `REVIEWER_LOGIN`, both your GitHub login, and the reviewer list `REVIEWER_SESSIONS`, set to `none` until you fill it | the checks know who you are and whose review comments to trust |
+| Repo variables | `MAINTAINER_LOGIN` and `REVIEWER_LOGIN`, both your GitHub login, and `REVIEWER_ROLES`, the reviewer names `reviewer-0,reviewer-1,reviewer-2` | the checks know who you are and whose review comments to trust; you never change these when reviewers come and go |
 | Security | Dependabot alerts and fixes, private vulnerability reporting (public repos), secret scanning, and blocking pushes that contain a password or key | you hear about vulnerable dependencies, people can report a security problem privately, and secrets can't be committed by accident |
 
 Run it again at any time: it only changes what differs, and `scripts/bootstrap.sh --check`
@@ -194,7 +196,7 @@ shows what would change without changing anything. The full list, with the exact
 in the [bootstrap runbook](runbooks/bootstrap.md#settings).
 
 **What bootstrap can't do**, because it needs your own accounts, is in the
-[bootstrap runbook](runbooks/bootstrap.md#by-hand) and in steps 2, 3, 4, 7 and 8 above. On a
+[bootstrap runbook](runbooks/bootstrap.md#by-hand) and in steps 2, 3, 4 and 7 above. On a
 **private** repo, you also turn on the dependency graph ([Things you'll do on GitHub](#github)).
 
 <a id="github"></a>
@@ -213,26 +215,19 @@ email for each one. To keep the rest quiet:
   **Actions**, choose to be notified only about failed workflows. The coordinator tells you
   about anything that needs you.
 
-**Set the reviewer list.** Each time the coordinator posts a card with reviewer session ids,
-whether the first time, a new reviewer or a replaced one:
-1. Open the repo's **Settings › Secrets and variables › Actions**, then the **Variables** tab.
-2. Edit `REVIEWER_SESSIONS` and set it to the ids from the card, separated by commas, for
-   example `session_01AbCdEfGhIjKlMnOpQrStUv,session_01ZyXwVuTsRqPoNmLkJiHgFe`. Replace the
-   whole value, including `none`.
-3. Tap **Done** on the card. The coordinator then re-runs the review gate on the open PRs,
-   since changing the variable doesn't re-run it.
-
 **Decide in the project chat.** Give every decision by tapping the card's option or by
 saying it in the project chat, never in a GitHub comment. A chat message has an id the agents
 can check against you; a comment under your login could have come from an agent.
 
-**Apply a label when a card asks.** Two labels are yours alone: `review-override`, on any PR,
-and `governance-approved` on a PR that changes a file only you may approve (the list is in
-[project-instructions.md](agents/project-instructions.md)). The agents use your login, so
-GitHub can't tell who ticked a label: only you tick these. The card says which PR and which
-label. Open the PR, click **Labels** in the right-hand column, and tick the label. Then
-answer the card. A push to the PR removes both labels, so when the card comes back after a
-push, tick the label again.
+**Apply a label when a "ready to land" card asks.** Two labels are yours alone:
+`review-override`, on any PR, and `governance-approved` on a PR that changes a file only you
+may approve (the list is in [project-instructions.md](agents/project-instructions.md)). The
+agents use your login, so GitHub can't tell who ticked a label: only you tick these. The
+card comes only once the PR is otherwise ready to land: its checks are green, and the
+reviewer has passed it (or, for an override, you have decided to override it). It says which
+PR and which label. Open the PR, click **Labels** in the right-hand column, and tick
+the label. Then tap **Applied**. A push to the PR removes both labels. If the PR changes
+again, a new card comes for the new version: tick the label again then.
 
 **Private repo only.** Turn on the dependency graph in **Settings › Code security**, or the
 `dependency-review` check fails. Public repos have it on already.
@@ -256,7 +251,7 @@ An intake agent turns your idea into a plan in three short rounds, through the c
 
 It then opens the first PR with the product description, the roadmap and your decisions.
 Once that merges, the coordinator asks you to paste the instructions and run bootstrap again
-([step 8](#start)), then the planner splits the roadmap into small pieces and the builders
+([step 7](#start)), then the planner splits the roadmap into small pieces and the builders
 start.
 
 <a id="day-to-day"></a>
@@ -277,8 +272,9 @@ start.
 - **Some things always wait for you:** changes to the review gate or the rules about who
   decides what, publishing anything, creating accounts, and spending beyond the budget. The
   full list is in [project-instructions.md](agents/project-instructions.md).
-- **"Stop" stops everything** until you say "resume". The daily budget pauses new work at 80%
-  and pauses the builders at 100% until you say to continue.
+- **"Stop" stops everything** until you say "resume", merges included. The daily budget
+  pauses new work at 80% and pauses the builders at 100% until you say to continue, or until
+  the next budget day starts.
 - **Hardware tests.** If the product needs testing on your own machine, the coordinator asks
   once a day whether now is a good time, and an agent runs the checks there with your
   permission.
@@ -326,8 +322,9 @@ rules, and are checked after the fact. This section says which is which.
   chat message about that exact thing, and the reviewer reads that message itself. A card
   tap has no message of its own: the coordinator records who tapped it, and that record is
   what the reviewer checks ([agent security](SECURITY-AGENTS.md)).
-- **"Stop" relies on the agents.** The coordinator pauses its routines and tells every
-  session to stop. PRs with auto-merge on can still merge.
+- **"Stop" relies on the agents.** The coordinator disables the scheduled triggers, turns
+  off auto-merge on every open PR so nothing merges, and tells every session to stop. A
+  session that ignored it could still act.
 
 **What closes the gaps later.** Giving builders, reviewers and the gate their own GitHub
 identities ([ADR-0006](adr/0006-separate-agent-identities.md), proposed) makes your login
@@ -342,14 +339,14 @@ identity no PR controls.
 | You see | What it usually means |
 |---|---|
 | a red CI badge or a red check | a test or a setting failed; the agents fix their own PRs, and a "main is red" issue tracks it if `main` itself breaks |
-| `review-gate`: "Gate not configured" | the reviewer list is still `none`; set it from the coordinator's card ([how](#github)) |
+| `review-gate`: "Gate not configured" | bootstrap hasn't set `REVIEWER_LOGIN` and `REVIEWER_ROLES` yet: run it again ([what it sets](#setup)) |
 | a check stuck at "Expected", "Waiting for status to be reported" | the rules require a check that no workflow runs any more, usually because the required checks changed; run bootstrap again. For `review-gate` it can also mean no reviewer has looked yet |
 | `dependency-review` fails with "not supported" | GitHub's dependency graph is off: turn it on in the repo's **Settings › Code security** |
 | bootstrap stops with "is private, and its plan lacks" | the repo is private without the paid features the template needs ([what you need](#before)) |
 | a PR labelled `needs-human` | a decision only you can make; the coordinator has a card for it |
 | `review-gate`: "has no Claude-Session trailer", after you edited a file on a PR | don't commit to agent PRs yourself: a commit from GitHub's web editor has no `Claude-Session:` trailer and blocks the gate. Tell the coordinator what to change instead; the PR's agent drops your commit from its branch and makes the change itself |
-| a label you ticked has gone | the PR got a new push, which removes `governance-approved` and `review-override`; tick it again when the card asks |
-| nothing happening for hours | a Claude usage limit: the coordinator resumes on its own when it lifts. Or the daily budget reached 100%: the builders wait until you say "continue" |
+| a label you ticked has gone | the PR got a new push, which removes `governance-approved` and `review-override`; tick it again when the next "ready to land" card asks |
+| nothing happening for hours | a Claude usage limit: the agents' scheduled triggers keep firing, so work resumes on its own when it lifts. Or the daily budget reached 100%: the builders wait until you say "continue", or until the budget day resets. Or, on a private repo, the Actions minutes ran out: checks queue and never start; see **Settings › Billing** ([what you need](#before)) |
 
 <a id="more"></a>
 ## Going further

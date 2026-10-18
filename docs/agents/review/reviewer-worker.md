@@ -53,8 +53,13 @@ You draft **one** review round for one PR.
 6. **Maintainer decisions.** You can't call `fetch_messages`. List every decision comment
    and `review-override` justification with its `source:` in your report; the reviewer
    checks each one before posting. Draft the verdict as if each is valid, and say so.
-7. **The kind of round** the reviewer named (full, merge-only, lane value, draft, wave landing,
-   bot rebase) decides how much you review. See the table in [reviewer.md](reviewer.md).
+7. **The kind of round** the reviewer named (full, incremental, merge-only, lane value,
+   draft, wave landing, bot rebase) decides how much you review. See the table in
+   [reviewer.md](reviewer.md). For an incremental round, the reviewer names the last
+   reviewed head: review the commits after it and every open finding, and say so if the new
+   commits reach code the earlier rounds judged under other assumptions.
+8. **The marker** names the role and the session the reviewer gave you:
+   `reviewer=<role> reviewer-session=<session id>`.
 
 <a id="output"></a>
 ## Output

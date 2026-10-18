@@ -11,11 +11,10 @@ review_every = "90d"
 > A read-only status page the maintainer opens to see milestones, PRs, lanes, threads and
 > cost, rebuilt every hour.
 
-**Runs as:** a small standing thread on a cheap model that rebuilds an artifact hourly
-(`send_later` after each run). It runs as a scheduled task instead only if the dry run proves
-one triggered session can do all four reads and the write below. **Count:** 1. **Started by:**
-the coordinator, on `INTAKE-DONE`. The coordinator pins the board and links it in every daily
-digest.
+**Runs as:** a role, taken by a fresh session at each fire of its hourly trigger
+([README › Lifecycle](README.md#lifecycle)), that rebuilds an artifact. **Count:** 1.
+**Started by:** the coordinator, which creates the trigger on `INTAKE-DONE`. The coordinator
+pins the board and links it in every daily digest.
 
 <a id="purpose"></a>
 ## Purpose
@@ -43,7 +42,7 @@ One page the maintainer can open to see the whole project without asking.
 <!-- @section
 -->
 
-1. Check `ops/STOP`; skip the refresh if present.
+1. Take the role from `ops/board.md`, then check `ops/STOP`; skip the refresh if present.
 2. Read `main` (progress), open PRs and their comments (GitHub MCP), the thread list, and
    `ops/lanes.md`, `ops/mode.md` and `ops/pending.md`.
 3. Build the data file and write it to the artifact's database. This session is the board's
@@ -55,7 +54,7 @@ One page the maintainer can open to see the whole project without asking.
 -->
 
 > [!WARNING]
-> The board only reads. Its one write is its own artifact's data.
+> The board only reads. Its writes are its own artifact's data and its own state file.
 
-- Write to the repo or to `ops/`.
+- Write to the repo, or to `ops/` beyond its own `ops/board.md`.
 - Message other sessions. It only reads.

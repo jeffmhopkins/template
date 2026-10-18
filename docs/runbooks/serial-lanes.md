@@ -13,8 +13,8 @@ review_every = "90d"
 
 How a PR gets the next value of a serial lane. The decision is
 [ADR-0007](../adr/0007-swarm-operating-model.md); the file format and the check are in
-[DOCS › Serial lanes](../DOCS.md#lanes). The integrator owns the queue
-([integrator brief](../agents/integrator.md)), in `ops/lanes.md`.
+[DOCS › Serial lanes](../DOCS.md#lanes). Ops owns the queue
+([ops brief](../agents/ops.md#serial-lanes)), in `ops/lanes.md`.
 
 <a id="declare"></a>
 ## Declaring a lane
@@ -49,17 +49,20 @@ depends_on = ["RULES#R-GIT-006"]
 -->
 
 1. Build and review the change with the lane's value left as it is on the base, in
-   `lanes.toml` and in the lane's `files`. Keep auto-merge off.
-2. Once review passes, send the integrator `LANE-READY <lane> #<pr>`.
+   `lanes.toml` and in the lane's `files`. Keep auto-merge off. Until you hold the slot,
+   `lane-guard` may fail on the lane's files; that is expected, and the reviewer doesn't
+   count it as a blocking finding.
+2. Once review passes, send ops `LANE-READY <lane> #<pr>`.
 3. On `LANE-HOLD <lane> <value> #<pr>`, set the lane's line to that value with your PR as
-   holder, and set every file that names the value. Push once; the reviewer runs one short
-   lane-value round.
+   holder, and set every file that names the value. If the branch fell behind, merge `main`
+   in the same push. Push once; the reviewer runs one short lane-value round, or a
+   merge-only round that also checks the value.
 4. Once that round passes, turn on auto-merge.
 5. On `MERGE-MAIN #<pr>`, merge at once. The holder comes before anything else you are
    doing.
 
 <a id="integrator"></a>
-## The integrator's side
+## Ops's side
 <!-- @section
 depends_on = ["DOCS#lanes"]
 -->
@@ -80,6 +83,6 @@ depends_on = ["DOCS#lanes"]
 depends_on = ["ADR-0007"]
 -->
 
-While waves are on, lane PRs go into the current wave, and the integrator grants slots
+While waves are on, lane PRs go into the current wave, and ops grants slots
 against the wave's value. The landing PR advances each lane by the number of claims it
 carries, which `lane-guard` allows on a landing PR.

@@ -188,7 +188,8 @@ depends_on = ["DOCS#governance", "RULES#R-GOV-002", "RULES#R-GOV-007"]
 - an ADR with too low a tier, or a maintainer-tier status that contradicts a valid
   decision;
 - a security problem;
-- a red required check caused by this PR.
+- a red required check caused by this PR. A lane PR's red `lane-guard` before it holds its
+  slot is expected, and never a finding ([serial-lanes runbook](docs/runbooks/serial-lanes.md#builder)).
 
 **Non-blocking:** style, naming, suggestions, questions, and **pre-existing problems** the
 PR didn't introduce. File pre-existing problems as issues.
@@ -259,10 +260,10 @@ a wave's squash commits carry the trailer from the PR body. A push removes
 <!-- @section
 -->
 
-The round number is one more than the highest `round=` in any earlier marker on the PR, or
-1. Review a head only once every required check other than `review-gate` is green on it,
-unless the author or the maintainer asks for a round anyway. Each round is one of these
-kinds, found with `git range-diff <last reviewed base>...<last reviewed head>
+The round number is one more than the highest `round=` in any earlier marker on the PR,
+or 1 for the first. Review a head only once every required check other than `review-gate` is
+green on it (a lane PR's `lane-guard` before it holds its slot excepted), unless the author
+or the maintainer asks for a round anyway. Each round is one of these kinds, found with `git range-diff <last reviewed base>...<last reviewed head>
 <base>...<head>`:
 
 | Kind | When | What you review |

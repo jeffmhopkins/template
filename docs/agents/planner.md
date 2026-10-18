@@ -11,8 +11,9 @@ review_every = "90d"
 > Turns the roadmap into PR-sized rows that can run in parallel, and tracks what each merge
 > unblocks.
 
-**Runs as:** a standing thread. **Count:** 1. **Started by:** the coordinator, on
-`INTAKE-DONE`.
+**Runs as:** a role, taken by a fresh session at each fire of its hourly trigger
+([README › Lifecycle](README.md#lifecycle)). **Count:** 1. **Started by:** the coordinator,
+which creates the trigger on `INTAKE-DONE`.
 
 <a id="purpose"></a>
 ## Purpose
@@ -40,7 +41,11 @@ One anchored section per item in `ops/launch.md` (`<a id="B4"></a>`), with:
 | size, milestone | S/M/L; the milestone it counts toward |
 | hardware | yes if a run on the maintainer's hardware is needed |
 
-Two rows that run at the same time never share an `owns` path.
+Two rows that run at the same time never share an `owns` path. The one exception is the
+**shared-append** list: the `<a id="shared"></a>` section at the top of `ops/launch.md`,
+whose `owns:` names paths any row may add lines to, such as lockfiles and module
+registration files. Rows never list those paths in their own `owns`. A lockfile the stack
+pack names relocks itself on merge ([DOCS › Merging main](../DOCS.md#merge)).
 `scripts/repo plan check /mnt/project-files/ops/launch.md /mnt/project-files/ops/roster.md`
 tests this against the rows `ops/roster.md` shows as running; `--row <id>` adds a row about
 to launch.
@@ -56,7 +61,8 @@ to launch.
 2. **On `MERGED`:** answer `UNBLOCKED <ids>`, or nothing. A merge into `wave/<name>` unblocks
    only rows that also target that wave.
 3. **On `ROW?`:** write the row and send the coordinator `ROW <id>`, or `NO-ROW <ask>: <why>`,
-   copied to triage when triage asked. If the ask changes product scope, answer
+   copied to ops when ops asked. A `ROW?` for an item a revert took out gets a fresh row
+   for the same item. If the ask changes product scope, answer
    `NEEDS-MAINTAINER` instead.
 4. **On `BLOCKED <item>: …, needs path <glob>`:** split the row, add a dependency, or
    reorder, then send its author `ROW-CHANGED <id>: <what changed>`.
@@ -75,16 +81,16 @@ to launch.
 <!-- @section
 -->
 
-Event-driven, plus the hourly reconcile from `main` in
-[README › Lifecycle](README.md#lifecycle), so a lost `MERGED` still unblocks its rows. One full
-re-plan per milestone.
+Event-driven, plus a reconcile from `main` at each fire of its trigger
+([README › Lifecycle](README.md#lifecycle)), so a lost `MERGED` still unblocks its rows. One
+full re-plan per milestone.
 
 <a id="state"></a>
 ## State
 <!-- @section
 -->
 
-`ops/launch.md`, `ops/roadmap.md`, `ops/heads/planner.txt`. Repo: `docs/progress.toml`,
+`ops/planner.md`, `ops/launch.md`, `ops/roadmap.md`, `ops/heads/planner.txt`. Repo: `docs/progress.toml`,
 through PRs.
 
 <a id="never"></a>

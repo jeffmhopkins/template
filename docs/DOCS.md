@@ -438,8 +438,8 @@ No label allows an edit to an accepted ADR's text or to metadata other than `sta
 ([R-DOC-008](RULES.md#R-DOC-008)). With `--pr-body` or `--labels`, the check fails on one
 whatever the labels. A changed decision is a new ADR that supersedes the old one.
 
-The workflow runs on `pull_request_target`. It builds the tool from the base commit and
-reads the head only as git objects: a PR's edits to the tool never change how its own
+The workflow runs on `pull_request_target`. It builds the tool from the base commit once
+per run, shares that binary with its jobs, and reads the head only as git objects: a PR's edits to the tool never change how its own
 check runs. `repo.toml`, the tool's source and the workflows are maintainer-only, so the
 list protects itself: no PR loosens it for the next one without the maintainer.
 

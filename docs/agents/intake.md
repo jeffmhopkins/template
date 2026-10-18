@@ -75,7 +75,7 @@ itself. The questions it must settle on day 0:
 - contributions: closed until first release?;
 - hardware runs: what only their machine can test, how often, and whether merging at risk with a
   tracking issue is fine;
-- flaky tests: may triage quarantine one for up to 24 hours, with a tracking issue? (template
+- flaky tests: may ops quarantine one for up to 24 hours, with a tracking issue? (template
   default: yes)
 
 **Round 3: confirm.** One message restating every answer and every agent-tier pick
@@ -85,8 +85,9 @@ itself. The questions it must settle on day 0:
   blanket approval, and the reviewer won't accept it.
 - **The maintainer-only paths** the design PR changes, such as
   `docs/agents/project-instructions.md`: `Approve the changes to <each path> in #<pr>`
-  (rec: yes). The context lists each path and what changes in it, and asks them to apply
-  `governance-approved` on the PR themselves ([R-GOV-007](../RULES.md#R-GOV-007)).
+  (rec: yes). The context lists each path and what changes in it, and says that a "ready to
+  land" card will ask them to apply `governance-approved` once review passes
+  ([R-GOV-007](../RULES.md#R-GOV-007)).
 
 Send the cards once the design PR is open, so each can name it.
 
@@ -122,10 +123,11 @@ A design PR into the repo:
     with the project's `OWNER/REPO`. Bootstrap turns on private vulnerability reporting,
     which the link opens. A private repo leaves it out.
 
-The PR body ends with `Completes: M0-1`: by the time it merges, the repo exists, bootstrap
-has run, and the checks pass on `main`. Items 6 and 13 touch protected paths, so the PR
-carries `governance-approved` and its justification. Intake applies the label itself unless
-the PR touches a maintainer-only path, where the maintainer applies it (round 3).
+The PR body ends with `Completes: M0-1` and your `Claude-Session:` line: by the time it
+merges, the repo exists, bootstrap has run, and the checks pass on `main`. Items 6, 7 and 13
+touch protected paths, so the PR needs `governance-approved` with its justification. Items 6
+and 7 are maintainer-only, so the maintainer applies the label, on the "ready to land" card
+([builder › Maintainer labels](builder.md#labels)).
 
 To the coordinator, not the repo: the accounts and secrets to create and the hardware list,
 for `ops/pending.md`. The coordinator writes the decision files.
@@ -138,17 +140,21 @@ for `ops/pending.md`. The coordinator writes the decision files.
 Intake drives its design PR the way a builder drives its own
 ([builder › The loop](builder.md#the-loop), steps 3 to 6 and 8):
 
-1. Open the design PR as a draft, **subscribe to its events**, and send the coordinator
-   `OPENED M0-1 #<pr>`. The reviewer started with intake reviews it.
+1. Open the design PR as a draft and **subscribe to its events**. `reviewer-0`, started
+   with intake, reviews it.
 2. After round 3's cards, post one proxy decision per ADR in
    [ADR-0003](../adr/0003-decision-tiers.md)'s format, each quoting the card's words with the
    list of ids from its context, with `source:` the message id the coordinator relayed. For
    the maintainer-only paths, post one `/approve <path>` proxy per path in the same format,
    its instruction quoting their words that name the PR or the path, with its `source:`.
-3. Mark the PR ready, turn on auto-merge (squash), send `REVIEW? #<pr> <sha>`, and answer
-   every finding until it merges. Merge main if it falls behind.
-4. On merge, send the coordinator `MERGED M0-1 #<pr>` and `INTAKE-DONE #<pr>`, then stop.
-   The coordinator asks the maintainer to paste the instructions again and re-run bootstrap.
+3. Mark the PR ready, turn on auto-merge (squash), send `REVIEW? #<pr> <sha>` once its
+   other checks are green, and answer every finding until it merges. Merge main if it falls
+   behind. Once review passes and CI is green, send the "ready to land" line for
+   `governance-approved`, and again for each later head
+   ([builder › Maintainer labels](builder.md#labels)).
+4. On merge, send the coordinator `INTAKE-DONE #<pr>`, then stop. The coordinator asks the
+   maintainer to paste the instructions again and re-run bootstrap, and starts the planner
+   and ops, which read the merge from `main`.
 
 <a id="never"></a>
 ## Never
