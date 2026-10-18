@@ -86,3 +86,9 @@ id = "github-actions-billing"
 url = "https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions"
 relied_on = "Standard GitHub-hosted runners are free on public repositories; private repositories draw on a monthly allowance of minutes that depends on the plan, and then pay"
 recheck_every = "180d"
+
+[[external]]
+id = "claude-code"
+url = "https://claude.ai/code"
+relied_on = "Claude Code's home page, which the review round template's attribution footer links to"
+recheck_every = "365d"

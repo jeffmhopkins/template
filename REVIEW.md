@@ -148,7 +148,9 @@ split ([R-GIT-004](docs/RULES.md#R-GIT-004)).
    compatibility, the review process, privacy or security posture, licensing, spending. When
    that decision is maintainer tier, the verdict is `escalate` ([Escalation](#escalate)).
 1. **Correctness.** Logic errors, unhandled cases, races, resource leaks, broken
-   invariants. Trace each one through a realistic caller.
+   invariants. Trace each one through a realistic caller. A race or other concurrency
+   finding gives a concrete interleaving: which threads, processes or sessions reach which
+   lines, in what order, and what state that leaves.
 2. **Applicable rules.** Check every rule Step 1 returned, the process rules included.
    Rules whose `enforced_by` includes `review` are yours: CI can't judge them.
 3. **Architecture and decisions.** The change fits
@@ -310,7 +312,9 @@ depends_on = ["DOCS#governance", "RULES#R-GOV-002", "RULES#R-GOV-007"]
 **Non-blocking:** style, naming, suggestions, questions, and **pre-existing problems** the
 PR didn't introduce. File pre-existing problems as issues.
 
-Don't inflate. A PR with only non-blocking findings gets `pass`.
+Don't inflate. A PR with only non-blocking findings gets `pass`. Don't deflate either: a
+finding that meets a blocking bar above is blocking, however small its fix, however late the
+round, and whoever wrote the code.
 
 <a id="output"></a>
 ## Step 4: Post the review
@@ -342,7 +346,9 @@ round whose verdict stands, with its open findings' IDs), then the marker line, 
 line and the footer.
 
 Finding IDs are permanent within a PR: `B1, B2, …` for blocking, `N1, N2, …` for
-non-blocking. Never reuse one. A blocking finding:
+non-blocking. Never reuse one. A finding never changes class under its ID: to move one
+between blocking and non-blocking, mark the old ID withdrawn with the reason, and raise a new
+ID in the other class that names the old one. A blocking finding:
 
 ```markdown
 **B1 · blocking · R-TEST-001 · `src/parser.rs:142`**
@@ -361,14 +367,18 @@ Problem: `parse_header` copies the whole buffer to read its first four bytes.
 Fix: read them from a borrowed slice.
 ```
 
-The marker line, on its own line, exactly in this form:
+The marker line, on its own line, starting at the line's first character, exactly in this
+form. An indented or quoted marker, such as one after `>` or inside a list, doesn't count:
 
 ```markdown
 <!-- review v1 verdict=pass sha=<40-char head SHA> round=<n> reviewer=<your role> reviewer-session=<your session id> -->
 ```
 
-`reviewer` is your stable role name, such as `reviewer-0`, and `reviewer-session` is the
-session that posts the round.
+`reviewer` is your stable role name, such as `reviewer-0`. `reviewer-session` is the id of
+the session that posts the round: the `session_…` part of its session URL, as a
+`Claude-Session:` trailer from that session would name it. The gate compares only that part.
+This form, with the `reviewer=` field and the `REVIEWER_ROLES` variable, is the one
+[ADR-0007](docs/adr/0007-swarm-operating-model.md) sets in place of ADR-0002's.
 
 > [!CAUTION]
 > The marker is the only line in the comment that starts with `<!-- review v1`. Never
