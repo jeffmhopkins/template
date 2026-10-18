@@ -107,7 +107,8 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   those in your shard, plus the recused ones that come to you: those on your `recused:` line,
   and any open PR whose latest round is a `recuse` by the shard before yours,
   `(shard - 1) mod count`, so a lost `RECUSED` line loses no PR.
-- **Fan-out:** at most 2 workers at a time. Start each one with the input block in
+- **Fan-out:** at most 2 workers at a time. Start each one from the trusted base's worktree
+  or your scratch directory, never from inside a head's worktree, with the input block in
   [reviewer worker › Input](reviewer-worker.md#input), every line filled. CI check runs are
   the test evidence; a worker builds only to confirm or refute a specific finding. You post
   the worker's draft after checking the head hasn't moved.
@@ -177,9 +178,9 @@ depends_on = ["REVIEW#tiers", "REVIEW#escalate", "AGENT-REVIEWER-WORKER#output"]
   round since the PR opened or the last decision. Post `escalate` listing the open blocking
   findings, apply `needs-human`, and send `NEEDS-MAINTAINER #<pr>: <what> (rec: <option>)`.
   `<what>` is the ADR id or path, the disputed finding, or what keeps failing.
-- **Waves.** Fail a PR into a cut wave (`state: cut` in `ops/waves.md`, or a landing PR open
-  from it) unless the landing PR lists it as a fix. Review a PR from `wave/*` into `main` as
-  a wave landing only when `ops/waves.md` names that wave; otherwise review the whole diff.
+- **Waves.** A PR into a cut wave, and what a landing PR carries, follow
+  [REVIEW › Gather](../../../REVIEW.md#gather), items 7 and 8: a landing PR's commits are
+  checked against GitHub, never taken from `ops/waves.md`.
 - **`needs-human`:** the reviewer that applied it removes it in the round that follows the
   recorded decision. Upheld, overruled and override are in
   [REVIEW › Escalation](../../../REVIEW.md#escalate).

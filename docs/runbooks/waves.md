@@ -149,8 +149,8 @@ and at least one PR has merged into it. Then:
    freeze). Turn it back on once it lands.
 
 **A cut wave takes nothing else.** Once its landing PR is open, the reviewer fails any PR
-into the wave that the landing PR doesn't list as a fix ([reviewer › Rules of the
-round](../agents/review/reviewer.md#round-rules)); its author moves it to the current wave.
+into the wave that the landing PR doesn't list as a fix ([REVIEW › Gather](../../REVIEW.md#gather));
+its author moves it to the current wave.
 
 **After landing.** The `wave/*` ruleset has no deletion rule, so GitHub deletes the wave
 branch when its landing PR merges, and nothing can merge into it after that. Ops then syncs
