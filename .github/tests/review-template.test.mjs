@@ -86,11 +86,11 @@ forms.forEach((form, i) => {
   }
 });
 
-test('the full form offers pass, fail and escalate; the short form recuse and fail', () => {
+test('the full form offers pass, fail and escalate; the short form recuse, and pass or fail for a bot rebase', () => {
   const full = forms[0].split('\n').find((l) => MARKER_START.test(l));
   const short = forms[1].split('\n').find((l) => MARKER_START.test(l));
   assert.deepEqual(offered(full).sort(), ['escalate', 'fail', 'pass']);
-  assert.deepEqual(offered(short).sort(), ['fail', 'recuse']);
+  assert.deepEqual(offered(short).sort(), ['fail', 'pass', 'recuse']);
 });
 
 test('the parser accepts exactly the four verdicts REVIEW.md names', () =>

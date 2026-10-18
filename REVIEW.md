@@ -197,10 +197,14 @@ For every new or changed ADR:
     if the tests pass") or a decision on something else is not one.
   - **A card tap** has no message of its own. Its `source:` is the card's message id, and
     its words are the option label tapped. Read the card with `fetch_messages` for its
-    question, context and options, and the coordinator's
-    `ops/decisions/<card message id>.md` for the tapper's `author_id`, which must be the
-    maintainer's. A card closed by the coordinator's own `close_decision` is not a tap: the
-    `source:` must be the maintainer's message that answered it.
+    question, context and options. Only the coordinator learns who tapped. Its
+    `ops/decisions/<card message id>.md` says so, but any session can write `ops/`, so that
+    file is a pointer, not proof. Send the coordinator `TAP? <card message id>`, and accept
+    its `TAP` answer only from the coordinator's session, which `get_channel_session_id`
+    returns. The answer's `author_id` must be the maintainer's, and its label the one you
+    judge. Until that answer comes, the tap doesn't count. A card closed by the
+    coordinator's own `close_decision` is not a tap: the `source:` must be the maintainer's
+    message that answered it.
 - **A decision covers the content it was given on.** That is the ADR's text, or the
   maintainer-only diff, at the head of the last round posted before the latest maintainer
   message it cites, or, with no round before it, the newest head whose first CI run started
@@ -242,6 +246,10 @@ depends_on = ["DOCS#governance", "RULES#R-GOV-002", "RULES#R-GOV-007"]
   a link other than a session URL. Where it points is yours to check: the link must lead to
   the maintainer's own message about this PR. Check that message as a `source:`; if it fails,
   say so in the review and send `NEEDS-MAINTAINER`.
+- **A Dependabot PR** is one whose author is `dependabot[bot]` and whose every commit not on
+  `main` is a commit by `dependabot[bot]` with a signature GitHub verified. A PR that only
+  looks like one, or has any other commit, such as a fix pushed onto Dependabot's branch, is
+  an ordinary PR: review it in full, and none of the Dependabot rules apply.
 - A Dependabot PR that only re-pins actions to new commit SHAs passes `governance` with no
   label: confirm the diff is limited to that, and for a major bump read the action's
   changelog against how the repo uses it.
@@ -299,8 +307,9 @@ base. Inline comments are welcome, as long as the summary lists every finding.
 8. exactly one marker line, then the human line, then the attribution footer.
 
 **The short form** is for a `recuse` round and a `bot-rebase` round. It holds the header
-line, one line that says why (the session that authored the PR, or the earlier round whose
-findings still stand, with their IDs), then the marker line, the human line and the footer.
+line, one line that says why (the commit whose trailer names your session, or the earlier
+round whose verdict stands, with its open findings' IDs), then the marker line, the human
+line and the footer.
 
 Finding IDs are permanent within a PR: `B1, B2, …` for blocking, `N1, N2, …` for
 non-blocking. Never reuse one. A blocking finding:
@@ -394,13 +403,14 @@ round recorded. Find the kind with:
 
 | Kind | When | What you review | Form |
 |---|---|---|---|
-| `full` | a new PR; the range-diff changes an earlier reviewed commit; asked for (above); or the last 3 rounds were incremental | the whole diff against the base | full |
+| `full` | a new PR; the PR's base branch changed; the range-diff changes an earlier reviewed commit; asked for (above); or the last 3 rounds were incremental | the whole diff against the base | full |
 | `incremental` | every earlier reviewed commit is unchanged, and new commits sit on top, or a merge adds hunks its conflict doesn't explain | the new commits and those hunks, against the code they touch, and every open finding | full |
 | `merge-only` | every earlier reviewed commit is unchanged, no new commit but merges of the base, and every remerge-diff hunk is conflict resolution | each merge's remerge-diff and each restamp note; earlier findings carry forward | full |
-| `lane-value` | the only change since the last round sets the lane value that `LANE-HOLD` gave | the value and every file that names it | full |
+| `description` | the head is unchanged, and the PR body's hash differs from the last round's ([reviewer › State](docs/agents/review/reviewer.md#state)) | the body against the diff: [Step 2](#checks) items 0 and 9, the "Governance change" and "Not run" sections, and the trailers; earlier findings carry forward | full |
+| `lane-value` | the only changes since the last round set the lane value that `LANE-HOLD` gave, and merge the base with every remerge-diff hunk conflict resolution | the value and every file that names it, and each merge's remerge-diff and restamp note | full |
 | `draft` | a draft PR, when asked for (above), such as one waiting on a lane or a base PR | a full review against its own base; staleness from waiting isn't a finding | full |
 | `wave-landing` | head `wave/*`, base `main`, and `ops/waves.md` names the wave | the sync merges, their conflict resolutions and the carried trailers and sections ([Step 1](#gather)) | full |
-| `bot-rebase` | a Dependabot PR whose last verdict was `fail`, and the range-diff marks every commit `=` | nothing new: restate the open findings | short |
+| `bot-rebase` | a [Dependabot PR](#governance), whatever its last verdict, and the range-diff marks every commit `=` | nothing new: check that every commit is still Dependabot's and verified, then restate the last verdict and its open findings | short |
 
 Then:
 

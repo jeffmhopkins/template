@@ -329,7 +329,9 @@ rules, and are checked after the fact. This section says which is which.
   green: the tests, the docs check, the governance check and the review gate. The gate turns
   green only on a passing verdict marker for the exact version being merged.
 - **The governance check and the review gate judge a PR with code it can't change.** They
-  run from the branch the PR merges into, never from the PR itself.
+  run from the branch the PR merges into, never from the PR itself, and only when that
+  branch is `main` or a wave. A PR stacked on another PR's branch fails them until it moves
+  to one.
 - **The docs stay true.** Each doc section is linked to the code it describes. When the code
   changes, the docs check fails until an agent re-reads the section.
 
@@ -338,9 +340,9 @@ rules, and are checked after the fact. This section says which is which.
   yours. "Only you apply this label" is a rule the agents follow, not something GitHub
   checks.
 - **The review gate trusts that login too.** A builder could post a verdict marker the gate
-  counts. Reviewers record every marker they post, and the coordinator checks each day that
-  every marker behind a merge was one of theirs. It tells you about any that wasn't, after
-  the merge.
+  counts. Reviewers report every marker they post to the coordinator and check the markers
+  on open PRs at every sweep, and the coordinator checks each day that every marker behind a
+  merge was one they reported. It tells you about any that wasn't, after the merge.
 - **A PR that edits a workflow can fake a check.** Its own edited workflow can post a
   passing result under any check's name, and GitHub can't tell it from the real one. Every
   workflow is a file only you may approve, so the real governance check fails and the
@@ -351,8 +353,8 @@ rules, and are checked after the fact. This section says which is which.
   and decide whether to revert it. Files only you may approve wait for you.
 - **Your approval means your words.** An agent acts on a decision only when it cites your own
   chat message about that exact thing, and the reviewer reads that message itself. A card
-  tap has no message of its own: the coordinator records who tapped it, and that record is
-  what the reviewer checks ([agent security](SECURITY-AGENTS.md)).
+  tap has no message of its own: only the coordinator sees who tapped it, so the reviewer
+  asks the coordinator's own session ([agent security](SECURITY-AGENTS.md)).
 - **"Stop" relies on the agents.** The coordinator disables the scheduled triggers, turns
   off auto-merge on every open PR so nothing merges, and tells every session to stop. A
   session that ignored it could still act.

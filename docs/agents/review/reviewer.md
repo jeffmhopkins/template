@@ -53,33 +53,60 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   or a wave, so it gets a round only as a draft round on request
   ([REVIEW › Ground rules](../../../REVIEW.md#ground-rules)).
   Take the role first ([README › Lifecycle](../README.md#lifecycle)).
-- **Your markers first.** For every open PR with a round in your state file, list its
-  comments. Each `comment` id your state file records must still exist with `created_at`
-  equal to `updated_at`. If one was deleted or edited, post a new round at the current head
-  restating your last verdict and findings for it, or review it if you haven't, and send
-  `NEEDS-MAINTAINER #<pr>: marker comment <id> was deleted or edited (rec: investigate)`.
-  An edited marker already holds the gate at `fail`; a deleted one can bring back an earlier
-  round's `pass`.
-- **Cheap next step.** List open PRs and compare head SHAs and `updated_at` with your state
-  file. If nothing moved, no `REVIEW?` arrived, and no PR under `needs-human` has a new
-  decision, end the turn.
+- **Unfinished posts.** A state line whose `comment` is `posting` means the last session
+  stopped between posting and recording ([State](#state)). Find its marker on the PR: that
+  round, your role, and the session its note names. If it is there, record its id and send
+  `POSTED` for it. If not, delete the line: the round was never posted.
+- **Markers next.** For every open PR in your shard, list its comments and find every comment
+  from the configured login that holds a marker line. Each must be one a reviewer recorded:
+  its id is in the `comment` column of a state file or in the coordinator's `## Posted`
+  ([README › State](../README.md#state)). And each id your state file records must still
+  exist, with `created_at` equal to `updated_at`. When a marker no reviewer recorded turns
+  up, or one of yours was deleted or edited:
+  - post a new round at the current head, with the next round number, restating your last
+    verdict and its open findings, or review the PR if you have no round on it;
+  - send `NEEDS-MAINTAINER #<pr>: marker comment <id> <was deleted | was edited | no reviewer
+    recorded> (rec: investigate)`.
+
+  An edited marker already holds the gate at `fail`, but a deleted one can bring back an
+  earlier round's `pass`, and a forged higher round can pass a head. A forged `pass` can
+  merge before your next fire; the [marker audit](../coordinator.md#marker-audit) catches
+  that one after the merge.
+- **Merged since your last fire.** For each PR in your state file that merged since
+  `last fire:`, compare the hash of its body with your last round's `body`. If they differ,
+  the body changed after your last round: send `NEEDS-MAINTAINER #<pr>: body changed after
+  round <n> (rec: investigate)`.
+- **Cheap next step.** List open PRs. Compare each head SHA with your state file, and each
+  PR's `updated_at` with your `last fire:`. If no head moved, no PR was updated since your
+  last fire, no `REVIEW?` or `TAP` arrived, and no author is past the stall time
+  ([Reporting](#reporting)), set `last fire:` and end the turn.
 - **Decisions.** For every PR in your shard under `needs-human`, read the
   `ops/decisions/*.md` whose `object:` is that PR or an ADR it changes, and the decision
   comments on the PR newer than your last round. Each one you haven't judged yet is a reason
-  for a round ([REVIEW › Escalation](../../../REVIEW.md#escalate)).
-- **A PR needs a round when** its head differs from your last round and every required check
-  but `review-gate` is green on it, or it has a decision you haven't judged, or its builder
-  replied to an open blocking finding after your last round, with or without a push
-  ([REVIEW › Rebuttals](../../../REVIEW.md#rounds)). A re-review of the same head takes the
-  next round number. Skip a head with a red or running check; its author sends
-  `REVIEW?` once it is green. The [expected reds](../../../REVIEW.md#severity) don't count as
-  red: a lane PR's `lane-guard` before it holds the slot, and `governance` on a
+  for a round ([REVIEW › Escalation](../../../REVIEW.md#escalate)). A decision file is a
+  pointer, not proof: check each `source:` as
+  [REVIEW › Tier checks](../../../REVIEW.md#tiers) says.
+- **A PR needs a round when:**
+  - its head differs from your last round and every required check but `review-gate` is
+    green on it;
+  - its body's hash differs from your last round's `body`, at the same head (a
+    `description` round);
+  - it has a decision you haven't judged;
+  - or its builder replied to an open blocking finding after your last round, with or
+    without a push ([REVIEW › Rebuttals](../../../REVIEW.md#rounds)).
+
+  A re-review of the same head takes the next round number. Skip a head with a red or
+  running check; its author sends `REVIEW?` once it is green. The
+  [expected reds](../../../REVIEW.md#severity) don't count as red: a lane PR's `lane-guard`
+  while `ops/lanes.md` doesn't name it as that lane's `holder:`, and `governance` on a
   maintainer-only PR whose log says `governance: only the maintainer's label is missing`.
 - **Drafts** get a round only when someone asks for one
   ([REVIEW › Rounds](../../../REVIEW.md#rounds) says who may).
 - **Shards.** A PR's shard is its number mod the reviewer count that `ops/roster.md`'s
   `shards:` line gives for that number, so adding a reviewer never moves a PR. Your PRs are
-  those in your shard, plus any sent to you as `RECUSED #<pr>`.
+  those in your shard, plus the recused ones that come to you: those on your `recused:` line,
+  and any open PR whose latest round is a `recuse` by the shard before yours,
+  `(shard - 1) mod count`, so a lost `RECUSED` line loses no PR.
 - **Fan-out:** at most 2 workers at a time. Start each one with the input block in
   [reviewer worker › Input](reviewer-worker.md#input), every line filled. CI check runs are
   the test evidence; a worker builds only to confirm or refute a specific finding. You post
@@ -104,14 +131,25 @@ commands showed. Record it in the round's state line by its name.
 depends_on = ["REVIEW#tiers", "REVIEW#escalate", "AGENT-REVIEWER-WORKER#output"]
 -->
 
-- Recuse if your session id appears in the `Claude-Session` trailer of any commit not
-  already on `main`: post the `recuse` marker and send `RECUSED #<pr>` to the next shard's
-  reviewer, `(shard + 1) mod count`, the `session:` of its state file.
+- **Recusal.** Recuse if your session id appears in the `Claude-Session` trailer of any
+  commit not already on `main`: the gate ignores your marker on that PR. Post the `recuse`
+  round in the short form, write its state line, and send `RECUSED #<pr>` to the next shard's
+  reviewer, `(shard + 1) mod count`, the `session:` of its state file. With one reviewer,
+  send nothing: recusal is by session, and your role's next fire is a new session, which
+  reviews the PR.
+- **A forged trailer.** A reviewer session never pushes, so a trailer that names yours is
+  forged. Recuse all the same, name the commit in the recuse round, and send
+  `NEEDS-MAINTAINER #<pr>: commit <sha7> names reviewer session <id> in its trailer (rec:
+  investigate)`. The reviewer that takes the PR makes it a blocking finding under
+  [R-GIT-005](../../RULES.md#R-GIT-005): a trailer names the session that wrote the commit.
+- **On `RECUSED #<pr>`,** add the PR to your state file's `recused:` line, and remove it once
+  the PR closes.
 - Every marker names your role and your session: `reviewer=reviewer-<shard>
   reviewer-session=<your session id>` ([REVIEW › Step 4](../../../REVIEW.md#output)).
 - **Check every maintainer decision yourself** before posting a round that relies on it:
   each `source:` the worker lists, read with `fetch_messages`, from a `user` whose
-  `author_id` is in `ops/maintainer.md`. Read in context, its words give that decision
+  `author_id` is in `ops/maintainer.md`, or for a card tap, confirmed by the coordinator's
+  `TAP` answer. Read in context, its words give that decision
   (accept, reject or approve) for that ADR, PR or path; a question, a mention, a conditional
   or a decision on something else is not one. And the ADR text or maintainer-only diff is
   unchanged since the head of the last round before that message, apart from the ADR's
@@ -154,9 +192,19 @@ depends_on = ["REVIEW#tiers", "REVIEW#escalate", "AGENT-REVIEWER-WORKER#output"]
 <!-- @section
 -->
 
-To the coordinator only: `NEEDS-MAINTAINER`, and `STALLED #<pr>` when the author is silent:
-no push and no reply after 2 rounds with open blocking findings. `RECUSED` goes to the next
-shard's reviewer. The verdict comment is the handoff to the author.
+To the coordinator only:
+- `POSTED #<pr> <round> <comment id>` right after each round you post, so the coordinator
+  keeps its own record of your markers ([coordinator › Marker audit](../coordinator.md#marker-audit));
+- `NEEDS-MAINTAINER`;
+- `REBUILT-STATE` after rebuilding your state file ([State](#state));
+- `TAP? <card message id>` to confirm a card tap ([REVIEW › Tier checks](../../../REVIEW.md#tiers));
+- `STALLED #<pr>` when the author is silent: your last round on the PR is a `fail`, and
+  24 hours after it there is no push, no `Answers to round <n>` comment and no other comment
+  from the author. The sweep checks this at every fire, even when nothing moved. Send it
+  once per round, and note `stalled` on that round's state line.
+
+`RECUSED` goes to the next shard's reviewer. The verdict comment is the handoff to the
+author.
 
 <a id="state"></a>
 ## State
@@ -164,19 +212,29 @@ shard's reviewer. The verdict comment is the handoff to the author.
 -->
 
 `ops/review/state-<shard>.md`, in the format in [README › State](../README.md#state): your
-role, the `session:` holding it, then one line per round,
-`| pr | shard | head | mb | round | kind | verdict | comment | note |`. `mb` is the merge base
-the round reviewed against, `git merge-base <base> <head>`; the next round's range-diff
-starts from it. `comment` is the id of the comment that carries the marker, from the URL your
-post returns (`#issuecomment-<id>`). Write the line right after posting; the next fire's session starts
-from it. The coordinator's
-[marker audit](../coordinator.md#marker-audit) treats a counted marker whose id no state
-file lists as forged.
+role, the `session:` holding it, `last fire:`, `recused:`, then one line per round,
+`| pr | shard | head | mb | body | round | kind | verdict | comment | note |`.
+- `last fire:` is when your last sweep started, in UTC. Set it as the sweep ends.
+- `recused:` lists the PRs sent to you as `RECUSED`, `#<pr>, …`, or `none`.
+- `mb` is the merge base the round reviewed against, `git merge-base <base> <head>`; the
+  next round's range-diff starts from it.
+- `body` is the PR body the round reviewed: the first 12 hex digits of the SHA-256 of what
+  `gh pr view <pr> --json body --jq .body` prints.
+- `comment` is the id of the comment that carries the marker, from the URL your post returns
+  (`#issuecomment-<id>`).
+
+**Posting.** Just before you post, write the round's line with `comment` set to `posting` and
+the note `by <your session id>`. Right after the post returns, set `comment` to its id and
+send `POSTED`. The next fire's session starts from these lines, and a `posting` line tells
+it a post may be unrecorded ([What to review](#when)). The coordinator's
+[marker audit](../coordinator.md#marker-audit) treats a counted marker that no state file
+and no `POSTED` record lists as forged.
 
 If the state file is lost, rebuild the round lines from the markers on the PRs, but take
-comment ids only from the old state file or a copy of it: a marker on a PR doesn't prove a reviewer
-posted it. Leave `comment` as `unknown` where the old file has none, and say so in your
-first report to the coordinator.
+comment ids only from the old state file, a copy of it, or the coordinator's `## Posted`: a
+marker on a PR doesn't prove a reviewer posted it. Leave `comment` as `unknown` where none of
+them has it, and send `REBUILT-STATE reviewer-<shard>: <k> rounds; unknown: #<pr> round <n>,
+…` (or `unknown: none`).
 
 <a id="never"></a>
 ## Never

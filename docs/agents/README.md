@@ -87,7 +87,8 @@ flowchart LR
     author -->|"REVIEW?"| reviewer([reviewer])
     author -->|HW| coord
     reviewer -->|"RECUSED"| next([next shard's reviewer])
-    reviewer -->|"STALLED, NEEDS-MAINTAINER"| coord
+    reviewer -->|"STALLED, NEEDS-MAINTAINER, POSTED, REBUILT-STATE, TAP?"| coord
+    coord -->|TAP| reviewer
     ops -->|STALLED| coord
     ops -->|"MERGE-MAIN, BASE, LANE-HOLD, ROUTE"| author
     any([any role]) -->|MAIN-RED| ops
@@ -103,7 +104,7 @@ flowchart LR
 the planner or ops.
 
 <details>
-<summary><b>All message formats</b> (21)</summary>
+<summary><b>All message formats</b> (24)</summary>
 
 | Line | From → to | Receiver does |
 |---|---|---|
@@ -112,7 +113,10 @@ the planner or ops.
 | `UNBLOCKED <ids>` | planner → coordinator ★ | launches the rows not already in `roster.md`; a stacked follow-up goes to its base PR's builder while that one runs |
 | `ROW-CHANGED <id>: <what changed>` | planner → that row's author | re-reads its section in `ops/launch.md` and stays inside the new `owns` |
 | `REVIEW? #<pr> <sha>` | PR author → its shard's reviewer, once every required check but `review-gate` is green at `<sha>`, apart from the [expected reds](../../REVIEW.md#severity), or after rebutting a finding without a push | reviews that head now, the same head included |
-| `RECUSED #<pr>` | reviewer → the next shard's reviewer | reviews it in place of the recused shard |
+| `RECUSED #<pr>` | reviewer → the next shard's reviewer | reviews it in place of the recused shard, and lists it on its `recused:` line until it closes |
+| `POSTED #<pr> <round> <comment id>` | reviewer → coordinator ★, right after posting a round | records it under `## Posted`, if a reviewer role's trigger started the sender; the [marker audit](coordinator.md#marker-audit) reads it |
+| `REBUILT-STATE reviewer-<shard>: <k> rounds; unknown: #<pr> round <n>, …` | reviewer → coordinator ★, after rebuilding its state file | notes it in the digest; the audit judges those markers by `## Posted` |
+| `TAP? <card message id>` / `TAP <card message id>: "<option label>" by <author_id>` | reviewer → coordinator ★ → that reviewer | the coordinator answers from the taps it received, or `TAP <card message id>: none`; the reviewer accepts the answer only from the coordinator's session |
 | `MERGED <item or -> #<pr> [wave/<name>]` | PR author → planner and ops | planner: unblocks; ops: lanes and waves |
 | `MAIN-RED #<issue>` | any → ops | acts on the red `main` now ([ops › Main is red](ops.md#main-health)) |
 | `MERGE-MAIN #<pr>: <what conflicts>` | ops → PR author | merges main, or its wave, next |
@@ -158,13 +162,13 @@ depends_on = ["TOOL#plans"]
 | `PAUSE-builders` | coordinator | present = builders pause, for the budget or on the maintainer's word. Every builder checks it at each wake |
 | `maintainer.md` | coordinator | the maintainer's user id, which every approval is checked against |
 | `roster.md` | coordinator | the shard count and from which PR it holds, each role's trigger, and each row's session, PR, shard and state, rebuilt from GitHub at each check-in |
-| `coordinator.md` | coordinator | open cards (by object and head), pending relays, triggers, the budget day and use, PRs whose auto-merge `STOP` turned off |
+| `coordinator.md` | coordinator | open cards (by object and head), pending relays, the markers reviewers reported `POSTED`, triggers, the budget day and use, PRs whose auto-merge `STOP` turned off |
 | `decisions/<message-id>.md` | coordinator | one file per maintainer decision |
 | `pending.md` | coordinator | open maintainer questions, the hardware queue, accounts to create |
 | `planner.md` | planner | the session holding the role, and its last fire |
 | `launch.md` | planner | the shared-append paths, then one anchored section per row ([planner › The row](planner.md#the-row)). Whether a row is launched is in `roster.md` |
 | `roadmap.md` | planner | lanes, hot spots, what only the maintainer can do, what's left |
-| `review/state-<shard>.md` | that reviewer role | the session holding the role, and one line per round, with the comment id of its marker |
+| `review/state-<shard>.md` | that reviewer role | the session holding the role, its last fire, the PRs recused to it, and one line per round, with the comment id of its marker |
 | `ops.md` | ops | the session holding the role, its last fire, routed issues, flakes, the `MERGE-MAIN` count, PRs whose auto-merge it turned off, the PR fixing `main` |
 | `mode.md` | ops | waves on or off, the current wave, main's health |
 | `lanes.md` | ops | per lane: holder, then ready PRs in order |
@@ -203,7 +207,8 @@ content the coordinator writes on day 0:
   or `ended`. It starts as `shards: 1 from #1` and two empty tables, under their header
   lines.
 - `coordinator.md`: `## Cards` (`<object> | <head sha or -> | <card message id> | open/answered`),
-  `## Relays` (`<message id> → <session>`), `## Triggers`
+  `## Relays` (`<message id> → <session>`), `## Posted`
+  (`#<pr> | <round> | <comment id> | <reviewer role> | <sender session>`), `## Triggers`
   (`<role> | <trigger id> | <cron> | on/off`), then `day: 00:00 <IANA time zone>` (from
   intake; `UTC` until then), `launches today: 0`, `used today: 0` (the budget unit,
   [coordinator › Daily digest](coordinator.md#daily-digest)), `paused: none` (`budget`,
@@ -221,10 +226,12 @@ content the coordinator writes on day 0:
   then one section per row, as the planner brief says. Starts with the shared section only,
   its `owns:` empty.
 - `roadmap.md`: `## Lanes`, `## Hot spots`, `## Only the maintainer`, `## What's left`.
-- `review/state-<shard>.md`: `session: none`, then
-  `| pr | shard | head | mb | round | kind | verdict | comment | note |`, starting empty.
-  `mb` is the merge base the round reviewed against; `kind` is `full`, `incremental` or
-  another kind of round; `comment` is the id of the comment that carries the marker.
+- `review/state-<shard>.md`: `session: none`, `last fire: none`, `recused: none`, then
+  `| pr | shard | head | mb | body | round | kind | verdict | comment | note |`, starting
+  empty. `mb` is the merge base the round reviewed against; `body` is the hash of the PR body
+  it reviewed; `kind` is a kind of round from [REVIEW › Rounds](../../REVIEW.md#rounds);
+  `comment` is the id of the comment that carries the marker, or `posting` while the post is
+  under way ([reviewer › State](review/reviewer.md#state)).
 - `ops.md`: `session: none`, `last fire: none`, `merge-mains today: 0`, then `## Routed`
   (`#<issue> → <row>`), `## Flakes` (`<test> | #<issue>`), `## Auto-merge off` (`#<pr>`)
   and `## Fixing main` (`#<pr>`).

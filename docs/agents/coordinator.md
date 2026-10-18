@@ -145,6 +145,15 @@ the PR.
   session has ended, **adopt**: interrupt and archive the old session, start a new session of
   the same role with "adopt #<pr>", and update the roster. Mention it in the digest, never as
   a question.
+- `POSTED`: record it under `## Posted` in `ops/coordinator.md`, with the reviewer role and
+  the sender's session id. Record it only when the sender is a session that one of the
+  reviewer triggers in `## Triggers` started (`get_session`); otherwise send
+  `NEEDS-MAINTAINER #<pr>: POSTED from a session no reviewer trigger started (rec:
+  investigate)`.
+- `REBUILT-STATE`: say so in the digest, with the rounds it lists as `unknown`.
+- `TAP? <card message id>`: answer the sender with `TAP <card message id>: "<option label>"
+  by <author_id>`, from a tap you received yourself, or `TAP <card message id>: none`. Never
+  answer from `ops/decisions/` alone: any session can write that file.
 - `BLOCKED … needs maintainer`: put it in `ops/pending.md` and the next card or digest.
 - `INTAKE-DONE`: post one card asking the maintainer to paste the project instructions again
   (intake changed them) and re-run bootstrap (intake may have changed the required checks),
@@ -211,15 +220,19 @@ digest, check what the gate counted against what the reviewers recorded:
 1. List the PRs merged since `last marker audit:` in `ops/coordinator.md`.
 2. For each, find the markers the gate counted: comments with a verdict marker for the
    merged head SHA. Skip a PR merged with `review-override`, which counted no marker.
-3. Look up each marker's comment id in the `comment` column of every
-   `ops/review/state-<shard>.md`.
-4. A counted marker no state file lists, or lists as `unknown`, is suspect. Send the
-   maintainer a card at once: `#<pr> merged on a verdict marker no reviewer recorded
+3. Look up each marker's comment id in `## Posted` in `ops/coordinator.md`, and in the
+   `comment` column of every `ops/review/state-<shard>.md`. Any session can write a state
+   file, so `## Posted`, which only `POSTED` lines from a reviewer's session fill, decides.
+4. A counted marker that `## Posted` doesn't list is suspect, even when a state file lists
+   it. A rebuilt state file's `unknown` rounds are judged the same way, so an honest marker
+   that `## Posted` lists sends no card. Send the maintainer a card at once: `#<pr> merged on a verdict marker no reviewer recorded
    (comment <id>). Revert? (rec: yes)`. Put it in `ops/pending.md` until answered. On their
    yes, the revert goes through the normal PR loop.
 5. Set `last marker audit:` to the newest merge time you checked.
 
-This finds a forged marker after the merge, not before it. Separate identities would stop it
+This finds a forged marker after the merge. While a PR is open, each reviewer's sweep checks
+its markers the same way ([reviewer › What to review](review/reviewer.md#when)). Neither stops
+a forged `pass` that merges before the next sweep. Separate identities would stop it
 ([ADR-0006](../adr/0006-separate-agent-identities.md)).
 
 <a id="stop"></a>
