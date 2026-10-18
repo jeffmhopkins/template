@@ -201,7 +201,8 @@ third-party action is pinned to a full commit SHA ([ADR-0004](../adr/0004-ci-dra
   `governance.yml` restores.
 - `pr-title`, `lane-guard` and `governance` run in `governance.yml`, from the base
   ([DOCS › Governance changes](../DOCS.md#governance)). `review-gate` runs in
-  `review-gate.yml` ([REVIEW › Post the review](../../REVIEW.md#output)).
+  `review-gate.yml` ([REVIEW › Post the review](../../REVIEW.md#output)). Both run on
+  `pull_request_target` and fail closed unless the base is `main` or `wave/*`.
 
 **Composite actions** (`.github/actions/`):
 - `rust-setup`: the Rust toolchain and a restored build cache, for every job that runs the
@@ -210,9 +211,9 @@ third-party action is pinned to a full commit SHA ([ADR-0004](../adr/0004-ci-dra
 - `cargo-deny`: a prebuilt, checksum-pinned cargo-deny;
 - `rust-stack`: the Rust pack's setup action, named by its `[ci].setup`.
 
-**`review-gate.yml`** counts only verdict markers that are for the current head SHA, posted
-by `REVIEWER_LOGIN`, name a role in `REVIEWER_ROLES`, and are the only marker line in a
-comment that hasn't been edited. An edited comment, or one with two marker lines, counts as a
+**`review-gate.yml`** fails on a base other than `main` or `wave/*`. Otherwise it counts
+only verdict markers that are for the current head SHA, posted by `REVIEWER_LOGIN`, name a
+role in `REVIEWER_ROLES`, and are the only marker line in a comment that hasn't been edited. An edited comment, or one with two marker lines, counts as a
 fail in round order. The highest round decides, and a fail beats a pass. A marker whose
 `reviewer-session` authored a commit is ignored, and the gate fails a non-merge commit without
 a `Claude-Session` trailer. `review-override` needs the maintainer's label and a
@@ -221,7 +222,8 @@ justification with a link that isn't a session URL, before the trailer block.
 **Tests** (`.github/tests/`), run by `gate-test`: the review gate's decision function, cut
 out of the deployed `review-gate.yml`; the review round template's marker lines and
 REVIEW.md's marker example, filled in and read by that same function; and a scan of every
-YAML file under `.github/` for repeated keys and tab indentation.
+YAML file under `.github/` for repeated keys and tab indentation, which also checks that each
+`pull_request_target` workflow has its trusted-base guard.
 
 **`main-health.yml`:** after each `ci` run on `main`, and each completed check suite from
 another CI app on `main`, it keeps one pinned "main is red" issue open while a required

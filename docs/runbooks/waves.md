@@ -68,6 +68,8 @@ While waves are on:
 | An urgent fix the maintainer asks to land now, or ops's revert of a merge that broke `main` | `main` |
 
 A stacked PR keeps the PR below it as its base; only the bottom of a stack targets a wave.
+Until a stacked PR targets `main` or a wave, its `governance` and `review-gate` checks fail
+closed ([REVIEW › Ground rules](../../REVIEW.md#ground-rules)).
 
 The `governance` check enforces the protected-path row: a PR into `wave/*` that changes a
 protected path fails, label or not, because the wave's own workflows judge the PRs into it.

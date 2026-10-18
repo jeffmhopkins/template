@@ -42,6 +42,8 @@ const commit = (o = {}) => ({
   },
 });
 const run = (o = {}) => decide({
+  base: 'base' in o ? o.base : 'main',
+  defaultBranch: 'defaultBranch' in o ? o.defaultBranch : 'main',
   head: H,
   comments: o.comments ?? [],
   commits: o.commits ?? [commit()],
@@ -227,3 +229,24 @@ test('recuse markers do not count', () =>
   assert.equal(state({ comments: [marker('recuse', 1)] }), 'pending'));
 test('a recuse does not hide another reviewer\'s pass', () =>
   assert.equal(state({ comments: [marker('recuse', 2), marker('pass', 1, { session: OTHER_REVIEWER })] }), 'success'));
+
+// The base: pull_request_target takes the workflow from it, so only main and wave/* decide.
+test('a PR into main or a wave is gated as usual', () => {
+  assert.equal(state({ comments: [marker('pass', 1)] }), 'success');
+  assert.equal(state({ base: 'wave/spring', comments: [marker('pass', 1)] }), 'success');
+});
+test('a stacked PR, whose base is another PR\'s branch, fails closed whatever its markers', () => {
+  const [st, why] = run({ base: 'claude/feature-x', comments: [marker('pass', 1)] });
+  assert.equal(st, 'failure');
+  assert.match(why, /^Base claude\/feature-x is not main or wave\/\*: a stacked PR is gated once it targets one$/);
+  assert.equal(state({ base: 'wave/', comments: [marker('pass', 1)] }), 'failure');
+  assert.equal(state({ base: 'mainline', comments: [marker('pass', 1)] }), 'failure');
+  assert.equal(state({ base: 'x/wave/y', comments: [marker('pass', 1)] }), 'failure');
+});
+test('a missing base or default branch fails closed', () => {
+  assert.equal(state({ base: undefined, comments: [marker('pass', 1)] }), 'failure');
+  assert.equal(state({ base: '', defaultBranch: '', comments: [marker('pass', 1)] }), 'failure');
+  assert.equal(state({ defaultBranch: undefined, comments: [marker('pass', 1)] }), 'failure');
+});
+test('the default branch need not be called main', () =>
+  assert.equal(state({ base: 'trunk', defaultBranch: 'trunk', comments: [marker('pass', 1)] }), 'success'));

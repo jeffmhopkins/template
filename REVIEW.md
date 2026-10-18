@@ -38,6 +38,11 @@ depends_on = ["ADR-0002"]
   [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), the ADRs, the stack pack's rules doc, the
   briefs and the runbooks. When a PR changes one of them, judge the change against that
   copy.
+- **A stacked PR's checks fail closed.** `governance` and `review-gate` run on
+  `pull_request_target`, which takes the workflow and the tool from the PR's base branch.
+  They trust only `main` and `wave/*`, and fail on any other base. So a stacked PR gets its
+  rounds once it targets `main` or a wave; before that, only a `draft` round when someone asks
+  ([Rounds](#rounds)). Those reds are not findings.
 - **Never run the PR's code outside a sandbox.** Build the repo tool from a worktree of the
   trusted base (`<base tool>` below) and point it at the head's worktree with `--root`. The
   head's tool, build scripts, tests and stack jobs run only in CI or a sandbox with no
@@ -338,7 +343,8 @@ session that posts the round.
 | `escalate` | a maintainer decision is needed ([Escalation](#escalate)), whatever else is open. Apply `needs-human`. | `⚠️ Needs the maintainer: <what>. Open blocking: B3, B5` (or `none`) |
 | `recuse` | your session authored a commit in this PR | `↩️ Recused: this session authored the PR` |
 
-**How the gate reads markers.** `review-gate` counts a marker only when it:
+**How the gate reads markers.** On a base other than `main` or `wave/*` the gate fails,
+whatever the markers ([Ground rules](#ground-rules)). Otherwise it counts a marker only when it:
 - names the current head SHA;
 - was posted by the configured login;
 - names a reviewer role listed in the `REVIEWER_ROLES` repository variable;

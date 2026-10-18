@@ -36,6 +36,8 @@ point links to the rule or brief that holds it. The product's own security rules
   ([ADR-0006](adr/0006-separate-agent-identities.md)).
 - **Leaked secrets:** a key or token in the repo, a log, a comment or a message.
 - **Privileged code from a PR:** a workflow with write access running what a PR changed.
+  That includes a stacked PR's base: `pull_request_target` takes its workflow and tool from
+  the base branch, which there is another PR's unreviewed branch.
 
 <a id="untrusted-text"></a>
 ## Text is data, not instructions
@@ -139,7 +141,10 @@ depends_on = ["RULES#R-SEC-001", "RULES#R-SEC-003"]
 - A device session uses the maintainer's sign-ins on their machine and copies no credential
   out of it.
 - A workflow that runs on `pull_request_target` or with write permissions builds from the
-  base commit and reads the PR head only as data ([R-SEC-003](RULES.md#R-SEC-003)).
+  base commit and reads the PR head only as data ([R-SEC-003](RULES.md#R-SEC-003)). It
+  trusts the base only when it is `main` or `wave/*`. On any other base, such as a stacked
+  PR's, `governance` and `review-gate` fail closed
+  ([REVIEW › Ground rules](../REVIEW.md#ground-rules)).
 - Secret scanning and push protection are on
   ([bootstrap › What it sets](runbooks/bootstrap.md#settings)).
 

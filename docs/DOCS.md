@@ -444,8 +444,10 @@ No label allows an edit to an accepted ADR's text or to metadata other than `sta
 ([R-DOC-008](RULES.md#R-DOC-008)). With `--pr-body` or `--labels`, the check fails on one
 whatever the labels. A changed decision is a new ADR that supersedes the old one.
 
-The workflow runs on `pull_request_target`. It builds the tool from the base commit once
-per run, shares that binary with its jobs, and reads the head only as git objects: a PR's edits to the tool never change how its own
+The workflow runs on `pull_request_target`, so GitHub takes it from the PR's base branch.
+It runs only when that base is `main` or a `wave/*` branch, and fails closed on any other,
+such as a stacked PR's base, which is another PR's unreviewed branch. It builds the tool
+from the base commit once per run, shares that binary with its jobs, and reads the head only as git objects: a PR's edits to the tool never change how its own
 check runs. `repo.toml`, the tool's source and the workflows are maintainer-only, so the
 list protects itself: no PR loosens it for the next one without the maintainer.
 

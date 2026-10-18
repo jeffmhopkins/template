@@ -95,7 +95,10 @@ auto-merge on your PR, and you don't turn it on: ops does that once `main` is gr
    Otherwise answer ops `DECLINED #<issue>: <why>`.
 10. **Stacked follow-ups.** Only when the coordinator hands you one. When the base PR merges,
     retarget to main or the wave and merge it in. A stacked PR never merges into another PR's
-    branch.
+    branch. Until it targets `main` or a wave, its `governance` and `review-gate` checks fail
+    closed, since they would run from the unreviewed base branch
+    ([REVIEW › Ground rules](../../REVIEW.md#ground-rules)). Keep it a draft until then, and
+    send `REVIEW?` once it is retargeted and green.
 11. **Merged:** send `MERGED <item> #<pr>` (adding `wave/<name>` if the base was a wave) to
     the planner and ops. Then stop; the coordinator archives the session at its next
     check-in.

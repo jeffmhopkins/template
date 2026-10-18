@@ -49,7 +49,9 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   `review-gate` is green at that head. Review that head.
 - **Each fire is a sweep** of every open, ready PR in your shard, **whatever its base**:
   `main`, `wave/*`, stacked branches, wave sync and landing PRs. A stacked PR is judged from
-  the trusted base, not its base branch ([REVIEW › Ground rules](../../../REVIEW.md#ground-rules)).
+  the trusted base, not its base branch, and its checks fail closed until it targets `main`
+  or a wave, so it gets a round only as a draft round on request
+  ([REVIEW › Ground rules](../../../REVIEW.md#ground-rules)).
   Take the role first ([README › Lifecycle](../README.md#lifecycle)).
 - **Your markers first.** For every open PR with a round in your state file, list its
   comments. Each `comment` id your state file records must still exist with `created_at`

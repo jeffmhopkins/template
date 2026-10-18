@@ -24,6 +24,8 @@ const T0 = '2026-01-01T00:00:00Z';
 const MARKER_START = /^<!-- review v1\b/;
 
 const run = (body) => decide({
+  base: 'main',
+  defaultBranch: 'main',
   head: H,
   comments: [{ id: 1, user: { login: LOGIN }, created_at: T0, updated_at: T0, body }],
   commits: [{ sha: 'c'.repeat(40), parents: [{}], author: { login: 'builder' },

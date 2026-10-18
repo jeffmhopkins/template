@@ -17,9 +17,10 @@
 # the one that judges the next PR.
 #
 # Runs on pull_request_target, so GitHub takes this file from the PR's base branch. The `tool`
-# job checks out the BASE commit, builds the tool from it once, and hands the binary to the
-# other jobs as a run artifact. Those jobs check out the base and fetch the PR head as git
-# objects only. Nothing from the head is checked out, built or run. The build cache is
+# job first fails closed unless that base is the default branch or a `wave/*` branch: a
+# stacked PR's base is another PR's unreviewed branch. It then checks out the BASE commit,
+# builds the tool from it once, and hands the binary to the other jobs as a run artifact.
+# Those jobs check out the base and fetch the PR head as git objects only. Nothing from the head is checked out, built or run. The build cache is
 # restored here and never saved (ci.yml's `base-tool` job saves it on pushes to main).
 # Editing this file is a maintainer-only change.
 #
@@ -74,6 +75,17 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
+      # A stacked PR's base is another PR's unreviewed branch, and pull_request_target takes
+      # this file and the tool from the base. Only the default branch and wave/* are trusted:
+      # on any other base every job fails closed, and the checks run once the PR targets one.
+      - name: The base is the default branch or a wave
+        run: |
+          case "$BASE_REF" in
+            "$DEFAULT_BRANCH"|wave/?*) ;;
+            *)
+              echo "::error::base '$BASE_REF' is not $DEFAULT_BRANCH or wave/*: a stacked PR is checked once it targets one"
+              exit 1 ;;
+          esac
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.base.sha }}

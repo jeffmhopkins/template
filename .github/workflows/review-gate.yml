@@ -23,7 +23,9 @@
 # label: an override counts only for the head it was applied to.
 #
 # Runs on pull_request_target and issue_comment, so GitHub takes this file from the base branch,
-# and it never checks out PR code. Changing it is maintainer-only (repo.toml [governance]).
+# and it never checks out PR code. The gate fails closed unless the PR's base is the default
+# branch or a `wave/*` branch: a stacked PR's base is another PR's unreviewed branch, whose
+# copy of this file would decide. Changing it is maintainer-only (repo.toml [governance]).
 # The decision is the self-contained `decide` function between the BEGIN/END lines;
 # .github/tests/review-gate-decide.test.mjs cuts it out of this file and tests it.
 #
@@ -107,6 +109,8 @@ jobs:
             const onMain = commits.map((c) => c.sha).filter((sha) => !ahead.has(sha));
 
             const [state, description] = decide({
+              base: pr.base.ref,
+              defaultBranch: pr.base.repo.default_branch,
               head,
               comments,
               commits,
@@ -138,10 +142,19 @@ jobs:
               const norm = (s) => (String(s).match(/session_[A-Za-z0-9]+/) || [String(s).trim()])[0];
               const sha7 = head.slice(0, 7);
 
-              // 0. Configuration that every outcome depends on.
+              // 0. The base. pull_request_target takes this file from the PR's base branch, so
+              //    only the default branch and wave/* are trusted to decide; a stacked PR's base
+              //    is another PR's unreviewed branch. Any other base fails closed.
+              const base = String(input.base || '');
+              const main = String(input.defaultBranch || '');
+              if (!main || !(base === main || /^wave\/./.test(base))) {
+                return ['failure', `Base ${base || '?'} is not ${main || 'the default branch'} or wave/*: a stacked PR is gated once it targets one`];
+              }
+
+              // 1. Configuration that every outcome depends on.
               if (!maintainer) return ['failure', 'MAINTAINER_LOGIN not set; run scripts/bootstrap.sh (docs/GETTING-STARTED.md#github)'];
 
-              // 1. Override: the maintainer's label plus a justification linking their message,
+              // 2. Override: the maintainer's label plus a justification linking their message,
               //    applied since the last push.
               if (labels.includes(OVERRIDE) && !pushed) {
                 // The section ends at the next heading or at the trailer block, so the trailers'
@@ -157,7 +170,7 @@ jobs:
                 return ['success', `Overridden by ${maintainer} (justified in the PR description)`];
               }
 
-              // 2. Authoring sessions; every non-merge commit not yet on main names its session.
+              // 3. Authoring sessions; every non-merge commit not yet on main names its session.
               //    Dependabot's commits count only when GitHub verified their signature.
               const authors = new Set();
               for (const c of commits) {
@@ -171,7 +184,7 @@ jobs:
                 }
               }
 
-              // 3. Configuration.
+              // 4. Configuration.
               // REVIEWER_ROLES: comma-separated stable role names; empty or `none` allows no role.
               const listed = Array.isArray(input.roles) ? input.roles : String(input.roles || '').split(',');
               const roles = new Set(listed.map((s) => String(s).trim()).filter((s) => s && s.toLowerCase() !== 'none'));
@@ -179,7 +192,7 @@ jobs:
                 return ['failure', 'Gate not configured: run scripts/bootstrap.sh to set REVIEWER_LOGIN and REVIEWER_ROLES (docs/runbooks/bootstrap.md#settings)'];
               }
 
-              // 4. Markers that count. A marker line starts a line; a comment holding more than one,
+              // 5. Markers that count. A marker line starts a line; a comment holding more than one,
               //    or edited after posting, can't be trusted to say what the reviewer posted: it
               //    takes part in round order as a fail, whatever its SHA, role or session, so a
               //    tampered higher round never brings back a lower round's pass.
@@ -216,7 +229,7 @@ jobs:
                   : `Waiting for review of ${sha7}`];
               }
 
-              // 5. The highest round decides; any verdict other than pass beats a pass within it.
+              // 6. The highest round decides; any verdict other than pass beats a pass within it.
               const round = Math.max(...counted.map((x) => x.round), ...tainted.map((x) => x.round));
               const bad = tainted.find((x) => x.round === round);
               if (bad) return ['failure', `Marker comment ${bad.id ?? '?'} (round ${round}) ${bad.why}; the reviewer posts a new round`];
