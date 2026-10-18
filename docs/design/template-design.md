@@ -219,8 +219,9 @@ a `Claude-Session` trailer. `review-override` needs the maintainer's label and a
 justification with a link that isn't a session URL, before the trailer block.
 
 **Tests** (`.github/tests/`), run by `gate-test`: the review gate's decision function, cut
-out of the deployed `review-gate.yml`, and a scan of every YAML file under `.github/` for
-repeated keys and tab indentation.
+out of the deployed `review-gate.yml`; the review round template's marker lines and
+REVIEW.md's marker example, filled in and read by that same function; and a scan of every
+YAML file under `.github/` for repeated keys and tab indentation.
 
 **`main-health.yml`:** after each `ci` run on `main`, and each completed check suite from
 another CI app on `main`, it keeps one pinned "main is red" issue open while a required

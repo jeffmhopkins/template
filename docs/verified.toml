@@ -157,7 +157,7 @@ stamp = { hash = "b3:a396821b70eee0e0", by = "agent:drift-batch", note = "New de
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New depends_on ADR-0007; the dry-run list still names the trigger and board checks ADR-0007 relies on; step 1 no longer names an ADR range" }
 
 ["DESIGN#ci"."body"]
-stamp = { hash = "b3:097aba91200d2ac4", by = "agent:reviewer-fix", note = "review-gate.yml summary updated: only marker line in an unedited comment counts, edited or multi-marker comments are fails, override link excludes session URLs and ends at trailers; tests now include the real PR template." }
+stamp = { hash = "b3:e10023239f03c7d7", by = "agent:reviewer-fix", note = "Added review-template.test.mjs to the Tests paragraph: it checks the round template's markers and REVIEW.md's example against decide() cut from review-gate.yml; gate-test runs the same glob in ci.yml" }
 
 ["DESIGN#ci"."dep:ADR-0004"]
 stamp = { hash = "b3:0c7cd60fc114a801", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
@@ -197,6 +197,9 @@ stamp = { hash = "b3:a358ec68cc2d6c50", by = "agent:drift-batch", note = "New CI
 
 ["DESIGN#ci"."file:.github/tests/review-gate-decide.test.mjs"]
 stamp = { hash = "b3:be02d26dc9792a8e", by = "agent:reviewer-fix", note = "review-gate.yml summary updated: only marker line in an unedited comment counts, edited or multi-marker comments are fails, override link excludes session URLs and ends at trailers; tests now include the real PR template." }
+
+["DESIGN#ci"."file:.github/tests/review-template.test.mjs"]
+stamp = { hash = "b3:4f611255a976f56a", by = "agent:reviewer-fix", note = "Added review-template.test.mjs to the Tests paragraph: it checks the round template's markers and REVIEW.md's example against decide() cut from review-gate.yml; gate-test runs the same glob in ci.yml" }
 
 ["DESIGN#ci"."file:.github/tests/workflow-yaml.test.mjs"]
 stamp = { hash = "b3:41a4e88f3200e7e8", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
@@ -509,6 +512,9 @@ stamp = { hash = "b3:370c444be7eea204", by = "agent:reviewer-fix", note = "Split
 
 ["REVIEW-TEMPLATE#template"."dep:REVIEW#rounds"]
 stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "Split into full and short forms; header line with the kind name from REVIEW#rounds, deferred and rebutted-in-rounds statuses, N format with Question, decisions with source:, the S caution; matches REVIEW#output and #rounds" }
+
+["REVIEW-TEMPLATE#template"."file:.github/tests/review-template.test.mjs"]
+stamp = { hash = "b3:4f611255a976f56a", by = "agent:reviewer-fix", note = "Now covers review-template.test.mjs, which reads both fenced forms here, requires one marker line each, fills every verdict each offers and checks decide() reads pass as success, fail and escalate as failure, recuse as pending" }
 
 ["RULES#documentation"."body"]
 stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-008 now says status changes only to superseded with superseded_by and that governance fails any other edit whatever the labels; the section's dependency DOCS#gate is unchanged and the group still holds." }

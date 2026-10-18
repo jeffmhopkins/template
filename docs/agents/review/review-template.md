@@ -14,6 +14,7 @@ review_every = "90d"
 <a id="template"></a>
 ## The comment
 <!-- @section
+covers = [".github/tests/review-template.test.mjs"]
 depends_on = ["REVIEW#output", "REVIEW#rounds", "REVIEW#escalate"]
 -->
 
