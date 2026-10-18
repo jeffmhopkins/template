@@ -2,6 +2,8 @@
 //!
 //! - **Sections** whose `covers` match the path (retired docs excluded).
 //! - **Rules** whose `applies_to` match it (retired rules excluded).
+//! - **Process rules**: active rules with `applies_to = []`, which govern every PR rather
+//!   than a path, so they are listed for every file.
 //! - **ADRs**, neither superseded nor rejected, cited by a matched section's `depends_on`,
 //!   by a link inside a matched section or rule, or by the back-reference line of the file
 //!   or of its package root.
@@ -22,6 +24,8 @@ use super::{Index, Loaded, strings};
 pub struct Governing {
     pub sections: BTreeSet<String>,
     pub rules: BTreeSet<String>,
+    /// Active rules with `applies_to = []`: they govern every PR, whatever its paths.
+    pub process: BTreeSet<String>,
     pub adrs: BTreeSet<String>,
 }
 
@@ -58,7 +62,13 @@ pub fn governing(l: &Loaded, index: &Index<'_>, path: &str) -> Governing {
         for r in &doc.rules {
             let Some(meta) = &r.meta else { continue };
             let retired = meta.get("status").and_then(|v| v.as_str()) == Some("retired");
-            if !retired && matches(&strings(meta, "applies_to"), path) {
+            if retired {
+                continue;
+            }
+            let globs = strings(meta, "applies_to");
+            if globs.is_empty() && meta.contains_key("applies_to") {
+                g.process.insert(format!("{}#{}", doc.id(), r.id));
+            } else if matches(&globs, path) {
                 g.rules.insert(format!("{}#{}", doc.id(), r.id));
                 ranges.push((r.line, r.body.1));
             }
@@ -125,6 +135,7 @@ pub fn render(path: &str, g: &Governing, index: &Index<'_>) -> String {
     for (title, items) in [
         ("Sections (covers)", &g.sections),
         ("Rules (applies_to)", &g.rules),
+        ("Process rules (applies_to = [], every PR)", &g.process),
         ("ADRs", &g.adrs),
     ] {
         let _ = writeln!(out, "\n{title}:");

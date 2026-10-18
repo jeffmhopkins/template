@@ -135,8 +135,8 @@ fn generate_writes_banners_and_index() {
 }
 
 #[test]
-fn docs_for_lists_sections_rules_and_adrs() {
-    let rules = "<!-- @doc\nid = \"RULES\"\ntitle = \"Rules\"\nkind = \"normative\"\nstatus = \"active\"\n-->\n\n<a id=\"code\"></a>\n## Code\n<!-- @section\n-->\n\n<a id=\"R-SRC-001\"></a>\n### R-SRC-001: Small files\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = [\"src/**\"]\n-->\nPer [ADR-0001](adr/0001-first.md).\n";
+fn docs_for_lists_sections_rules_process_rules_and_adrs() {
+    let rules = "<!-- @doc\nid = \"RULES\"\ntitle = \"Rules\"\nkind = \"normative\"\nstatus = \"active\"\n-->\n\n<a id=\"code\"></a>\n## Code\n<!-- @section\n-->\n\n<a id=\"R-SRC-001\"></a>\n### R-SRC-001: Small files\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = [\"src/**\"]\n-->\nPer [ADR-0001](adr/0001-first.md).\n\n<a id=\"R-PR-001\"></a>\n### R-PR-001: One change per PR\n<!-- @rule\nstatus = \"active\"\nenforced_by = [\"review\"]\napplies_to = []\n-->\nScope.\n\n<a id=\"R-PR-002\"></a>\n### R-PR-002: Old process\n<!-- @rule\nstatus = \"retired\"\nenforced_by = [\"review\"]\napplies_to = []\n-->\nGone.\n";
     let f = Fixture::new(
         "for",
         &[
@@ -155,6 +155,20 @@ fn docs_for_lists_sections_rules_and_adrs() {
         r.out
     );
     assert!(r.out.contains("ADR-0001  (First)"), "{}", r.out);
+    let process = r
+        .out
+        .split("Process rules (applies_to = [], every PR):")
+        .nth(1)
+        .unwrap_or_default();
+    assert!(
+        process.contains("RULES#R-PR-001  (R-PR-001: One change per PR)"),
+        "{}",
+        r.out
+    );
+    assert!(!r.out.contains("R-PR-002"), "a retired rule: {}", r.out);
+    let other = f.repo(&["docs", "for", "README.md"]);
+    assert!(other.out.contains("RULES#R-PR-001"), "{}", other.out);
+    assert!(!other.out.contains("RULES#R-SRC-001"), "{}", other.out);
 }
 
 #[test]

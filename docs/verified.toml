@@ -256,7 +256,7 @@ stamp = { hash = "b3:02dc7f207ae6c9eb", by = "agent:routing-fixer", note = "Comm
 stamp = { hash = "b3:0a956098d3c3d533", by = "agent:drift-batch", note = "generate.rs no longer has a progress block and generate() takes no progress body; merge-main and docs generate call it that way; the command table needed no change" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/govern.rs"]
-stamp = { hash = "b3:e2204a69436a431a", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+stamp = { hash = "b3:aad6de4daa53894b", by = "agent:reviewer-fix", note = "govern.rs now also collects active rules with applies_to = [] into a Process rules group printed for every path, and main.rs help says so; the docs for row still points to the backrefs section, which now describes that group" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/hash.rs"]
 stamp = { hash = "b3:45208e15bf5bf3e2", by = "agent:trust-fixer", note = "Table now has governance --author and the config check name-over-id rule, and the intro the global --root; checked main.rs, git.rs set_root, config.rs job_names, governance.rs, progress.rs and hash.rs" }
@@ -292,7 +292,7 @@ stamp = { hash = "b3:0f870b5fbd65fc45", by = "agent:drift-batch", note = "heads-
 stamp = { hash = "b3:c2e8bca7bbe0a31b", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/main.rs"]
-stamp = { hash = "b3:62a302886f6e795a", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
+stamp = { hash = "b3:7f50c4b4538fdf39", by = "agent:reviewer-fix", note = "govern.rs now also collects active rules with applies_to = [] into a Process rules group printed for every path, and main.rs help says so; the docs for row still points to the backrefs section, which now describes that group" }
 
 ["DOCS#tool"."file:tools/repo/src/plan.rs"]
 stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }

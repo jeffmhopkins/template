@@ -473,7 +473,8 @@ package no section covers needs no line.
 
 `scripts/repo docs for <path>` prints what governs a file: the sections whose `covers`
 match it, the rules whose `applies_to` match it, and the ADRs those sections and the file's
-`Docs:` line cite. The path need not exist yet.
+`Docs:` line cite. It also prints the process rules, the active rules with
+`applies_to = []`, since they govern every PR. The path need not exist yet.
 
 <a id="history"></a>
 ## History

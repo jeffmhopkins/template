@@ -37,7 +37,7 @@ commands:
   docs check                                metadata, references, ledger freshness, generated drift, rule enforcers
   docs verify <DOC#anchor> --by <who> --note <text>
                                             restamp a section after a re-read
-  docs for <path>                           the sections, rules and ADRs that govern a file
+  docs for <path>                           the sections, rules and ADRs that govern a file, and the process rules
   docs generate                             rewrite @generated blocks
   docs log <DOC[#anchor]> [--rev <rev>]     a doc's or section's history, from git
   docs review <DOC> --by <who> --note <text>
