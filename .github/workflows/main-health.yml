@@ -12,7 +12,9 @@ on:
     workflows: [ci]
     types: [completed]
     branches: [main]
-  check_suite:   # suites from other CI apps; GitHub skips this event for Actions' own suites
+  # Suites from other CI apps, for a project whose required checks include one. GitHub skips
+  # this event for Actions' own suites, and the job below skips suites on other branches.
+  check_suite:
     types: [completed]
   workflow_dispatch:
 
@@ -31,6 +33,7 @@ env:
 
 jobs:
   main-health:
+    if: github.event_name != 'check_suite' || github.event.check_suite.head_branch == 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

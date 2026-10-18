@@ -87,6 +87,144 @@ stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New
 ["CLAUDE#which-repo"."dep:AGENT-INTAKE#outputs"]
 stamp = { hash = "b3:c7f32d7b3c667bb4", by = "agent:scale-batch", note = "AGENT-INTAKE#outputs changed only its closing paragraph on who applies governance-approved; the which-repo section's claim that only intake edits product docs until the design PR merges still holds" }
 
+["DESIGN#agents"."body"]
+stamp = { hash = "b3:c36d24429decd671", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+
+["DESIGN#agents"."dep:ADR-0007"]
+stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+
+["DESIGN#agents"."dep:AGENTS#lifecycle"]
+stamp = { hash = "b3:ea6665c00cae7188", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+
+["DESIGN#agents"."dep:AGENTS#messages"]
+stamp = { hash = "b3:e0da83c677fa8667", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+
+["DESIGN#agents"."dep:AGENTS#state"]
+stamp = { hash = "b3:c36ebb83b90ce26d", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+
+["DESIGN#build-plan"."body"]
+stamp = { hash = "b3:a396821b70eee0e0", by = "agent:drift-batch", note = "New depends_on ADR-0007; the dry-run list still names the trigger and board checks ADR-0007 relies on; step 1 no longer names an ADR range" }
+
+["DESIGN#build-plan"."dep:ADR-0007"]
+stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New depends_on ADR-0007; the dry-run list still names the trigger and board checks ADR-0007 relies on; step 1 no longer names an ADR range" }
+
+["DESIGN#ci"."body"]
+stamp = { hash = "b3:17725647275dd543", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:ADR-0004"]
+stamp = { hash = "b3:0c7cd60fc114a801", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:ADR-0007"]
+stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:DOCS#governance"]
+stamp = { hash = "b3:55a9749dec774df5", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:DOCS#ttl"]
+stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:REVIEW#output"]
+stamp = { hash = "b3:1451844d6353d3fd", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:RULES#R-GIT-003"]
+stamp = { hash = "b3:a7ac95a8d51a7f8e", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."dep:STACKS#pack-toml"]
+stamp = { hash = "b3:6dcd8ccade7b0134", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.claude/hooks/session-start.sh"]
+stamp = { hash = "b3:2eebb8f5d266e82c", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/actions/cargo-deny/action.yml"]
+stamp = { hash = "b3:8d522b38472fa966", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/actions/repo-tool/action.yml"]
+stamp = { hash = "b3:aceed4797cd4d991", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/actions/rust-setup/action.yml"]
+stamp = { hash = "b3:b3f8918c9a8800ee", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/actions/rust-stack/action.yml"]
+stamp = { hash = "b3:a358ec68cc2d6c50", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/tests/review-gate-decide.test.mjs"]
+stamp = { hash = "b3:73635cdcf7f114cf", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/tests/workflow-yaml.test.mjs"]
+stamp = { hash = "b3:41a4e88f3200e7e8", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/workflows/after-review.yml"]
+stamp = { hash = "b3:bedc096498531258", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/workflows/ci.yml"]
+stamp = { hash = "b3:584ca2c1b95cc68b", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/workflows/main-health.yml"]
+stamp = { hash = "b3:3ba2bb9e18134b3f", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#ci"."file:.github/workflows/progress.yml"]
+stamp = { hash = "b3:534f213d019d836e", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+
+["DESIGN#open-questions"."body"]
+stamp = { hash = "b3:f4386a5203ea7eca", by = "agent:drift-batch", note = "New depends_on on ADR-0002, 0003, 0006 and 0007; the agent and maintainer decisions and the merge-queue follow-up match them" }
+
+["DESIGN#open-questions"."dep:ADR-0002"]
+stamp = { hash = "b3:3afd307de4726119", by = "agent:drift-batch", note = "New depends_on on ADR-0002, 0003, 0006 and 0007; the agent and maintainer decisions and the merge-queue follow-up match them" }
+
+["DESIGN#open-questions"."dep:ADR-0003"]
+stamp = { hash = "b3:9f8bce207e2aff0c", by = "agent:drift-batch", note = "New depends_on on ADR-0002, 0003, 0006 and 0007; the agent and maintainer decisions and the merge-queue follow-up match them" }
+
+["DESIGN#open-questions"."dep:ADR-0006"]
+stamp = { hash = "b3:67d0fd4562805aad", by = "agent:drift-batch", note = "New depends_on on ADR-0002, 0003, 0006 and 0007; the agent and maintainer decisions and the merge-queue follow-up match them" }
+
+["DESIGN#open-questions"."dep:ADR-0007"]
+stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New depends_on on ADR-0002, 0003, 0006 and 0007; the agent and maintainer decisions and the merge-queue follow-up match them" }
+
+["DESIGN#overview"."body"]
+stamp = { hash = "b3:8a8ae7efb49d26cf", by = "agent:drift-batch", note = "New depends_on on AGENTS#lifecycle and ADR-0007; re-read: the four trigger-woken standing roles, builder ratio and one-file config still match them, and the tool claim no longer says language-neutral" }
+
+["DESIGN#overview"."dep:ADR-0007"]
+stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New depends_on on AGENTS#lifecycle and ADR-0007; re-read: the four trigger-woken standing roles, builder ratio and one-file config still match them, and the tool claim no longer says language-neutral" }
+
+["DESIGN#overview"."dep:AGENTS#lifecycle"]
+stamp = { hash = "b3:ea6665c00cae7188", by = "agent:drift-batch", note = "New depends_on on AGENTS#lifecycle and ADR-0007; re-read: the four trigger-woken standing roles, builder ratio and one-file config still match them, and the tool claim no longer says language-neutral" }
+
+["DESIGN#repo"."body"]
+stamp = { hash = "b3:a2f953c42b6dc371", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:ADR-0003"]
+stamp = { hash = "b3:9f8bce207e2aff0c", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:ADR-0007"]
+stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:ADR-0008"]
+stamp = { hash = "b3:48bc504030d3abeb", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:DOCS#lanes"]
+stamp = { hash = "b3:91f8a73d82878be8", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:DOCS#progress"]
+stamp = { hash = "b3:7f155d20e9aec09c", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:DOCS#sections"]
+stamp = { hash = "b3:f21d56d03b176583", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:DOCS#tool"]
+stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#repo"."dep:STACKS#pack-toml"]
+stamp = { hash = "b3:6dcd8ccade7b0134", by = "agent:drift-batch", note = "Replaced the layout, rule list and tool table copies with a top-level layout and pointers to docs/README, RULES.md and DOCS#tool; ADR numbering now says how template and project ADRs coexist; tool rules list the pack keys in STACKS#pack-toml; no prebuilt-release or dependency-lint claims" }
+
+["DESIGN#setup"."body"]
+stamp = { hash = "b3:cec153f9dd7396e2", by = "agent:drift-batch", note = "New depends_on on RUNBOOK-BOOTSTRAP settings and by-hand; repo, rulesets, actions, labels, variables, security and by-hand steps match the runbook's table and list" }
+
+["DESIGN#setup"."dep:RUNBOOK-BOOTSTRAP#by-hand"]
+stamp = { hash = "b3:24d059ced02301ec", by = "agent:drift-batch", note = "New depends_on on RUNBOOK-BOOTSTRAP settings and by-hand; repo, rulesets, actions, labels, variables, security and by-hand steps match the runbook's table and list" }
+
+["DESIGN#setup"."dep:RUNBOOK-BOOTSTRAP#settings"]
+stamp = { hash = "b3:f8843a26f1cb5c6c", by = "agent:drift-batch", note = "New depends_on on RUNBOOK-BOOTSTRAP settings and by-hand; repo, rulesets, actions, labels, variables, security and by-hand steps match the runbook's table and list" }
+
 ["DOCS#governance"."body"]
 stamp = { hash = "b3:55a9749dec774df5", by = "agent:scale-batch", note = "governance.yml now builds the base tool once in a tool job and hands it to governance, pr-title and lane-guard by artifact; the section now says it builds once per run and shares the binary; head-labels and the rest of the list hold" }
 
@@ -400,7 +538,7 @@ stamp = { hash = "b3:d64141081adc2a87", by = "agent:routing-fixer", note = "New:
 stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:routing-fixer", note = "New: each CHANGELOG version is tagged v<version> at its merge commit by the maintainer, as an outside action needing their words" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#what"."body"]
-stamp = { hash = "b3:3c9a2acab88a4eba", by = "agent:routing-fixer", note = "Template ADRs are those [template].commit already has; new ones port one by one under the next free number; intake's outputs now include recording [template].commit" }
+stamp = { hash = "b3:b2f603530fe1e778", by = "agent:drift-batch", note = "Added how template and project ADRs share one number sequence, and a Ported-from line that lets later upgrades find ported ADRs; the comes-over and never-overwritten lists are unchanged" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#what"."dep:AGENT-INTAKE#outputs"]
 stamp = { hash = "b3:c7f32d7b3c667bb4", by = "agent:scale-batch", note = "AGENT-INTAKE#outputs changed only who applies the design PR's label; the lists of what comes over and what intake set inside template files still hold" }

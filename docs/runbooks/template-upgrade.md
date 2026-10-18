@@ -94,10 +94,18 @@ lost):
 In a project, `CHANGELOG.md` is the project's own: intake replaced the template's. The
 template's changelog is read at the new tag and never copied.
 
+**How template ADRs and project ADRs share one sequence.** A project starts with the
+template's ADRs, 0001 up to the template's highest number at `<commit>`, and numbers its own
+from the next free number. The template's ADRs that `<commit>` already has keep their
+numbers, and only their status changes come over ([Apply](#apply), step 3).
+
 **New template ADRs are ported one by one.** An ADR the template added after `<commit>` may
 share its number with one of the project's. Each comes over under the project's next free
 ADR number ([ADR index](../adr/README.md)), with its `id` and the links to it in the files
-that come over renamed to match.
+that come over renamed to match. Its file says which template ADR it is: the port adds one
+line under its title, `> Ported from the template's ADR-<NNNN>.`, which is part of the ADR
+from then on. A later upgrade finds the template ADRs already ported by that line, and
+applies a template change that supersedes one to the project's number for it.
 
 <a id="apply"></a>
 ## Apply the change

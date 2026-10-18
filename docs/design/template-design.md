@@ -17,6 +17,7 @@ Where this doc and a brief differ, the brief wins.
 <a id="overview"></a>
 ## 1. Overview
 <!-- @section
+depends_on = ["AGENTS#lifecycle", "ADR-0007"]
 -->
 
 **The template is the swarm.** A fork gets a governed repo and a set of agent roles. The
@@ -31,7 +32,7 @@ project's content comes from an intake agent that questions the maintainer.
 - docs checked like code;
 - CI shaped for many parallel agent PRs.
 
-One language-neutral tool (`tools/repo`) does the checking, configured by one file
+One tool (`tools/repo`) does the checking for every language, configured by one file
 (`repo.toml`). Each language plugs in through a small stack pack; Rust comes first.
 
 **The agent side:**
@@ -47,97 +48,46 @@ words.
 <a id="repo"></a>
 ## 2. The repo
 <!-- @section
+depends_on = ["DOCS#sections", "DOCS#tool", "DOCS#lanes", "DOCS#progress", "STACKS#pack-toml", "ADR-0003", "ADR-0007", "ADR-0008"]
 -->
 
 ### 2.1 Layout
 
+The top level, with what each part is for. [docs/README.md](../README.md) lists every doc,
+and [CI and the merge gate](#ci) every workflow.
+
 ```
-CLAUDE.md                     entry point for builders: where the rules are, not what they are
-REVIEW.md                     how the reviewer judges a PR (at the root, where review tools look)
-README.md                     project pitch, link to progress
-CONTRIBUTING.md  SECURITY.md  CODE_OF_CONDUCT.md  LICENSE-*
-repo.toml                     the one config: tracked and protected paths, required checks,
-                              serial lanes, label names, review marker prefix, stack pack
+CLAUDE.md  REVIEW.md          the builder's entry point; how the reviewer judges a PR
+README.md  CONTRIBUTING.md  SECURITY.md  CODE_OF_CONDUCT.md  LICENSE-*  CHANGELOG.md
+repo.toml                     the one config: docs, checks, governance, labels, review marker,
+                              stack pack, template source
 lanes.toml                    one line per serial lane (value and holder)
-docs/
-  README.md                   the docs hub: every doc and what it is for
-  DOCS.md                     the docs system
-  RULES.md                    the rules
-  PRODUCT.md                  written by intake: pitch, users, demos, never-rules
-  ARCHITECTURE.md             skeleton: components, boundaries, data model, processes
-  ROADMAP.md                  milestones, written by intake
-  progress.toml               items, milestones, dependencies (status is derived)
-  verified.toml               the docs verification ledger (empty)
-  facts.toml  external.toml   repeated values; registered external URLs
-  adr/  TEMPLATE.md README.md (generated index)
-        0001 docs as a checked graph                     (agent tier)
-        0002 review gate and governance                  (maintainer tier)
-        0003 decision tiers                              (maintainer tier)
-        0004 CI: drafts skip, platform after review, pins (agent tier)
-        0005 wave branches and serial lanes              (agent tier, superseded by 0007)
-        0006 separate agent identities                   (maintainer tier, proposed)
-        0007 swarm operating model at scale              (agent tier)
-  SECURITY-AGENTS.md          the agents' rules on untrusted text, approvals and secrets
-  runbooks/  waves.md  serial-lanes.md  bootstrap.md  template-upgrade.md
-  agents/                     one brief per agent type, plus project-instructions.md
-    review/                   the reviewer, reviewer worker and review round template
-  design/                     this document
-.github/
-  pull_request_template.md  ISSUE_TEMPLATE/  dependabot.yml
-  workflows/ ci.yml review-gate.yml governance.yml after-review.yml sweep.yml main-health.yml
-  tests/review-gate-decide.test.mjs
-.claude/
-  settings.json  hooks/session-start.sh
-  skills/steward/SKILL.md     PR conventions the harness reads before CI and review events
-  skills/verify-docs/SKILL.md how to re-read and stamp doc sections
-tools/repo/                   the checking tool
-stacks/rust/                  Rust stack pack: CI steps, language rules, lint and licence
-                              defaults, dependency lint, suppression patterns
-scripts/bootstrap.sh          one-time GitHub setup, run by the maintainer
+docs/                         the docs: hub, docs system, rules, product, architecture,
+                              roadmap, ADRs, runbooks, agent briefs, this design
+.github/                      workflows, composite actions, their scripts and tests,
+                              PR and issue templates, Dependabot
+.claude/                      settings (the agents' allow list), the session hook, skills
+tools/repo/                   the checking tool, `scripts/repo`
+stacks/                       one pack per language; Rust ships
+scripts/                      `repo` (runs the tool) and `bootstrap.sh` (GitHub setup)
 .editorconfig  .gitattributes editor defaults; LF endings, generated files marked
 ```
 
-The template's ADRs take 0001 to 0007, and each project numbers on from 0008.
+**ADR numbers.** The template ships ADRs from 0001 up to its highest number, listed in the
+[ADR index](../adr/README.md). A project numbers its own ADRs from the next free number. A
+template ADR added later reaches a project through a template upgrade, which ports it under
+the project's next free number ([template-upgrade runbook](../runbooks/template-upgrade.md#what)).
 
 The cloud harness reads `.claude/skills/steward/SKILL.md` from a PR's head branch before it
 acts on CI or review events. It holds the merge, restamp and merge-only round rules.
 
 ### 2.2 Rules
 
-`docs/RULES.md` holds rules with permanent IDs. Each rule declares:
-- `applies_to`: path globs;
-- `enforced_by`: a CI check, `review` or `human`. A rule naming an enforcer the tool doesn't
-  implement fails the docs check.
-
-The template's own rule groups:
-- **Architecture:** structural decisions need an ADR.
-- **Git and PRs:**
-  - protected `main`, squash merges, Conventional Commit titles;
-  - one logical change per PR;
-  - the PR description answers the template;
-  - a PR that changes a serial lane holds its slot.
-- **Docs:**
-  - docs and sections have permanent IDs, and references resolve;
-  - no stale verification, and a section is verified only after it's re-read;
-  - no history in files;
-  - derivable content is generated;
-  - one source per fact;
-  - accepted ADRs are immutable;
-  - covered globs must match.
-- **Governance:**
-  - changes that loosen a check carry a label and a justification;
-  - overrides are declared and audited;
-  - an independent reviewer gates every merge;
-  - builders answer every blocking finding;
-  - maintainer-tier decisions need the maintainer;
-  - actions that need the maintainer cite their own words, naming the object.
-- **Testing:** bug fixes ship a regression test; tests are hermetic; PRs say what wasn't run.
-- **Dependencies:**
-  - acceptable licences only;
-  - new dependencies are justified;
-  - CI actions are pinned to commit SHAs.
-- **Security:** secrets stay in the OS credential store; no telemetry unless intake says otherwise.
-
+`docs/RULES.md` holds the rules, each with a permanent ID, the paths it applies to
+(`applies_to`) and its enforcer (`enforced_by`: a CI check, `review` or `human`). A rule
+naming an enforcer the tool doesn't implement fails the docs check
+([DOCS › Rules format](../DOCS.md#rules)). The template's groups are architecture, git and
+PRs, documentation, governance, testing, dependencies and security; RULES.md is the list.
 Language rules come with the stack pack. Product rules (real-time, protocol, persistence and
 so on) are written at intake.
 
@@ -165,7 +115,7 @@ ID, kind, status and review interval. Every `##` section has a permanent anchor.
 **What a section declares:**
 - `covers`: the code it describes, bounded to one package or `max_cover_files` files;
 - `depends_on`: other sections or rules it relies on. Architecture sections depend on package
-  sections and cover no code.
+  sections and cover no code, which `docs check` enforces.
 
 **How staleness works:**
 - **The ledger** (`docs/verified.toml`) holds one hash per input of each section: its body,
@@ -183,108 +133,31 @@ ID, kind, status and review interval. Every `##` section has a permanent anchor.
 **Progress is derived, not recorded:**
 - `docs/progress.toml` holds items, milestones and dependencies only.
 - A PR's body ends with `Completes: <id>` or `Part-of: <id>`. The squash message is the PR
-  body. A wave landing lists the trailers it carries.
+  body. A wave landing carries the trailers `scripts/repo progress --trailers` prints for
+  the wave.
 - A revert cancels an item. `hardware` means merged with no `Verified-on-hardware: <id>` yet.
 - Progress is published as a pinned issue updated on every push to `main`, and on the board.
+  No committed file holds it ([ADR-0008](../adr/0008-docs-graph-v2.md)).
 
 ### 2.5 The tool: `tools/repo`
 
-One standalone binary, written in Rust, driven by `repo.toml`. A non-Rust project needs
-only a toolchain in CI, or a prebuilt release.
-
-| Command | What it does |
-|---|---|
-| `scripts/repo docs check` | metadata, references, ledger freshness, generated drift, rule enforcers |
-| `scripts/repo docs verify` | restamp a section after a re-read |
-| `scripts/repo docs for <path>` | the rules, sections and ADRs that govern a file |
-| `scripts/repo docs generate` | rewrite generated blocks (ADR index, status banners) |
-| `scripts/repo docs log` | a doc's or section's history, from git |
-| `scripts/repo docs review` | stamp a doc's time-based review |
-| `scripts/repo docs merge-main [--from wave/<name>]` | merge, resolve ledger and generated conflicts, list sections to re-read |
-| `scripts/repo governance --base <rev>` | list governance changes |
-| `scripts/repo progress` | derive progress from trailers on `main` |
-| `scripts/repo lane-guard` | check a PR's serial-lane claims, and the lane files it changes |
-| `scripts/repo plan check <launch.md> <roster.md> [--row <id>]` | no `owns` overlap between running rows |
-| `scripts/repo heads-changed` | cheap "did anything move" check for sweeps |
+One standalone binary, written in Rust, driven by `repo.toml` and the stack pack. Every
+project builds it from source with the Rust toolchain that CI sets up for it, whatever the
+project's own language. Its commands are listed once, in [DOCS › The tool](../DOCS.md#tool).
 
 **Rules for the tool:**
 - It exits non-zero on any finding.
 - It resolves the repo root at run time.
 - Its config is schema-checked and fails on unknown keys.
-- Per-language details are config from the stack pack: suppression patterns
-  (`#[allow`, `eslint-disable`, `# noqa`), the comment syntax for code back-references, and
-  dependency lint.
+- Per-language details are config from the stack pack: the job commands, the CI setup
+  action, the paths that make `deps` run, the sweep items, suppression patterns
+  (`#[allow`, `eslint-disable`, `# noqa`), lint-level manifest tables, lockfiles, and the
+  comment syntax for code back-references ([stack packs](../../stacks/README.md#pack-toml)).
 
 The template records its source repo and version in `repo.toml` and keeps a CHANGELOG. A
 project takes later versions through `docs/runbooks/template-upgrade.md`.
 
-### 2.6 CI and the merge gate
-
-**`ci.yml`:**
-- Draft PRs skip every job.
-- `fmt`, `lint`, `test` and `deps` come from the stack pack.
-- `docs` and `gate-test` are generic.
-- `pr-title`, `lane-guard` and `governance` run in `governance.yml`, from the base.
-- `dependency-review` fails a PR that adds or changes a dependency with a known
-  vulnerability of high or critical severity.
-
-**`review-gate.yml`:**
-- The reviewer posts one comment per round ending in
-  `<!-- review v1 verdict=… sha=… round=… reviewer=… reviewer-session=… -->`.
-- The gate counts only markers that:
-  - are for the current head SHA;
-  - are posted by the configured login;
-  - name a reviewer role listed in the `REVIEWER_ROLES` repo variable, which bootstrap sets
-    once to `reviewer-0,reviewer-1,reviewer-2`;
-  - haven't been edited.
-- The highest round decides, and a fail beats a pass.
-- A marker whose `reviewer-session` authored a commit is ignored (recusal by the
-  `Claude-Session` trailer), and the gate fails if a non-merge commit lacks that trailer. Commits already on
-  `main` and Dependabot's signed commits are exempt; squash commits carry the trailer from
-  the PR body.
-- `review-override` needs a justification that links the maintainer's message. Only the
-  maintainer applies it, and a push removes it.
-- A node test runs the decision function cut out of the deployed workflow.
-
-**Running checks from base:** `governance`, `lane-guard` and `pr-title` run on
-`pull_request_target`. They build the checker from the base commit and read the head only as
-git objects. The checker's build cache is
-written only on pushes to `main`.
-
-**Rulesets:** every required check is pinned to GitHub Actions (`integration_id`).
-
-**Governance changes** need the `governance-approved` label and a "Governance change" section
-in the PR description. They are:
-- edits to `covers`, `applies_to`, `enforced_by` or `status`;
-- any edit to an accepted ADR;
-- retiring a rule or a doc;
-- edits to protected paths: lint and licence config, `.github/`, the tool, `DOCS.md`,
-  `REVIEW.md`;
-- new lint suppressions.
-
-Agents may self-label after examining what was flagged, and a push removes the label.
-Changes to the trust base always need the maintainer, who alone labels them: the workflows
-and actions, `repo.toml`, the tool's source, `REVIEW.md`, the reviewer briefs, the tier rules
-and the project instructions. A Dependabot PR that only re-pins actions is exempt.
-
-**`after-review.yml`** runs expensive jobs (other OSes, end-to-end) only after the review gate
-passes, posting commit statuses under each check name. It stays dormant until a project needs it.
-
-**`main-health.yml`:** while a required check fails on `main`, it keeps one pinned "main is
-red" issue.
-
-**`sweep.yml`** (weekly, never fails) rewrites one pinned issue with:
-- dependency advisories;
-- docs due for review;
-- available updates;
-- every PR merged with `governance-approved` or `review-override`;
-- sections re-verified far more often than they are edited;
-- lane holders older than a day.
-
-The required-check list lives in `repo.toml`, and the tool compares it with the workflow job
-names.
-
-### 2.7 Serial lanes and waves
+### 2.6 Serial lanes and waves
 
 **A serial lane** is a value only one PR at a time may change: a protocol or schema version,
 a migration number. ADRs take the next free number instead ([ADR index](../adr/README.md)).
@@ -305,9 +178,71 @@ a migration number. ADRs take the next free number instead ([ADR index](../adr/R
   every two merges over a day, or runners queue. The wave ruleset is created at bootstrap
   ([ADR-0007](../adr/0007-swarm-operating-model.md)).
 
-<a id="agents"></a>
-## 3. The agents
+<a id="ci"></a>
+## 3. CI and the merge gate
 <!-- @section
+covers = [".github/workflows/ci.yml", ".github/workflows/main-health.yml", ".github/workflows/progress.yml", ".github/workflows/after-review.yml", ".github/actions/*/action.yml", ".github/tests/*", ".claude/hooks/*"]
+depends_on = ["DOCS#governance", "DOCS#ttl", "REVIEW#output", "RULES#R-GIT-003", "STACKS#pack-toml", "ADR-0004", "ADR-0007"]
+-->
+
+The required checks are `[checks].required` in `repo.toml`; `scripts/repo config check`
+compares them with the workflows' job names ([R-GIT-003](../RULES.md#R-GIT-003)). Every
+third-party action is pinned to a full commit SHA ([ADR-0004](../adr/0004-ci-drafts-platform-pins.md)).
+
+**`ci.yml`**, on every PR and every push to `main`:
+- Draft PRs skip every job.
+- `fmt`, `lint`, `test` and `deps` run the stack pack's commands, after the pack's setup
+  action, and also check the repo tool itself. `deps` does its work on a PR only when a path
+  `.github/scripts/deps-changed.py` lists changes, and passes at once otherwise.
+- `docs` runs `config check` and `docs check`. `gate-test` runs the node tests.
+- `dependency-review` fails a PR that adds or changes a dependency with a known
+  vulnerability of high or critical severity.
+- The build cache is written only on a push to `main`; `base-tool` caches the release build
+  `governance.yml` restores.
+- `pr-title`, `lane-guard` and `governance` run in `governance.yml`, from the base
+  ([DOCS › Governance changes](../DOCS.md#governance)). `review-gate` runs in
+  `review-gate.yml` ([REVIEW › Post the review](../../REVIEW.md#output)).
+
+**Composite actions** (`.github/actions/`):
+- `rust-setup`: the Rust toolchain and a restored build cache, for every job that runs the
+  repo tool;
+- `repo-tool`: builds the tool from the checked-out commit;
+- `cargo-deny`: a prebuilt, checksum-pinned cargo-deny;
+- `rust-stack`: the Rust pack's setup action, named by its `[ci].setup`.
+
+**`review-gate.yml`** counts only verdict markers that are for the current head SHA, posted
+by `REVIEWER_LOGIN`, name a role in `REVIEWER_ROLES` and haven't been edited. The highest
+round decides, and a fail beats a pass. A marker whose `reviewer-session` authored a commit is
+ignored, and the gate fails a non-merge commit without a `Claude-Session` trailer.
+`review-override` needs the maintainer's label and a justification with a link.
+
+**Tests** (`.github/tests/`), run by `gate-test`: the review gate's decision function, cut
+out of the deployed `review-gate.yml`, and a scan of every YAML file under `.github/` for
+repeated keys and tab indentation.
+
+**`main-health.yml`:** after each `ci` run on `main`, and each completed check suite from
+another CI app on `main`, it keeps one pinned "main is red" issue open while a required
+check fails there, and closes it once they pass.
+
+**`progress.yml`:** on every push to `main`, it rewrites the pinned "Progress" issue from
+`scripts/repo progress`.
+
+**`after-review.yml`** is dormant. Turned on, it runs expensive jobs (other OSes, end to
+end) only after the review gate passes, and posts a commit status under each check name.
+
+**`sweep.yml`** (weekly, never fails) rewrites one pinned issue
+([DOCS › Time-based review](../DOCS.md#ttl)).
+
+**The session hook** (`.claude/hooks/session-start.sh`) prepares a cloud session: the Rust
+components and a prebuilt repo tool, then a short orientation. It never fails the session.
+
+**Rulesets:** every required check is pinned to GitHub Actions (`integration_id`), set by
+bootstrap ([setup](#setup)).
+
+<a id="agents"></a>
+## 4. The agents
+<!-- @section
+depends_on = ["AGENTS#messages", "AGENTS#state", "AGENTS#lifecycle", "ADR-0007"]
 -->
 
 The briefs are in [docs/agents/](../agents/README.md).
@@ -350,8 +285,9 @@ The [agents README](../agents/README.md) has the message table and state rules, 
 the approval contract.
 
 <a id="setup"></a>
-## 4. One-time setup (`docs/runbooks/bootstrap.md`)
+## 5. One-time setup (`docs/runbooks/bootstrap.md`)
 <!-- @section
+depends_on = ["RUNBOOK-BOOTSTRAP#settings", "RUNBOOK-BOOTSTRAP#by-hand"]
 -->
 
 Agents don't change repo settings. `scripts/bootstrap.sh` is idempotent, uses template
@@ -379,12 +315,13 @@ prints the commands to fix any difference; any agent may run it read-only.
    Claude project, and on a private repo turn on the dependency graph.
 
 <a id="build-plan"></a>
-## 5. Building the template
+## 6. Building the template
 <!-- @section
+depends_on = ["ADR-0007"]
 -->
 
 Each step is one PR, reviewed through the template's own gate once that exists:
-1. Skeleton: docs, rules, ADRs 0001 to 0005, CLAUDE.md, REVIEW.md, the PR template.
+1. Skeleton: docs, rules, the first ADRs, CLAUDE.md, REVIEW.md, the PR template.
 2. `tools/repo` and `repo.toml`, with tests. This takes 3 to 4 PRs; progress derivation is new code.
 3. `.github`: CI, the review gate and its test, governance, main-health, the sweep, and
    after-review (dormant).
@@ -400,8 +337,9 @@ Each step is one PR, reviewed through the template's own gate once that exists:
    - `Completes:` trailers survive a squash and a wave landing.
 
 <a id="open-questions"></a>
-## 6. Decisions
+## 7. Decisions
 <!-- @section
+depends_on = ["ADR-0002", "ADR-0003", "ADR-0006", "ADR-0007"]
 -->
 
 Agent tier:
