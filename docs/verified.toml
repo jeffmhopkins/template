@@ -16,7 +16,7 @@ stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "New se
 stamp = { hash = "b3:4aecd7b02380b793", by = "agent:scale-batch", note = "Reviewer state lines gained a kind column and a session line; the audit still reads only the comment column of every state-<shard>.md, so its steps hold unchanged" }
 
 ["AGENT-DEVICE#bootstrap"."body"]
-stamp = { hash = "b3:f145710602f206cd", by = "agent:day0-fixer", note = "New section: the bootstrap procedure under the maintainer's gh login, checked against the runbook's run steps (check tools, run, --check must say All settings match, exit 2 stops) and the BOOTSTRAP-RESULT line in the agents README" }
+stamp = { hash = "b3:5a0b69960e9eec85", by = "agent:drift-batch", note = "Step 2 now handles a gh that isn't logged in: the maintainer runs gh auth login in a terminal themselves, then the session checks gh auth status again" }
 
 ["AGENT-DEVICE#bootstrap"."dep:RUNBOOK-BOOTSTRAP#run"]
 stamp = { hash = "b3:b3dc8ef107d92e88", by = "agent:routing-fixer", note = "Bootstrap runbook's run section gained the two-step --also-require procedure for a PR changing required checks; the device's one-time and post-intake procedure is unchanged and still matches" }
@@ -85,7 +85,7 @@ stamp = { hash = "b3:77b4d9a0d3382d15", by = "agent:trust-fixer", note = "Added 
 stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:structure-pass", note = "New first section; template mode by [template].source equal to origin's owner/repo, project mode while PRODUCT.md is draft; product docs match AGENT-INTAKE#outputs" }
 
 ["CLAUDE#which-repo"."dep:AGENT-INTAKE#outputs"]
-stamp = { hash = "b3:c7f32d7b3c667bb4", by = "agent:scale-batch", note = "AGENT-INTAKE#outputs changed only its closing paragraph on who applies governance-approved; the which-repo section's claim that only intake edits product docs until the design PR merges still holds" }
+stamp = { hash = "b3:a90795a8b2fb7ea8", by = "agent:drift-batch", note = "Intake outputs gained item 14 (SECURITY.md contact on a private repo); which-repo only says intake owns the product docs until its design PR, which still holds" }
 
 ["DESIGN#agents"."body"]
 stamp = { hash = "b3:c36d24429decd671", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
@@ -313,7 +313,7 @@ stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "sweep.
 stamp = { hash = "b3:8d9e1c08e77c1a2c", by = "agent:drift-batch", note = "sweep.yml now takes stack items from the pack's [[sweep]] via stack sweep and checks the tool's own advisories and updates; the bullet now says so, the rest of the list matches the issue sections" }
 
 ["GETTING-STARTED#github"."body"]
-stamp = { hash = "b3:899467448fa400a0", by = "agent:scale-batch", note = "Removed the REVIEWER_SESSIONS steps; the label paragraph now says the ready-to-land card comes only when the PR is otherwise ready and comes again for a new head, matching coordinator stop, digest and builder labels" }
+stamp = { hash = "b3:34f6fe8e53a0f9ee", by = "agent:drift-batch", note = "Added re-pasting after later instruction changes (coordinator card on merge), account keys in Actions secrets, publishing releases, and template upgrades with their approval, label and bootstrap asks; each matches coordinator, project-instructions and the upgrade runbook" }
 
 ["GETTING-STARTED#github"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
@@ -334,7 +334,7 @@ stamp = { hash = "b3:1656af2c7e78080b", by = "agent:trust-batch", note = "New de
 stamp = { hash = "b3:aac3f558a95a2f15", by = "agent:scale-batch", note = "AGENT-INTAKE#the-rounds changed only the round 3 maintainer-only card wording (label asked later on a ready-to-land card); the three-round summary here still holds" }
 
 ["GETTING-STARTED#intake"."dep:AGENT-INTAKE#the-rounds"]
-stamp = { hash = "b3:8232e189c414c27f", by = "agent:scale-batch", note = "AGENT-INTAKE#the-rounds changed only the round 3 maintainer-only card wording (label asked later on a ready-to-land card); the three-round summary here still holds" }
+stamp = { hash = "b3:5e76f7283e1a3278", by = "agent:drift-batch", note = "Round 2 gained the private-repo security contact question; this summary of round 2 still holds without listing every card" }
 
 ["GETTING-STARTED#safety"."body"]
 stamp = { hash = "b3:535d289e3cb03460", by = "agent:scale-batch", note = "Stop paragraph now says the coordinator disables triggers and turns auto-merge off on every open PR, per AGENT-COORDINATOR#stop; digest, marker audit and the other guarantees unchanged and still hold" }
@@ -364,7 +364,7 @@ stamp = { hash = "b3:24d059ced02301ec", by = "agent:scale-batch", note = "Repo v
 stamp = { hash = "b3:f8843a26f1cb5c6c", by = "agent:scale-batch", note = "Repo variables row now names REVIEWER_ROLES set by bootstrap to the three reviewer roles, matching RUNBOOK-BOOTSTRAP#settings; by-hand step list reference is now steps 2, 3, 4 and 7" }
 
 ["GETTING-STARTED#start"."body"]
-stamp = { hash = "b3:66062be8a75d5901", by = "agent:scale-batch", note = "Dropped the reviewer-ids step and its warning, renumbered to 7 steps; step 6 says bootstrap already set the trusted reviewer roles; matches AGENTS#day-0-order and the shortened RUNBOOK-BOOTSTRAP#by-hand" }
+stamp = { hash = "b3:48a2c7deb066e4ab", by = "agent:drift-batch", note = "Step 5 now says a device run may ask them to run gh auth login once, matching device.md#bootstrap step 2; the other steps are unchanged" }
 
 ["GETTING-STARTED#start"."dep:AGENTS#day-0-order"]
 stamp = { hash = "b3:dc1c18b93d748237", by = "agent:scale-batch", note = "Dropped the reviewer-ids step and its warning, renumbered to 7 steps; step 6 says bootstrap already set the trusted reviewer roles; matches AGENTS#day-0-order and the shortened RUNBOOK-BOOTSTRAP#by-hand" }
@@ -541,7 +541,7 @@ stamp = { hash = "b3:cf292b656a18cfa0", by = "agent:routing-fixer", note = "New:
 stamp = { hash = "b3:b2f603530fe1e778", by = "agent:drift-batch", note = "Added how template and project ADRs share one number sequence, and a Ported-from line that lets later upgrades find ported ADRs; the comes-over and never-overwritten lists are unchanged" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#what"."dep:AGENT-INTAKE#outputs"]
-stamp = { hash = "b3:c7f32d7b3c667bb4", by = "agent:scale-batch", note = "AGENT-INTAKE#outputs changed only who applies the design PR's label; the lists of what comes over and what intake set inside template files still hold" }
+stamp = { hash = "b3:a90795a8b2fb7ea8", by = "agent:drift-batch", note = "Intake's new SECURITY.md item touches a file neither list names, and upgrades don't copy SECURITY.md, so both lists still hold" }
 
 ["RUNBOOK-WAVES#current"."body"]
 stamp = { hash = "b3:8aa60d15758aa947", by = "agent:skeleton-verifier", note = "Checked against DOCS#merge: merge-main --from wave/<name> merges origin/wave/<name>, resolves ledger and generated-block conflicts, lists stale sections; merge never rebase" }

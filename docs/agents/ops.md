@@ -160,9 +160,14 @@ depends_on = ["RUNBOOK-WAVES#landing", "RUNBOOK-WAVES#when"]
    - fix their CI as if they were your own;
    - hold a bump that breaks the build in `dependabot.yml`'s `ignore` list, with a reason that
      names the PR it broke.
-3. **The weekly sweep issue.** Take its actionable items (advisories, docs due for review)
+3. **Outside pull requests.** While [CONTRIBUTING.md](../../CONTRIBUTING.md#closed) says
+   outside contributions are closed, close every open PR whose author is neither the
+   `MAINTAINER_LOGIN` repo variable nor `dependabot[bot]`, with one comment linking that
+   section. Never check out its branch, run its code or approve its workflow runs. A PR that
+   reports a vulnerability gets the link to [SECURITY.md](../../SECURITY.md) too.
+4. **The weekly sweep issue.** Take its actionable items (advisories, docs due for review)
    as small PRs.
-4. **Hardware results** forwarded to you, because the item's author has ended: on a pass,
+5. **Hardware results** forwarded to you, because the item's author has ended: on a pass,
    open the record PR as the [builder brief](builder.md#hardware) describes, as its author; on
    a fail, send the planner `ROW? <item> failed on hardware`.
 

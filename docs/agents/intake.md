@@ -73,6 +73,8 @@ itself. The questions it must settle on day 0:
 - data and compliance: personal data, regulated users, third-party content licences;
 - time horizon: a target date, or until the budget runs out;
 - contributions: closed until first release?;
+- on a private repo, where security reports go: an email address or a page, since a private
+  repo has no private reporting form;
 - hardware runs: what only their machine can test, how often, and whether merging at risk with a
   tracking issue is fine;
 - flaky tests: may ops quarantine one for up to 24 hours, with a tracking issue? (template
@@ -122,6 +124,8 @@ A design PR into the repo:
 13. `.github/ISSUE_TEMPLATE/config.yml`: on a public repo, the private security report link,
     with the project's `OWNER/REPO`. Bootstrap turns on private vulnerability reporting,
     which the link opens. A private repo leaves it out.
+14. `SECURITY.md`: on a private repo, the reporting section names the contact from round 2
+    in place of the Security tab, which a private repo doesn't offer.
 
 The PR body ends with `Completes: M0-1` and your `Claude-Session:` line: by the time it
 merges, the repo exists, bootstrap has run, and the checks pass on `main`. Items 6, 7 and 13

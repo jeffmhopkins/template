@@ -251,7 +251,11 @@ Event-driven, plus the check-in trigger every 2 hours. A check-in:
 1. **Rebuilds the roster from GitHub:** each open PR's row, author session, shard and state
    ([README › Lifecycle](README.md#lifecycle)); merged and closed PRs set their rows to
    `merged` or `ended`. A builder whose PR merged is archived, unless it holds a stacked
-   follow-up. One line in the chat for a merge that completes a milestone.
+   follow-up. One line in the chat for a merge that completes a milestone. A merge since
+   the last check-in that changed `docs/agents/project-instructions.md` gets one card:
+   "#<pr> changed the project instructions: paste them again", with options **Done** (rec)
+   and **Later**. On **Later**, ask again at the next digest. The template-upgrade PR's
+   merge counts too.
 2. Updates the budget count, and lifts a `budget` pause at the day boundary.
 3. Checks review latency ([Reviewers](#reviewers)).
 4. Wakes sessions sitting idle on work that needs no approval, such as a dirty PR that

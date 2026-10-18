@@ -55,7 +55,10 @@ When the coordinator starts this session for bootstrap, follow the
    folder of their choice.
 2. Check the tools: `git --version`, `gh auth status` and `python3 --version` (3.11 or
    later). If one is missing, give them the install line for their system from
-   [Getting started](../GETTING-STARTED.md#before), and wait.
+   [Getting started](../GETTING-STARTED.md#before), and wait. If `gh auth status` says they
+   aren't logged in, ask them to run `gh auth login` in a terminal on this computer, choosing
+   GitHub.com, HTTPS and the web browser login, and wait. It needs their hands, so never run
+   it for them. Then check `gh auth status` again.
 3. Clone the repo with `gh repo clone OWNER/REPO`, or use their existing clone, and change
    into it. Pull `main` first if the clone already existed.
 4. Run `scripts/bootstrap.sh`. Exit 2 means it stopped before changing anything: pass on its

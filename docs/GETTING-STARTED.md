@@ -152,7 +152,8 @@ depends_on = ["AGENTS#day-0-order", "RUNBOOK-BOOTSTRAP#by-hand"]
    change. Either:
    - **ask Claude to do it:** in the project chat, say "Run the bootstrap on my computer".
      You'll be asked to allow Claude to work in a folder on your machine, which needs the
-     Claude desktop app there ([what you need](#before)); or
+     Claude desktop app there ([what you need](#before)). If `gh` isn't signed in to GitHub
+     on that computer yet, it asks you to run `gh auth login` once in a terminal there; or
    - **run it yourself** in a terminal. This example uses the repo `jane/photo-sorter`;
      replace it with yours:
      ```sh
@@ -235,6 +236,33 @@ again, a new card comes for the new version: tick the label again then.
 **After intake's first PR merges.** Paste the project instructions into the Claude project
 again, and run bootstrap again, the same way as the first time.
 
+**When the instructions change again.** A later PR may change
+[project-instructions.md](agents/project-instructions.md). Once it merges, the coordinator
+asks you with a card to paste the instructions again. Do it the same way as the first time,
+then tap **Done**. Until you do, the agents run on the old instructions.
+
+**Account keys.** When the product needs an account or a key, such as for a paid service,
+the coordinator asks you for it. Create the account yourself. Put its key in the repo's
+**Settings › Secrets and variables › Actions**, with **New repository secret**, under the
+name the coordinator gives. The agents can't add or read secrets there, and never paste a
+key into the project chat, a PR or an issue.
+
+**Publishing a release.** A release is yours to publish. When a version is ready, the
+coordinator asks you with a card. On your answer, an agent pushes the version's tag and
+writes the release notes. Then, on the repo's page, open **Releases**, click **Draft a new
+release**, choose that tag, paste the notes, and click **Publish release**. The agents can't
+publish a release themselves.
+
+**Template upgrades.** The template gets new versions. When you ask the coordinator to
+upgrade, or it reports a new version and you agree, an agent brings the new version over in
+one PR. That PR changes files only you may approve, so it asks you three things in turn:
+- an approval card for the files it changes;
+- a "ready to land" card to tick `governance-approved`;
+- when the required checks change, bootstrap runs twice: once before the PR merges and once
+  right after. The coordinator offers to run both on your computer.
+
+If the upgrade changes the project instructions, paste them again once it merges.
+
 <a id="intake"></a>
 ## The first conversation
 <!-- @section
@@ -269,6 +297,9 @@ start.
     `governance-approved` or `review-override`: each one loosened a check or skipped the
     reviewer, and its PR says why. The coordinator's digest asks whether to revert any;
   - **main is red**: only while `main` is broken; the agents are fixing it.
+- **Outside pull requests** are closed by the agents, with a link to
+  [CONTRIBUTING.md](../CONTRIBUTING.md), while contributions are closed. Issues from anyone
+  are welcome and handled as usual.
 - **Some things always wait for you:** changes to the review gate or the rules about who
   decides what, publishing anything, creating accounts, and spending beyond the budget. The
   full list is in [project-instructions.md](agents/project-instructions.md).
