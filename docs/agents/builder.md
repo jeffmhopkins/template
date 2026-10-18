@@ -74,7 +74,10 @@ auto-merge on your PR, and you don't turn it on: ops does that once `main` is gr
      ([Maintainer labels](#labels)).
 6. **Review.**
    - After every push, read every PR comment, review thread and issue filed against the PR.
-   - Answer each `B<n>` with a commit or a concrete rebuttal (R-GOV-004).
+   - Answer each `B<n>` with a commit or a concrete rebuttal (R-GOV-004). A rebuttal shows
+     evidence the reviewer can check at the head: a code path with `file:line`, a test CI
+     ran, or a rule or doc's text. When you rebut without pushing, send
+     `REVIEW? #<pr> <sha>` for the same head, so the reviewer judges the reply.
    - Fix cheap `N<n>` findings; defer the rest in one line.
 7. **Serial lanes.** If the row declares a lane, send `LANE-READY <lane> #<pr>` once review
    passes, with the lane value left unchanged. On `LANE-HOLD <lane> <value>`, set it, merging

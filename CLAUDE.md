@@ -96,7 +96,8 @@ depends_on = ["REVIEW#output", "REVIEW#rounds", "RULES#R-GOV-005", "RULES#R-GOV-
    by hand.**
 4. Answer every blocking finding: push a fix and reply naming the commit, or reply with a
    concrete rebuttal ([R-GOV-004](docs/RULES.md#R-GOV-004)). Each push starts a new review
-   round.
+   round. So does a rebuttal without a push, once you send the reviewer `REVIEW?` for the
+   same head.
 5. Non-blocking findings: fix them if cheap, or say they're deferred. Pre-existing problems
    become issues.
 6. A `needs-human` label means the maintainer decides. Stop arguing that point.
@@ -115,7 +116,7 @@ flowchart TD
     A["Draft PR: CI skips it"] --> B["Ready: merge main, mark ready, auto-merge (squash) on"]
     B --> C["Reviewer posts a round: findings B/N and one verdict marker for the head"]
     C -->|fail| D["Answer every B: a fix commit or a rebuttal"]
-    D -->|push: new round| C
+    D -->|"push, or REVIEW? after a rebuttal: new round"| C
     C -->|escalate| E["needs-human: the maintainer decides"]
     E -->|decision recorded: next round| C
     C -->|pass| F{"Every required check green, review-gate included?"}

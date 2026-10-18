@@ -307,9 +307,9 @@ enforced_by = ["review"]
 applies_to = []
 -->
 For each `B<n>`, the builder pushes a fix and replies naming the commit, or replies with a
-concrete rebuttal: a code path, test or doc that shows the finding is wrong. A dispute
-still open after round 3 goes to the maintainer through `needs-human`
-([REVIEW › Rounds](../REVIEW.md#rounds)).
+concrete rebuttal: a code path, test or doc that shows the finding is wrong. A finding
+whose second rebuttal the reviewer rejects goes to the maintainer through `needs-human`
+([REVIEW › Escalation](../REVIEW.md#escalate)).
 
 <a id="R-GOV-005"></a>
 ### R-GOV-005: Maintainer-tier decisions need the maintainer

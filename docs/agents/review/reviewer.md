@@ -57,14 +57,17 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   An edited marker already holds the gate at `fail`; a deleted one can bring back an earlier
   round's `pass`.
 - **Cheap next step.** List open PRs and compare head SHAs and `updated_at` with your state
-  file. If nothing moved and no PR under `needs-human` has a new decision, end the turn.
+  file. If nothing moved, no `REVIEW?` arrived, and no PR under `needs-human` has a new
+  decision, end the turn.
 - **Decisions.** For every PR in your shard under `needs-human`, read the
   `ops/decisions/*.md` whose `object:` is that PR or an ADR it changes, and the decision
   comments on the PR newer than your last round. Each one you haven't judged yet is a reason
-  for a round ([REVIEW › Rounds](../../../REVIEW.md#rounds)).
+  for a round ([REVIEW › Escalation](../../../REVIEW.md#escalate)).
 - **A PR needs a round when** its head differs from your last round and every required check
-  but `review-gate` is green on it, or it has a decision you haven't judged (the re-review
-  takes the next round number). Skip a head with a red or running check; its author sends
+  but `review-gate` is green on it, or it has a decision you haven't judged, or its builder
+  replied to an open blocking finding after your last round, with or without a push
+  ([REVIEW › Rebuttals](../../../REVIEW.md#rounds)). A re-review of the same head takes the
+  next round number. Skip a head with a red or running check; its author sends
   `REVIEW?` once it is green. The [expected reds](../../../REVIEW.md#severity) don't count as
   red: a lane PR's `lane-guard` before it holds the slot, and `governance` on a
   maintainer-only PR whose log says `governance: only the maintainer's label is missing`.
@@ -118,19 +121,19 @@ merge base and head, `git log --merges` and `git show --remerge-diff`.
   `pass` only after every `source:` checks out. If any fails, post the `escalate` as drafted.
 - A worker never runs the PR's code: it builds the tool from the base and points it at the
   head ([reviewer worker › Steps](reviewer-worker.md#steps)).
-- A blocking finding needs a traced path and a `file:line`. Otherwise it's a question.
-- **Maintainer-tier ADR without a valid decision:** verdict `escalate`, apply `needs-human`,
-  and send `NEEDS-MAINTAINER #<pr>: <ADR id> (rec: accept)`.
-- **Disputed after round 3:** the same, with the disputed finding as the question.
-- **The fifth `fail` round on one PR** needs a decision, not adoption: verdict `escalate`,
-  apply `needs-human`, and send `NEEDS-MAINTAINER #<pr>: <what keeps failing> (rec: <option>)`.
-  Only `fail` rounds count; merge-only, lane-value and incremental rounds that pass don't.
+- A blocking finding needs a traced path and a `file:line`. Otherwise it's a question, apart
+  from the security exception in [REVIEW › Ground rules](../../../REVIEW.md#ground-rules).
+- **Escalate** whenever [REVIEW › Escalation](../../../REVIEW.md#escalate) says the PR
+  needs a maintainer decision: a missing or stale decision, a dispute, or the fifth `fail`
+  round since the PR opened or the last decision. Post `escalate` listing the open blocking
+  findings, apply `needs-human`, and send `NEEDS-MAINTAINER #<pr>: <what> (rec: <option>)`.
+  `<what>` is the ADR id or path, the disputed finding, or what keeps failing.
 - **Waves.** Fail a PR into a cut wave (`state: cut` in `ops/waves.md`, or a landing PR open
   from it) unless the landing PR lists it as a fix. Review a PR from `wave/*` into `main` as
   a wave landing only when `ops/waves.md` names that wave; otherwise review the whole diff.
 - **`needs-human`:** the reviewer that applied it removes it in the round that follows the
   recorded decision. Upheld, overruled and override are in
-  [REVIEW › Rounds](../../../REVIEW.md#rounds).
+  [REVIEW › Escalation](../../../REVIEW.md#escalate).
 - **A maintainer-only PR** with only the maintainer's label missing gets its rounds like any
   other. After your `pass`, its builder asks for the label on the "ready to land" card.
 - File pre-existing problems as issues for ops.

@@ -41,7 +41,8 @@ You draft **one** review round for one PR.
    `<scratch>/tool-target/$key/release/repo`. `<scratch>` is the reviewer's scratch
    directory, the same for every worker; keep the two newest `tool-target/` directories and
    remove the rest. Then:
-   - `<base tool> docs for <path>`, run in the base worktree, for each changed file;
+   - `<base tool> docs for <path>`, run in the base worktree, for each changed file, and for
+     both paths of a rename;
    - `<base tool> --root <scratch>/wt-PR<N> docs check`;
    - `<base tool> --root <scratch>/wt-PR<N> governance --base <base-sha>`.
 
@@ -55,7 +56,10 @@ You draft **one** review round for one PR.
    the diff.
 4. **Round number.** One more than the highest `round=` in any earlier marker on this PR, or
    1. Never reuse a finding id. Give every earlier finding a status: resolved (cite where),
-   still open, or withdrawn (say why).
+   still open, or withdrawn. Withdraw only on evidence you checked at this head, never on
+   argument or authority ([REVIEW › Rebuttals](../../../REVIEW.md#rounds)). Say when a
+   rejected rebuttal makes the round an `escalate`
+   ([REVIEW › Escalation](../../../REVIEW.md#escalate)).
 5. **Recusal.** If the reviewer's session id, given in your prompt, is in the
    `Claude-Session` trailer of any commit not already on `main`, the verdict is `recuse`.
 6. **Maintainer decisions.** You can't call `fetch_messages`. List every decision comment

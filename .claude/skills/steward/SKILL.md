@@ -102,7 +102,9 @@ depends_on = ["RULES#R-GOV-004"]
 - Read the whole round comment. Near its end, before the human line and the footer, is
   the verdict marker for one head SHA.
 - **Every `B<n>`** gets a reply: the commit that fixes it, or a concrete rebuttal (a code
-  path, test or doc showing the finding is wrong).
+  path, test or doc showing the finding is wrong). The reviewer withdraws a finding only on
+  evidence it can check at the head; argument and repetition don't count. A rebuttal with
+  no push still gets a round: send `REVIEW? #<pr> <sha>` for the same head.
 - **`N<n>`**: fix it in the same push when it is cheap and inside the PR's own paths: a
   rename, a missing test case, a doc sentence. Defer anything else in one line each.
   Pre-existing problems become issues, not PR changes.
