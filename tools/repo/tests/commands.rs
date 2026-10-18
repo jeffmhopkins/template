@@ -553,10 +553,34 @@ fn heads_changed_tracks_origin() {
     let run = || work.repo(&["heads-changed", "--state", &state]);
     assert_eq!(run().out.trim(), "changed");
     assert_eq!(run().out.trim(), "unchanged");
+    // A branch that is neither main nor a wave doesn't count.
+    origin.git(&["branch", "claude/row-1"]);
+    assert_eq!(run().out.trim(), "unchanged");
     origin.write("x", "x");
     origin.commit("move");
     let r = run();
     assert!(r.ok() && r.out.trim() == "changed", "{}", r.out);
+    origin.git(&["branch", "wave/w1"]);
+    assert_eq!(run().out.trim(), "changed");
+    assert!(
+        std::fs::read_to_string(&state)
+            .unwrap()
+            .contains("refs/heads/wave/w1")
+    );
+    // --refs watches other refs instead.
+    let only_rows = work.repo(&[
+        "heads-changed",
+        "--state",
+        &state,
+        "--refs",
+        "refs/heads/claude/**",
+    ]);
+    assert_eq!(only_rows.out.trim(), "changed");
+    assert!(
+        !std::fs::read_to_string(&state)
+            .unwrap()
+            .contains("refs/heads/main")
+    );
     let _ = std::fs::remove_file(&state);
 }
 

@@ -56,7 +56,8 @@ commands:
   progress --trailers <range>               the Completes/Part-of/Verified-on-hardware lines in <range>
   plan check <launch.md> <roster.md> [--row <id>]
                                             no `owns` overlap between running rows
-  heads-changed --state <file>              print `changed` or `unchanged` for origin's refs
+  heads-changed --state <file> [--refs <glob,…>]
+                                            print `changed` or `unchanged` for origin's main and wave/* (or <glob>s)
   stack run <job>                           run the stack pack's command for a CI job
   stack setup <dir>                         put the pack's CI setup action, or a no-op one, at <dir>
   stack sweep                               run the pack's sweep items; print Markdown; exits 0";

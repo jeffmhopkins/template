@@ -544,7 +544,7 @@ check another, as the reviewer checks a PR head with the base's tool
 | `lane-guard --base <rev> --head <rev> --pr <n> [--wave --head-ref <branch> --base-ref <branch>]` | [Serial lanes](#lanes); `--wave` for a wave's landing PR |
 | `progress [--format markdown\|json]`, `progress --trailers <range>` | [Progress](#progress) |
 | `plan check <launch.md> <roster.md> [--row <id>]` | no `owns` overlap between running rows |
-| `heads-changed --state <file>` | print `changed` or `unchanged` for a sweep, and update the state file |
+| `heads-changed --state <file> [--refs <glob,…>]` | print `changed` or `unchanged` for `origin`'s `main` and `wave/*` branches (or the refs the globs name) since the last run, and replace the state file in one step |
 | `stack run <job>` | run the stack pack's command for a CI job; skip when the pack's detect file is absent |
 | `stack setup <dir>` | put the pack's CI setup action, or a no-op one, at `<dir>` ([stack packs](../stacks/README.md#pack-toml)) |
 | `stack sweep` | run the pack's weekly sweep items and print their Markdown; exits 0 |
