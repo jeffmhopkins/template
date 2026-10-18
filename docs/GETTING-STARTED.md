@@ -224,10 +224,10 @@ can check against you; a comment under your login could have come from an agent.
 `review-override`, on any PR, and `governance-approved` on a PR that changes a file only you
 may approve (the list is in [project-instructions.md](agents/project-instructions.md)). The
 agents use your login, so GitHub can't tell who ticked a label: only you tick these. The
-card comes only once the PR is otherwise ready to land: its checks are green, and the
-reviewer has passed it (or, for an override, you have decided to override it). It says which
-PR and which label. Open the PR, click **Labels** in the right-hand column, and tick
-the label. Then tap **Applied**. A push to the PR removes both labels. If the PR changes
+card comes only once the PR is otherwise ready to land: its other checks are green (the
+`governance` check waits for your label), and the reviewer has passed it (or, for an
+override, you have decided to override it). It says which PR and which label. Open the PR,
+click **Labels** in the right-hand column, and tick the label. Then tap **Applied**. A push to the PR removes both labels. If the PR changes
 again, a new card comes for the new version: tick the label again then.
 
 **Private repo only.** Turn on the dependency graph in **Settings › Code security**, or the

@@ -152,7 +152,9 @@ Intake drives its design PR the way a builder drives its own
    the maintainer-only paths, post one `/approve <path>` proxy per path in the same format,
    its instruction quoting their words that name the PR or the path, with its `source:`.
 3. Mark the PR ready, turn on auto-merge (squash), send `REVIEW? #<pr> <sha>` once its
-   other checks are green, and answer every finding until it merges. Merge main if it falls
+   other checks are green, and answer every finding until it merges. `governance` stays red
+   until the maintainer applies the label, with the log line `governance: only the
+   maintainer's label is missing`; that red is expected and doesn't hold back `REVIEW?`. Merge main if it falls
    behind. Once review passes and CI is green, send the "ready to land" line for
    `governance-approved`, and again for each later head
    ([builder › Maintainer labels](builder.md#labels)).

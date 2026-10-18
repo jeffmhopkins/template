@@ -161,8 +161,10 @@ depends_on = ["RULES#R-GOV-001", "RULES#R-GOV-007", "RUNBOOK-BOOTSTRAP#check"]
    `governance-approved` only when it prints no `maintainer-only:` path
    ([R-GOV-001](../RULES.md#R-GOV-001)).
 4. Any `maintainer-only:` path it prints needs the maintainer's `/approve` decision on the
-   PR, and the maintainer applies the label themselves, with `needs-human` until both are
-   there ([R-GOV-007](../RULES.md#R-GOV-007)). An upgrade that changes workflows or the tool
+   PR, with `needs-human` until it is there ([R-GOV-007](../RULES.md#R-GOV-007)). The
+   maintainer applies the label themselves, on the "ready to land" card once review passes;
+   until then `governance` is red, as expected
+   ([builder › Maintainer labels](../agents/builder.md#labels)). An upgrade that changes workflows or the tool
    always has such paths.
 5. When `[checks].required` changed, the rulesets follow it in two steps
    ([bootstrap runbook](bootstrap.md#run)). Before the PR merges, once it reports each new

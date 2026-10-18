@@ -211,10 +211,12 @@ third-party action is pinned to a full commit SHA ([ADR-0004](../adr/0004-ci-dra
 - `rust-stack`: the Rust pack's setup action, named by its `[ci].setup`.
 
 **`review-gate.yml`** counts only verdict markers that are for the current head SHA, posted
-by `REVIEWER_LOGIN`, name a role in `REVIEWER_ROLES` and haven't been edited. The highest
-round decides, and a fail beats a pass. A marker whose `reviewer-session` authored a commit is
-ignored, and the gate fails a non-merge commit without a `Claude-Session` trailer.
-`review-override` needs the maintainer's label and a justification with a link.
+by `REVIEWER_LOGIN`, name a role in `REVIEWER_ROLES`, and are the only marker line in a
+comment that hasn't been edited. An edited comment, or one with two marker lines, counts as a
+fail in round order. The highest round decides, and a fail beats a pass. A marker whose
+`reviewer-session` authored a commit is ignored, and the gate fails a non-merge commit without
+a `Claude-Session` trailer. `review-override` needs the maintainer's label and a
+justification with a link that isn't a session URL, before the trailer block.
 
 **Tests** (`.github/tests/`), run by `gate-test`: the review gate's decision function, cut
 out of the deployed `review-gate.yml`, and a scan of every YAML file under `.github/` for

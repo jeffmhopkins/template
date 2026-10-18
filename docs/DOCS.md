@@ -422,7 +422,10 @@ non-empty `## Governance change` section saying what is loosened or tightened, a
 `scripts/repo governance --base <rev>` lists the changes between the merge base and `HEAD`.
 With `--pr-body` and `--labels` it also fails when the label or the section is missing. It
 prints `maintainer-only: <path>` for each changed path in `[governance].maintainer_only`,
-and `maintainer-only: <path>#<rule id>` for each changed `R-GOV-*` rule.
+and `maintainer-only: <path>#<rule id>` for each changed `R-GOV-*` rule. On such a PR, when
+the label is the only thing missing, it prints `governance: only the maintainer's label is
+missing`: the check is red until the maintainer applies the label, after review passes
+([REVIEW › Governance checks](../REVIEW.md#governance)).
 With `--author dependabot[bot]`, a diff whose every changed line re-pins a `uses:` reference
 of the same action to a new full commit SHA, with its release in a trailing comment, is
 exempt ([ADR-0004](adr/0004-ci-drafts-platform-pins.md)). With `--into wave/<name>`, a file

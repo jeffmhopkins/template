@@ -94,8 +94,8 @@ Follow the day 0 order in [README.md](README.md#day-0-order).
 -->
 
 Review latency is read from GitHub, never from messages: a **waiting PR** is a ready PR
-whose required checks other than `review-gate` are all green, and whose `review-gate` has
-been pending since. Count them by shard at each check-in.
+whose required checks other than `review-gate` are all green, apart from the
+[expected reds](../../REVIEW.md#severity), and whose `review-gate` has been pending since. Count them by shard at each check-in.
 
 - **The third reviewer.** When, at two check-ins in a row, more than 4 PRs have waited over
   an hour, create and fire the `reviewer-2` trigger (never more than 3 reviewers), add it to

@@ -353,7 +353,8 @@ A change to a path in `[governance].maintainer_only` in `repo.toml`, or to the h
 or metadata of any `R-GOV-*` rule, needs the maintainer's own words on the PR, as an
 `/approve` decision whose `source:` the reviewer checks
 ([ADR-0003](adr/0003-decision-tiers.md), [R-GOV-006](#R-GOV-006)). Only the maintainer
-applies `governance-approved` on such a PR. It carries `needs-human` until both are there.
+applies `governance-approved` on such a PR, once review has passed. It carries
+`needs-human` until the `/approve` decision is there.
 This rule's `applies_to` is the same list as `maintainer_only`, and `scripts/repo config
 check` fails when they differ.
 

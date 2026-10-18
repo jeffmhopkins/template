@@ -7,13 +7,13 @@ stamp = { hash = "b3:1fbf1ed9e5b5ef3d", by = "agent:scale-batch", note = "Rewrot
 stamp = { hash = "b3:ea6665c00cae7188", by = "agent:scale-batch", note = "Rewrote day 0 for ADR-0007: creates its own check-in trigger and one fresh-session trigger per role, fires each once, records them in coordinator.md and the roster roles table, starts shards at 1 then 2; no reviewer ids card. Matches AGENTS#state formats and AGENTS#lifecycle triggers" }
 
 ["AGENT-COORDINATOR#day-0"."dep:AGENTS#state"]
-stamp = { hash = "b3:c36ebb83b90ce26d", by = "agent:scale-batch", note = "Rewrote day 0 for ADR-0007: creates its own check-in trigger and one fresh-session trigger per role, fires each once, records them in coordinator.md and the roster roles table, starts shards at 1 then 2; no reviewer ids card. Matches AGENTS#state formats and AGENTS#lifecycle triggers" }
+stamp = { hash = "b3:d76f716a3bf506e2", by = "agent:reviewer-fix", note = "Day 0 creates ops files from README#state; the reviewer state header now has the mb column, which this section points to rather than copies, so it holds." }
 
 ["AGENT-COORDINATOR#marker-audit"."body"]
 stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "New section: daily cross-check of every marker the gate counted on merged PRs against the comment ids in reviewer state files, card to the maintainer on a miss; matches reviewer.md#state and ADR-0002's new negative consequence." }
 
 ["AGENT-COORDINATOR#marker-audit"."dep:AGENT-REVIEWER#state"]
-stamp = { hash = "b3:4aecd7b02380b793", by = "agent:scale-batch", note = "Reviewer state lines gained a kind column and a session line; the audit still reads only the comment column of every state-<shard>.md, so its steps hold unchanged" }
+stamp = { hash = "b3:f27170b211f5adf8", by = "agent:reviewer-fix", note = "Reviewer state still records the comment column the audit looks up; the added mb column and the sweep's edited/deleted-marker check don't change the audit steps." }
 
 ["AGENT-DEVICE#bootstrap"."body"]
 stamp = { hash = "b3:5a0b69960e9eec85", by = "agent:drift-batch", note = "Step 2 now handles a gh that isn't logged in: the maintainer runs gh auth login in a terminal themselves, then the session checks gh auth status again" }
@@ -43,7 +43,7 @@ stamp = { hash = "b3:eac96200b6d55e59", by = "agent:trust-batch", note = "New se
 stamp = { hash = "b3:7b02237c5ff640e9", by = "agent:trust-batch", note = "New section describing .claude/settings.json: allow list (check-only bootstrap, gh api reads, --disable-auto) and deny list (review-override labels, gh api method/body flags in every spelling); checked line by line against the file." }
 
 ["AGENTS#state"."body"]
-stamp = { hash = "b3:c36ebb83b90ce26d", by = "agent:scale-batch", note = "Rewrote the state table and formats: PAUSE-builders, planner.md, board.md and ops.md files, session lines in role files, roster shards line and trigger column, coordinator triggers, day boundary, paused and STOP auto-merge list, review state kind column. Roster tables still match plan.rs (roles table skipped, row table read)" }
+stamp = { hash = "b3:d76f716a3bf506e2", by = "agent:reviewer-fix", note = "Reviewer state line gains an mb column (merge base the round reviewed against), same as reviewer#state; other ops file formats unchanged." }
 
 ["AGENTS#state"."dep:TOOL#plans"]
 stamp = { hash = "b3:e26320717bd7b6a7", by = "agent:routing-fixer", note = "Rewrote: ops/maintainer.md and heads/<role>.txt added, hw/ files dropped for the hardware issue, every file's format and day-0 content; roster tables match plan.rs (role table skipped, row table read, merged/ended finished) per TOOL#plans" }
@@ -70,10 +70,10 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:8cc5be3af13bd4d9", by = "agent:trust-fixer", note = "Added the Claude-Session trailer rule to step 1 (commits and PR body, R-GIT-005); REVIEW#output now exempts main's commits and signed Dependabot ones, R-GOV-005/006 add the source check, none contradict the loop" }
 
 ["CLAUDE#pr-loop"."dep:REVIEW#output"]
-stamp = { hash = "b3:1451844d6353d3fd", by = "agent:scale-batch", note = "REVIEW#rounds now defines full, incremental and merge-only rounds and REVIEW#output adds reviewer= to the marker; the PR loop says only that each push starts a new round and a verdict marker ends each, which still holds" }
+stamp = { hash = "b3:701c659b4f4529aa", by = "agent:reviewer-fix", note = "Reviewer still ends each round with one verdict marker and builders never post one; the new marker-reproduction rule and round-kind commands don't change the builder loop." }
 
 ["CLAUDE#pr-loop"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:3aed8b8aa18a5ac6", by = "agent:scale-batch", note = "REVIEW#rounds gained the green-CI wait and lane-guard exception and REVIEW#output is unchanged since the last stamp; the PR loop's round and marker steps still hold" }
+stamp = { hash = "b3:8837c4befeb8b95b", by = "agent:reviewer-fix", note = "Reviewer still ends each round with one verdict marker and builders never post one; the new marker-reproduction rule and round-kind commands don't change the builder loop." }
 
 ["CLAUDE#pr-loop"."dep:RULES#R-GOV-005"]
 stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Added the Claude-Session trailer rule to step 1 (commits and PR body, R-GIT-005); REVIEW#output now exempts main's commits and signed Dependabot ones, R-GOV-005/006 add the source check, none contradict the loop" }
@@ -97,10 +97,10 @@ stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New de
 stamp = { hash = "b3:ea6665c00cae7188", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
 
 ["DESIGN#agents"."dep:AGENTS#messages"]
-stamp = { hash = "b3:e0da83c677fa8667", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+stamp = { hash = "b3:e6c7376f95958940", by = "agent:reviewer-fix", note = "Re-read against the state and message table edits (mb column, expected reds on REVIEW?): the roles table and how-they-work list still hold." }
 
 ["DESIGN#agents"."dep:AGENTS#state"]
-stamp = { hash = "b3:c36ebb83b90ce26d", by = "agent:drift-batch", note = "New depends_on on AGENTS messages, state, lifecycle and ADR-0007; the role table, phases and trigger, stop and budget lines match them" }
+stamp = { hash = "b3:d76f716a3bf506e2", by = "agent:reviewer-fix", note = "Re-read against the state and message table edits (mb column, expected reds on REVIEW?): the roles table and how-they-work list still hold." }
 
 ["DESIGN#build-plan"."body"]
 stamp = { hash = "b3:a396821b70eee0e0", by = "agent:drift-batch", note = "New depends_on ADR-0007; the dry-run list still names the trigger and board checks ADR-0007 relies on; step 1 no longer names an ADR range" }
@@ -109,7 +109,7 @@ stamp = { hash = "b3:a396821b70eee0e0", by = "agent:drift-batch", note = "New de
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New depends_on ADR-0007; the dry-run list still names the trigger and board checks ADR-0007 relies on; step 1 no longer names an ADR range" }
 
 ["DESIGN#ci"."body"]
-stamp = { hash = "b3:17725647275dd543", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+stamp = { hash = "b3:097aba91200d2ac4", by = "agent:reviewer-fix", note = "review-gate.yml summary updated: only marker line in an unedited comment counts, edited or multi-marker comments are fails, override link excludes session URLs and ends at trailers; tests now include the real PR template." }
 
 ["DESIGN#ci"."dep:ADR-0004"]
 stamp = { hash = "b3:0c7cd60fc114a801", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
@@ -118,13 +118,13 @@ stamp = { hash = "b3:0c7cd60fc114a801", by = "agent:drift-batch", note = "New CI
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
 
 ["DESIGN#ci"."dep:DOCS#governance"]
-stamp = { hash = "b3:55a9749dec774df5", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+stamp = { hash = "b3:cb8ea50cb732b2e4", by = "agent:reviewer-fix", note = "review-gate.yml summary updated: only marker line in an unedited comment counts, edited or multi-marker comments are fails, override link excludes session URLs and ends at trailers; tests now include the real PR template." }
 
 ["DESIGN#ci"."dep:DOCS#ttl"]
 stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
 
 ["DESIGN#ci"."dep:REVIEW#output"]
-stamp = { hash = "b3:1451844d6353d3fd", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+stamp = { hash = "b3:701c659b4f4529aa", by = "agent:reviewer-fix", note = "review-gate.yml summary updated: only marker line in an unedited comment counts, edited or multi-marker comments are fails, override link excludes session URLs and ends at trailers; tests now include the real PR template." }
 
 ["DESIGN#ci"."dep:RULES#R-GIT-003"]
 stamp = { hash = "b3:a7ac95a8d51a7f8e", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
@@ -148,7 +148,7 @@ stamp = { hash = "b3:b3f8918c9a8800ee", by = "agent:drift-batch", note = "New CI
 stamp = { hash = "b3:a358ec68cc2d6c50", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
 
 ["DESIGN#ci"."file:.github/tests/review-gate-decide.test.mjs"]
-stamp = { hash = "b3:73635cdcf7f114cf", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
+stamp = { hash = "b3:be02d26dc9792a8e", by = "agent:reviewer-fix", note = "review-gate.yml summary updated: only marker line in an unedited comment counts, edited or multi-marker comments are fails, override link excludes session URLs and ends at trailers; tests now include the real PR template." }
 
 ["DESIGN#ci"."file:.github/tests/workflow-yaml.test.mjs"]
 stamp = { hash = "b3:41a4e88f3200e7e8", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
@@ -226,7 +226,7 @@ stamp = { hash = "b3:24d059ced02301ec", by = "agent:drift-batch", note = "New de
 stamp = { hash = "b3:f8843a26f1cb5c6c", by = "agent:drift-batch", note = "New depends_on on RUNBOOK-BOOTSTRAP settings and by-hand; repo, rulesets, actions, labels, variables, security and by-hand steps match the runbook's table and list" }
 
 ["DOCS#governance"."body"]
-stamp = { hash = "b3:55a9749dec774df5", by = "agent:scale-batch", note = "governance.yml now builds the base tool once in a tool job and hands it to governance, pr-title and lane-guard by artifact; the section now says it builds once per run and shares the binary; head-labels and the rest of the list hold" }
+stamp = { hash = "b3:cb8ea50cb732b2e4", by = "agent:reviewer-fix", note = "Documents the new 'governance: only the maintainer's label is missing' line from awaits_maintainer() and that the check stays red until the maintainer's label after review." }
 
 ["DOCS#governance"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "Added the R-GOV rule bullet, the path#rule maintainer-only output line and the paragraph that accepted ADR edits fail whatever the labels; checked against classify, decision_rules and hard_problems in governance.rs and ADR-0002's pointer to repo.toml." }
@@ -283,7 +283,7 @@ stamp = { hash = "b3:1c22ea8917bc0be1", by = "agent:trust-fixer", note = "Table 
 stamp = { hash = "b3:ddc6d36f0bffe580", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/governance.rs"]
-stamp = { hash = "b3:512d4ee788d1d59f", by = "agent:trust-batch", note = "config check row now names the copies comparison (new #copies section), checked against check_constants and check_maintainer_copies in config.rs; governance row unchanged, its R-DOC-008 and R-GOV behaviour is in #governance and the usage text in main.rs." }
+stamp = { hash = "b3:61b3a8f982dd66b4", by = "agent:reviewer-fix", note = "governance.rs adds AWAITING_MAINTAINER and awaits_maintainer(); the command table row and its link to Governance changes still describe the command and flags unchanged." }
 
 ["DOCS#tool"."file:tools/repo/src/heads.rs"]
 stamp = { hash = "b3:0f870b5fbd65fc45", by = "agent:drift-batch", note = "heads-changed row now says it watches main and wave/* by default, takes --refs globs, and replaces the state file in one step, matching heads.rs and the usage line" }
@@ -313,7 +313,7 @@ stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "sweep.
 stamp = { hash = "b3:8d9e1c08e77c1a2c", by = "agent:drift-batch", note = "sweep.yml now takes stack items from the pack's [[sweep]] via stack sweep and checks the tool's own advisories and updates; the bullet now says so, the rest of the list matches the issue sections" }
 
 ["GETTING-STARTED#github"."body"]
-stamp = { hash = "b3:34f6fe8e53a0f9ee", by = "agent:drift-batch", note = "Added re-pasting after later instruction changes (coordinator card on merge), account keys in Actions secrets, publishing releases, and template upgrades with their approval, label and bootstrap asks; each matches coordinator, project-instructions and the upgrade runbook" }
+stamp = { hash = "b3:a57d4c5d9d57ec40", by = "agent:reviewer-fix", note = "Ready-to-land card wording now says the other checks are green and governance waits for the maintainer's label, matching builder#labels; decision and label text otherwise unchanged by the tiers edit." }
 
 ["GETTING-STARTED#github"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
@@ -328,7 +328,7 @@ stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "New de
 stamp = { hash = "b3:8b7df3f03d2f4777", by = "agent:scale-batch", note = "Removed the REVIEWER_SESSIONS steps; the label paragraph now says the ready-to-land card comes only when the PR is otherwise ready and comes again for a new head, matching coordinator stop, digest and builder labels" }
 
 ["GETTING-STARTED#github"."dep:REVIEW#tiers"]
-stamp = { hash = "b3:1656af2c7e78080b", by = "agent:trust-batch", note = "New depends_on on ADR-0002, REVIEW#tiers and the coordinator stop, digest and marker-audit sections; re-read: reviewer ids, chat decisions and the two maintainer labels still match those sections and project-instructions." }
+stamp = { hash = "b3:c7f8599d398b0b28", by = "agent:reviewer-fix", note = "Ready-to-land card wording now says the other checks are green and governance waits for the maintainer's label, matching builder#labels; decision and label text otherwise unchanged by the tiers edit." }
 
 ["GETTING-STARTED#intake"."body"]
 stamp = { hash = "b3:aac3f558a95a2f15", by = "agent:scale-batch", note = "AGENT-INTAKE#the-rounds changed only the round 3 maintainer-only card wording (label asked later on a ready-to-land card); the three-round summary here still holds" }
@@ -352,7 +352,7 @@ stamp = { hash = "b3:66402e307dd4e44d", by = "agent:trust-batch", note = "Rewrit
 stamp = { hash = "b3:8b7df3f03d2f4777", by = "agent:scale-batch", note = "Stop paragraph now says the coordinator disables triggers and turns auto-merge off on every open PR, per AGENT-COORDINATOR#stop; digest, marker audit and the other guarantees unchanged and still hold" }
 
 ["GETTING-STARTED#safety"."dep:REVIEW#tiers"]
-stamp = { hash = "b3:1656af2c7e78080b", by = "agent:trust-batch", note = "Rewritten into enforced by GitHub, relies on agents (shared login, forged markers and the daily audit, self-labelled governance audited later, card taps recorded by the coordinator, workflow-faked checks, stop vs auto-merge) and ADR-0006 as the later fix; each claim checked against ADR-0002, REVIEW#tiers and coordinator.md." }
+stamp = { hash = "b3:c7f8599d398b0b28", by = "agent:reviewer-fix", note = "Re-read against the new REVIEW#tiers decision-validity rules: the safety claims (required checks, base-branch checks, login sharing, marker audit) still hold; nothing here restates decision validity." }
 
 ["GETTING-STARTED#setup"."body"]
 stamp = { hash = "b3:45cfae4235a0cc3d", by = "agent:scale-batch", note = "Repo variables row now names REVIEWER_ROLES set by bootstrap to the three reviewer roles, matching RUNBOOK-BOOTSTRAP#settings; by-hand step list reference is now steps 2, 3, 4 and 7" }
@@ -397,37 +397,37 @@ stamp = { hash = "b3:719c860cc28f8ec9", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes only reformatted its first bullet as a CAUTION alert, wording unchanged; the note-judging bullets still match it" }
 
 ["REVIEW#gather"."body"]
-stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
+stamp = { hash = "b3:8d2e8918c53cdb93", by = "agent:reviewer-fix", note = "Step 1 diffs against the trusted <base>; step 4 points to the governance log line 'only the maintainer's label is missing' that the tool now prints for the expected red." }
 
 ["REVIEW#gather"."dep:DOCS#tool"]
 stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "DOCS#tool dropped docs check --draft, which gather never used; the --root docs check call is unchanged" }
 
 ["REVIEW#governance"."body"]
-stamp = { hash = "b3:ba5d99640f8e74b1", by = "agent:drift-batch", note = "The review-override bullet now says the gate accepts any link and the reviewer checks it leads to the maintainer's own message about the PR, matching the R-GOV-002 text and its new review enforcer" }
+stamp = { hash = "b3:424d50b87e610534", by = "agent:reviewer-fix", note = "Maintainer-only PRs: missing label is expected red with the new tool line, not a finding; reviewer judges the section and /approve; label comes on the ready-to-land card. Override check matches the gate's trailer and session-URL handling." }
 
 ["REVIEW#governance"."dep:DOCS#governance"]
-stamp = { hash = "b3:55a9749dec774df5", by = "agent:scale-batch", note = "DOCS#governance changed only to say the tool is built once per run and shared; the reviewer's governance checks do not depend on that, so every bullet holds" }
+stamp = { hash = "b3:cb8ea50cb732b2e4", by = "agent:reviewer-fix", note = "Maintainer-only PRs: missing label is expected red with the new tool line, not a finding; reviewer judges the section and /approve; label comes on the ready-to-land card. Override check matches the gate's trailer and session-URL handling." }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-002"]
 stamp = { hash = "b3:d61bd36d515c40f1", by = "agent:drift-batch", note = "The review-override bullet now says the gate accepts any link and the reviewer checks it leads to the maintainer's own message about the PR, matching the R-GOV-002 text and its new review enforcer" }
 
 ["REVIEW#governance"."dep:RULES#R-GOV-007"]
-stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
+stamp = { hash = "b3:1c29b6ee8c1be803", by = "agent:reviewer-fix", note = "Maintainer-only PRs: missing label is expected red with the new tool line, not a finding; reviewer judges the section and /approve; label comes on the ready-to-land card. Override check matches the gate's trailer and session-URL handling." }
 
 ["REVIEW#ground-rules"."body"]
-stamp = { hash = "b3:50dd88429baca7ae", by = "agent:trust-fixer", note = "Added never-run-PR-code (base tool plus --root) and recusal leaving out main's commits; checked against amended ADR-0002 decision and negatives on the shared login" }
+stamp = { hash = "b3:350df424465479f3", by = "agent:reviewer-fix", note = "Trusted base defined: base branch only for main or wave/*, otherwise merge-base with origin/main or the stack's wave; base PR's unmerged commits join the diff; tool built from the trusted base." }
 
 ["REVIEW#ground-rules"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names verdict-marker forgery and points the maintainer-only list at repo.toml; the ground rules (only comment, base branch, recusal by trailer) are unaffected and still hold." }
 
 ["REVIEW#output"."body"]
-stamp = { hash = "b3:1451844d6353d3fd", by = "agent:scale-batch", note = "Marker line now carries reviewer=<role> before reviewer-session; the gate list says it counts roles from REVIEWER_ROLES and recuses by the marker's reviewer-session, matching decide() in review-gate.yml" }
+stamp = { hash = "b3:701c659b4f4529aa", by = "agent:reviewer-fix", note = "Matches review-gate.yml: edited or multi-marker comments count as fail at their highest round regardless of SHA/role/session; deleted ones are left to the sweep; new caution never to reproduce a marker line." }
 
 ["REVIEW#output"."file:.github/workflows/review-gate.yml"]
-stamp = { hash = "b3:cf9dae467198e303", by = "agent:scale-batch", note = "Marker line now carries reviewer=<role> before reviewer-session; the gate list says it counts roles from REVIEWER_ROLES and recuses by the marker's reviewer-session, matching decide() in review-gate.yml" }
+stamp = { hash = "b3:c37f891140684158", by = "agent:reviewer-fix", note = "Matches review-gate.yml: edited or multi-marker comments count as fail at their highest round regardless of SHA/role/session; deleted ones are left to the sweep; new caution never to reproduce a marker line." }
 
 ["REVIEW#tiers"."body"]
-stamp = { hash = "b3:1656af2c7e78080b", by = "agent:routing-fixer", note = "Added the card tap rule: source is the card's message id, words the option label, tapper's author_id from the coordinator's decision file; a close_decision is not a tap" }
+stamp = { hash = "b3:c7f8599d398b0b28", by = "agent:reviewer-fix", note = "Added: a decision's words must give that decision for that object (not a question, mention or conditional); it covers the ADR text or maintainer-only diff at the last round's head before the message, else escalate." }
 
 ["REVIEW#tiers"."dep:ADR-0003"]
 stamp = { hash = "b3:9f8bce207e2aff0c", by = "agent:trust-fixer", note = "Decisions now need a source the reviewer checks with fetch_messages against ops/maintainer.md, and range cards count only listed ids; matches amended ADR-0003 and R-GOV-005" }
@@ -436,13 +436,13 @@ stamp = { hash = "b3:9f8bce207e2aff0c", by = "agent:trust-fixer", note = "Decisi
 stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Decisions now need a source the reviewer checks with fetch_messages against ops/maintainer.md, and range cards count only listed ids; matches amended ADR-0003 and R-GOV-005" }
 
 ["REVIEW-TEMPLATE#template"."body"]
-stamp = { hash = "b3:c07fe5437fbe109f", by = "agent:scale-batch", note = "The template marker now carries reviewer=<role> and the round kinds list adds incremental, matching REVIEW#output and the new REVIEW#rounds table" }
+stamp = { hash = "b3:bc1501ab8819d01a", by = "agent:reviewer-fix", note = "Caution now says the marker is the only line starting with the marker prefix and that the gate counts edited or two-marker comments as fail; withdrawn status may cite a decision source, per REVIEW#rounds." }
 
 ["REVIEW-TEMPLATE#template"."dep:REVIEW#output"]
-stamp = { hash = "b3:1451844d6353d3fd", by = "agent:scale-batch", note = "The template marker now carries reviewer=<role> and the round kinds list adds incremental, matching REVIEW#output and the new REVIEW#rounds table" }
+stamp = { hash = "b3:701c659b4f4529aa", by = "agent:reviewer-fix", note = "Caution now says the marker is the only line starting with the marker prefix and that the gate counts edited or two-marker comments as fail; withdrawn status may cite a decision source, per REVIEW#rounds." }
 
 ["REVIEW-TEMPLATE#template"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:3aed8b8aa18a5ac6", by = "agent:scale-batch", note = "REVIEW#rounds now waits for green checks with a lane-guard exception and rewords the round-number line; the template's round header, kinds list and marker with reviewer= still match" }
+stamp = { hash = "b3:8837c4befeb8b95b", by = "agent:reviewer-fix", note = "Caution now says the marker is the only line starting with the marker prefix and that the gate counts edited or two-marker comments as fail; withdrawn status may cite a decision source, per REVIEW#rounds." }
 
 ["RULES#documentation"."body"]
 stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-008 now says status changes only to superseded with superseded_by and that governance fails any other edit whatever the labels; the section's dependency DOCS#gate is unchanged and the group still holds." }
@@ -451,7 +451,7 @@ stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-
 stamp = { hash = "b3:a2c6fe480176d777", by = "agent:drift-batch", note = "DOCS#gate gained item 9 (covers in an ARCH section) and lost the --draft line; the R-DOC rules enforced by ci:docs still match what the check fails on" }
 
 ["RULES#governance"."body"]
-stamp = { hash = "b3:ec607abab8cdf49a", by = "agent:drift-batch", note = "R-GOV-002 now says review-gate checks only that a link exists and the reviewer judges where it points, with review added to enforced_by; the other R-GOV rules are unchanged" }
+stamp = { hash = "b3:5e1a430741549583", by = "agent:reviewer-fix", note = "R-GOV-007 now says the maintainer applies the label once review has passed and needs-human lasts until the /approve; R-GOV-002 already says review-gate checks only for a link; others unchanged." }
 
 ["RULES#governance"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names marker forgery and points to repo.toml for the maintainer-only list; R-GOV-007 gained the R-GOV rule clause and the extended applies_to that config check compares with repo.toml." }
@@ -520,13 +520,13 @@ stamp = { hash = "b3:40abaf47c94e76b7", by = "agent:scale-batch", note = "Now de
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:scale-batch", note = "Now depends on ADR-0007, which restates ADR-0005's lane and wave rules; ops replaces the integrator; landing still advances each lane by its claims" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."body"]
-stamp = { hash = "b3:de25f290f1c491dd", by = "agent:routing-fixer", note = "Step 5 now changes rulesets in two steps with bootstrap --also-require before the merge and a plain run after, as in the bootstrap runbook" }
+stamp = { hash = "b3:15731c739cdd3eaf", by = "agent:reviewer-fix", note = "Step 4 now says needs-human lasts until /approve and the maintainer applies the label on the ready-to-land card after review, with governance red until then, per R-GOV-007." }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RULES#R-GOV-001"]
 stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:structure-pass", note = "New section; governance label and section per R-GOV-001, maintainer-only paths with needs-human per R-GOV-007, ruleset follow-up through bootstrap --check reported to the coordinator" }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RULES#R-GOV-007"]
-stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "R-GOV-007 now also covers R-GOV rule edits and a longer maintainer-only list; steps 3 and 4 still say to apply the label only with no maintainer-only line and get /approve otherwise, which covers path#rule entries too." }
+stamp = { hash = "b3:1c29b6ee8c1be803", by = "agent:reviewer-fix", note = "Step 4 now says needs-human lasts until /approve and the maintainer applies the label on the ready-to-land card after review, with governance red until then, per R-GOV-007." }
 
 ["RUNBOOK-TEMPLATE-UPGRADE#after"."dep:RUNBOOK-BOOTSTRAP#check"]
 stamp = { hash = "b3:e74c079604734f70", by = "agent:routing-fixer", note = "Step 5 now changes rulesets in two steps with bootstrap --also-require before the merge and a plain run after, as in the bootstrap runbook" }
@@ -556,7 +556,7 @@ stamp = { hash = "b3:fd59049830728d61", by = "agent:drift-batch", note = "Step 3
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:scale-batch", note = "Ops owns landing and fixes what the landing run finds since builders end on merge into the wave; every check runs as on every wave PR; ADR-0007 replaces ADR-0005" }
 
 ["RUNBOOK-WAVES#landing"."dep:REVIEW#gather"]
-stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "REVIEW#gather step 4 now names path#rule maintainer-only entries; the landing steps refer to gather generally and still hold." }
+stamp = { hash = "b3:8d2e8918c53cdb93", by = "agent:reviewer-fix", note = "REVIEW#gather's wave landing step is unchanged (sync merges via remerge-diff); its step 1 now diffs against the trusted base, which for a landing PR is main, so step 4 here holds." }
 
 ["RUNBOOK-WAVES#sync"."body"]
 stamp = { hash = "b3:78d98f13f6d38e0e", by = "agent:scale-batch", note = "After a sync merges, ops sends MERGE-MAIN only to wave PRs left dirty and never BASE, per ADR-0007; DOCS#merge relocking doesn't change the sync steps" }
@@ -577,7 +577,7 @@ stamp = { hash = "b3:d3e9d0b533acb951", by = "agent:scale-batch", note = "Lane r
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:scale-batch", note = "Lane row now says ops; urgent row adds ops's revert of a merge that broke main, which targets main; protected-path row and governance enforcement unchanged under ADR-0007" }
 
 ["SECURITY-AGENTS#approvals"."body"]
-stamp = { hash = "b3:4c12dfba8119d234", by = "agent:trust-batch", note = "Maintainer-only bullet now includes R-GOV rule changes, matching R-GOV-007 and the governance tool's path#rule entries; the rest of the approvals list still matches R-GOV-002/005/006." }
+stamp = { hash = "b3:8d50edc120c8ed66", by = "agent:reviewer-fix", note = "Added that the cited words, read in context, must give that decision for that object; matches REVIEW#tiers. R-GOV-007's label-after-pass change contradicts nothing here." }
 
 ["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-002"]
 stamp = { hash = "b3:d61bd36d515c40f1", by = "agent:drift-batch", note = "R-GOV-002 now names the reviewer as the judge of the override link; this section's label and words-of-the-maintainer bullets still hold as written" }
@@ -589,7 +589,7 @@ stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Record
 stamp = { hash = "b3:77b4d9a0d3382d15", by = "agent:trust-fixer", note = "Records the maintainer user id in ops/maintainer.md, says the shared login proves nothing, and bars agents from the two labels; matches R-GOV-002, R-GOV-005, R-GOV-006 and R-GOV-007 as edited" }
 
 ["SECURITY-AGENTS#approvals"."dep:RULES#R-GOV-007"]
-stamp = { hash = "b3:b3ed397f9fdbda75", by = "agent:trust-batch", note = "Maintainer-only bullet now includes R-GOV rule changes, matching R-GOV-007 and the governance tool's path#rule entries; the rest of the approvals list still matches R-GOV-002/005/006." }
+stamp = { hash = "b3:1c29b6ee8c1be803", by = "agent:reviewer-fix", note = "Added that the cited words, read in context, must give that decision for that object; matches REVIEW#tiers. R-GOV-007's label-after-pass change contradicts nothing here." }
 
 ["SECURITY-AGENTS#secrets"."body"]
 stamp = { hash = "b3:6553df6e65b74cc6", by = "agent:callout-pass", note = "Split the compromised-secret sentence into a CAUTION alert after the list; message format and no-history-rewrite wording unchanged" }
@@ -601,19 +601,19 @@ stamp = { hash = "b3:4b001dd704dc4efe", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:398a292664325578", by = "agent:structure-pass", note = "New section; restates R-SEC-001 and R-SEC-003 without widening them, links intake outputs for the secrets list and bootstrap settings for secret scanning; leak report uses the NEEDS-MAINTAINER line format" }
 
 ["SECURITY-AGENTS#sub-workers"."body"]
-stamp = { hash = "b3:b05f79761637adfe", by = "agent:trust-fixer", note = "Added that a worker builds the tool from the base and never runs head code, and lists sources instead of checking them; matches reviewer-worker steps 2 and 6" }
+stamp = { hash = "b3:559df345c7abc21b", by = "agent:reviewer-fix", note = "Worker builds the tool from the trusted base, as reviewer-worker#steps now says; the worker still never decides decision validity, consistent with its fail-closed escalate draft." }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENT-REVIEWER-WORKER#steps"]
-stamp = { hash = "b3:86648068609349b0", by = "agent:drift-batch", note = "The worker brief now builds the base tool into a shared target dir keyed by the base's tools/repo tree; still the base's tool, still never the head's code, so this holds" }
+stamp = { hash = "b3:6f1bb67d68524039", by = "agent:reviewer-fix", note = "Worker builds the tool from the trusted base, as reviewer-worker#steps now says; the worker still never decides decision validity, consistent with its fail-closed escalate draft." }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
-stamp = { hash = "b3:c36ebb83b90ce26d", by = "agent:scale-batch", note = "AGENTS#state still says sub-workers never write ops/, and the reviewer worker steps (base tool, --root, no PR code) are unchanged apart from round kinds and the marker fields" }
+stamp = { hash = "b3:d76f716a3bf506e2", by = "agent:reviewer-fix", note = "Worker builds the tool from the trusted base, as reviewer-worker#steps now says; the worker still never decides decision validity, consistent with its fail-closed escalate draft." }
 
 ["SECURITY-AGENTS#untrusted-text"."body"]
-stamp = { hash = "b3:50ae3d88621d3e93", by = "agent:structure-pass", note = "New section; checked against REVIEW ground-rules (base-branch instructions, PR content is data), R-GOV-004 for findings, and the fixed lines in AGENTS#messages" }
+stamp = { hash = "b3:eb31091db3773827", by = "agent:reviewer-fix", note = "Reviewer reads REVIEW/RULES/DOCS at the trusted base (base branch only for main or wave/*), matching REVIEW#ground-rules; the list of data sources is unchanged." }
 
 ["SECURITY-AGENTS#untrusted-text"."dep:REVIEW#ground-rules"]
-stamp = { hash = "b3:50dd88429baca7ae", by = "agent:trust-fixer", note = "REVIEW#ground-rules gained the base-tool and recusal points; the list of what is data and what instructs agents here still holds" }
+stamp = { hash = "b3:350df424465479f3", by = "agent:reviewer-fix", note = "Reviewer reads REVIEW/RULES/DOCS at the trusted base (base branch only for main or wave/*), matching REVIEW#ground-rules; the list of data sources is unchanged." }
 
 ["SKILL-STEWARD#ci"."body"]
 stamp = { hash = "b3:768186a969485129", by = "agent:callout-pass", note = "Moved the review-gate pending bullet into a NOTE alert below the list; wording unchanged, the reproduce and fix guidance still holds" }
@@ -646,7 +646,7 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:a989592e73f80b70", by = "agent:scale-batch", note = "REVIEW#rounds now has incremental rounds; a later real-change push now gets its own round, incremental or full when it changes a reviewed commit, instead of always full" }
 
 ["SKILL-STEWARD#merge-only"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:3aed8b8aa18a5ac6", by = "agent:scale-batch", note = "REVIEW#rounds now also says review waits for green checks with a lane-guard exception, and rewords the round-number line; the merge-only push rules and the own-round note for a later change still hold" }
+stamp = { hash = "b3:8837c4befeb8b95b", by = "agent:reviewer-fix", note = "REVIEW#rounds now finds merge-only rounds with range-diff from the recorded merge base and remerge-diff per merge; a real change in a separate push, as here, keeps it incremental, so this holds." }
 
 ["SKILL-STEWARD#merging"."body"]
 stamp = { hash = "b3:a42e150b4b73c0e2", by = "agent:skeleton-verifier", note = "Checked against CLAUDE#pr-loop step 2: enable_pr_auto_merge with SQUASH or gh pr merge --auto --squash, say so if it fails, lane PRs keep it off until they hold the slot, merges once every required check is green" }

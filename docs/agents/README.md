@@ -111,7 +111,7 @@ the planner or ops.
 | `ROW <id> (brief: ops/launch.md#<id>)` / `NO-ROW <ask>: <why>` | planner → coordinator ★, copied to the asker when that is ops | coordinator: launches the row, or reports why not; ops: notes the outcome against the issue |
 | `UNBLOCKED <ids>` | planner → coordinator ★ | launches the rows not already in `roster.md`; a stacked follow-up goes to its base PR's builder while that one runs |
 | `ROW-CHANGED <id>: <what changed>` | planner → that row's author | re-reads its section in `ops/launch.md` and stays inside the new `owns` |
-| `REVIEW? #<pr> <sha>` | PR author → its shard's reviewer, once every required check but `review-gate` is green at `<sha>` | reviews that head now |
+| `REVIEW? #<pr> <sha>` | PR author → its shard's reviewer, once every required check but `review-gate` is green at `<sha>`, apart from the [expected reds](../../REVIEW.md#severity) | reviews that head now |
 | `RECUSED #<pr>` | reviewer → the next shard's reviewer | reviews it in place of the recused shard |
 | `MERGED <item or -> #<pr> [wave/<name>]` | PR author → planner and ops | planner: unblocks; ops: lanes and waves |
 | `MAIN-RED #<issue>` | any → ops | acts on the red `main` now ([ops › Main is red](ops.md#main-health)) |
@@ -222,9 +222,9 @@ content the coordinator writes on day 0:
   its `owns:` empty.
 - `roadmap.md`: `## Lanes`, `## Hot spots`, `## Only the maintainer`, `## What's left`.
 - `review/state-<shard>.md`: `session: none`, then
-  `| pr | shard | head | round | kind | verdict | comment | note |`, starting empty. `kind`
-  is `full`, `incremental` or another kind of round; `comment` is the id of the comment that
-  carries the marker.
+  `| pr | shard | head | mb | round | kind | verdict | comment | note |`, starting empty.
+  `mb` is the merge base the round reviewed against; `kind` is `full`, `incremental` or
+  another kind of round; `comment` is the id of the comment that carries the marker.
 - `ops.md`: `session: none`, `last fire: none`, `merge-mains today: 0`, then `## Routed`
   (`#<issue> → <row>`), `## Flakes` (`<test> | #<issue>`), `## Auto-merge off` (`#<pr>`)
   and `## Fixing main` (`#<pr>`).

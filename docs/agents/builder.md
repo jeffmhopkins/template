@@ -68,8 +68,10 @@ auto-merge on your PR, and you don't turn it on: ops does that once `main` is gr
      `ops/roster.md`; until the roster lists it, the PR number mod the reviewer count that
      the roster's `shards:` line gives for it. The reviewer is the `session:` line of
      `ops/review/state-<shard>.md`. Send it again after every later push, once that head is
-     green too. A lane PR's `lane-guard` may be red until it holds the slot; send
-     `REVIEW?` without it.
+     green too. Two checks may be red and still count as green here: a lane PR's
+     `lane-guard` until it holds the slot, and, on a PR that changes a maintainer-only path,
+     `governance` while its log says `governance: only the maintainer's label is missing`
+     ([Maintainer labels](#labels)).
 6. **Review.**
    - After every push, read every PR comment, review thread and issue filed against the PR.
    - Answer each `B<n>` with a commit or a concrete rebuttal (R-GOV-004).
@@ -112,8 +114,10 @@ auto-merge on your PR, and you don't turn it on: ops does that once `main` is gr
 A PR that changes a maintainer-only path needs `governance-approved` from the maintainer, and
 a PR the maintainer chose to override needs `review-override` from them. Ask only when the PR
 is ready to land at its head: for `governance-approved`, review passed and every other
-required check is green; for `review-override`, their override decision is recorded and
-every required check but `review-gate` is green. Then send `NEEDS-MAINTAINER #<pr> <sha>: ready to land, apply <label> (rec: apply)`, with the full
+required check is green but `governance`, whose log says only that label is missing; for
+`review-override`, their override decision is recorded and every required check but
+`review-gate` is green. Until then that red `governance` is expected: it doesn't hold back
+`REVIEW?`, and the reviewer doesn't count the missing label as a finding. Then send `NEEDS-MAINTAINER #<pr> <sha>: ready to land, apply <label> (rec: apply)`, with the full
 head SHA. A push removes the label, so after any later push, once that head has passed review
 and is green, send the line again with the new SHA. The coordinator keeps one card per PR and
 head.
