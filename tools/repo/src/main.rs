@@ -56,7 +56,9 @@ commands:
   plan check <launch.md> <roster.md> [--row <id>]
                                             no `owns` overlap between running rows
   heads-changed --state <file>              print `changed` or `unchanged` for origin's refs
-  stack run <job>                           run the stack pack's command for a CI job";
+  stack run <job>                           run the stack pack's command for a CI job
+  stack setup <dir>                         put the pack's CI setup action, or a no-op one, at <dir>
+  stack sweep                               run the pack's sweep items; print Markdown; exits 0";
 
 fn run(args: &[String]) -> Outcome {
     let args = match args {
@@ -79,7 +81,7 @@ fn run(args: &[String]) -> Outcome {
         (Some("progress"), _) => progress::run(rest(1)),
         (Some("plan"), Some("check")) => plan::run(rest(2)),
         (Some("heads-changed"), _) => heads::run(rest(1)),
-        (Some("stack"), Some("run")) => stack::run(rest(2)),
+        (Some("stack"), Some(sub)) => stack::run(sub, rest(2)),
         (Some("help" | "--help" | "-h"), _) => {
             println!("{USAGE}");
             Ok(true)

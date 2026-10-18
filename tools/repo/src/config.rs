@@ -149,6 +149,32 @@ pub struct Pack {
     #[serde(default)]
     pub lockfiles: BTreeMap<String, String>,
     pub backrefs: Backrefs,
+    #[serde(default)]
+    pub ci: Ci,
+    /// The weekly sweep's items for this stack, in order.
+    #[serde(default)]
+    pub sweep: Vec<SweepItem>,
+}
+
+/// `[ci]`: how CI prepares the stack.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Ci {
+    /// A composite action directory under `.github/actions/`, run in every stack job after
+    /// the repo tool's setup (`repo stack setup`).
+    #[serde(default)]
+    pub setup: Option<String>,
+    /// Globs of the files whose change on a PR makes the `deps` job run.
+    #[serde(default)]
+    pub deps_paths: Vec<String>,
+}
+
+/// One `[[sweep]]` item: a heading and the command whose Markdown output goes under it.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SweepItem {
+    pub title: String,
+    pub run: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -222,6 +248,46 @@ impl Repo {
         let pack = Pack::load(&root, &config)?;
         Ok(Self { root, config, pack })
     }
+}
+
+/// Problems with the pack's `[ci]` and `[[sweep]]` tables.
+fn ci_problems(root: &Path, path: &str, pack: &Pack) -> Vec<String> {
+    let mut out = Vec::new();
+    if let Some(setup) = &pack.ci.setup {
+        let dir = setup.trim_end_matches('/');
+        let inside = dir.strip_prefix(".github/actions/").is_some_and(|rest| {
+            !rest.is_empty() && !rest.split('/').any(|c| c == ".." || c.is_empty())
+        });
+        if !inside {
+            out.push(format!(
+                "{path}: [ci].setup `{setup}` must be a directory under .github/actions/"
+            ));
+        } else if !["action.yml", "action.yaml"]
+            .iter()
+            .any(|f| root.join(dir).join(f).is_file())
+        {
+            out.push(format!("{path}: [ci].setup `{setup}` has no action.yml"));
+        }
+    }
+    for g in &pack.ci.deps_paths {
+        if let Err(e) = crate::glob::compile(g) {
+            out.push(format!("{path}: [ci].deps_paths: {e:#}"));
+        }
+    }
+    let mut titles = BTreeSet::new();
+    for item in &pack.sweep {
+        if item.title.trim().is_empty() || item.run.trim().is_empty() {
+            out.push(format!(
+                "{path}: every [[sweep]] item needs a `title` and a `run` command"
+            ));
+        } else if !titles.insert(item.title.as_str()) {
+            out.push(format!(
+                "{path}: [[sweep]] title `{}` appears twice",
+                item.title
+            ));
+        }
+    }
+    out
 }
 
 /// The check names of each workflow file under `.github/workflows/` at `root`.
@@ -448,6 +514,7 @@ pub fn check(root: &Path) -> Vec<String> {
                     out.push(format!("{path}: [lockfiles] `{g}` has an empty command"));
                 }
             }
+            out.extend(ci_problems(root, &path, &pack));
         }
     }
 

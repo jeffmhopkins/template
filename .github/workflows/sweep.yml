@@ -1,7 +1,8 @@
 # sweep: the weekly sweep. It rewrites one pinned issue, "Weekly sweep", with what it finds.
 # It never fails: each step continues on error and reports its own failure in the issue.
 # Findings never block a PR; each one is fixed in a normal PR.
-# Editing this file is a maintainer-only change.
+# The stack's items come from its pack's [[sweep]] table (`scripts/repo stack sweep`), so a new
+# pack needs no edit here. Editing this file is a maintainer-only change.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 
@@ -45,6 +46,8 @@ jobs:
         with:
           cache-name: sweep
 
+      # The repo tool is written in Rust, so the sweep checks its dependencies with cargo-deny
+      # whatever the stack. The stack's own items come from its pack, below.
       - name: Install cargo-deny
         continue-on-error: true
         uses: ./.github/actions/cargo-deny
@@ -57,62 +60,50 @@ jobs:
             exit 1
           fi
 
-      - name: Dependency advisories
+      - name: Stack setup
+        continue-on-error: true
+        run: scripts/repo stack setup .stack-setup
+      - continue-on-error: true
+        uses: ./.stack-setup
+        with:
+          job: sweep
+
+      # The pack's [[sweep]] items (stacks/<pack>/pack.toml), each under its own title.
+      - name: Stack checks
         continue-on-error: true
         run: |
-          out="$RUNNER_TEMP/sweep/deps.md"
+          out="$RUNNER_TEMP/sweep/stack.md"
           echo "**Could not run** (see the run log)." > "$out"
-          cargo deny --color never fetch db
-          report() {   # <label> <command…>
-            local label=$1; shift
-            local status=0
-            "$@" > "$RUNNER_TEMP/deny.txt" 2>&1 || status=$?
-            if [ "$status" -eq 0 ]; then
-              echo "- $label: passed. $(tail -n 1 "$RUNNER_TEMP/deny.txt")"
-            else
-              echo "- $label: **failed** (exit $status)."
-              echo
-              echo '  ```text'
-              grep -E '^(error|warning)' -A10 "$RUNNER_TEMP/deny.txt" | head -c 15000 | sed 's/^/  /'
-              echo '  ```'
-            fi
-          }
+          scripts/repo stack sweep > "$RUNNER_TEMP/stack.txt" 2>&1
           {
-            echo "$(cargo deny --version), advisory DB fetched $(date -u +%Y-%m-%d)."
+            cat "$RUNNER_TEMP/stack.txt"
             echo
-            report "Project (\`scripts/repo stack run deps\`)" scripts/repo stack run deps
-            report 'Repo tool (advisories)' cargo deny --color never --manifest-path tools/repo/Cargo.toml check advisories
-            echo
-            echo "Each finding needs a fix, or a justified exception in the stack's deny config (a governance change)."
+            echo "Each finding needs a fix, or a justified exception in the stack's config (a governance change)."
           } > "$out"
 
-      - name: Available updates
+      - name: Repo tool dependencies
         continue-on-error: true
         run: |
-          out="$RUNNER_TEMP/sweep/updates.md"
-          : > "$out"
-          for manifest in Cargo.toml tools/repo/Cargo.toml; do
-            [ -f "$manifest" ] || continue
-            cargo update --dry-run --verbose --manifest-path "$manifest" > "$RUNNER_TEMP/update.txt" 2>&1 || true
-            changes=$(grep -E '^ +(Updating|Adding|Removing|Downgrading) [A-Za-z0-9_-]+ v' "$RUNNER_TEMP/update.txt" | sed 's/^ *//' || true)
-            held=$(grep -E '^ +Unchanged [A-Za-z0-9_-]+ v.*\(available: ' "$RUNNER_TEMP/update.txt" | sed 's/^ *Unchanged //' || true)
-            {
-              echo "**\`$manifest\`**"
-              echo
-              if [ -n "$changes" ]; then
-                echo "Compatible updates the lockfile would take (Dependabot proposes them):"
-                echo; echo '```text'; printf '%s\n' "$changes" | head -c 10000; echo '```'
-              else
-                echo "The lockfile takes every compatible update already."
-              fi
-              if [ -n "$held" ]; then
-                echo; echo "Held back by a version requirement:"
-                echo; echo '```text'; printf '%s\n' "$held" | head -c 10000; echo '```'
-              fi
-              echo
-            } >> "$out"
-          done
-          [ -s "$out" ] || echo "No Cargo manifests." > "$out"
+          out="$RUNNER_TEMP/sweep/tool.md"
+          echo "**Could not run** (see the run log)." > "$out"
+          status=0
+          cargo deny --color never --manifest-path tools/repo/Cargo.toml check advisories > "$RUNNER_TEMP/deny.txt" 2>&1 || status=$?
+          {
+            echo "### Advisories"
+            echo
+            echo "$(cargo deny --version), advisory DB fetched $(date -u +%Y-%m-%d)."
+            echo
+            if [ "$status" -eq 0 ]; then
+              echo "Passed. $(tail -n 1 "$RUNNER_TEMP/deny.txt")"
+            else
+              echo "**Failed** (exit $status)."
+              echo; echo '```text'; grep -E '^(error|warning)' -A10 "$RUNNER_TEMP/deny.txt" | head -c 15000; echo '```'
+            fi
+            echo
+            echo "### Available updates"
+            echo
+            bash .github/scripts/cargo-updates.sh tools/repo/Cargo.toml
+          } > "$out"
 
       - name: Docs due for review
         continue-on-error: true
@@ -193,14 +184,15 @@ jobs:
           s="$RUNNER_TEMP/sweep"
           part() { if [ -s "$s/$1" ]; then cat "$s/$1"; else echo "**This step did not run to completion** (see the run log)."; fi; }
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          pack=$(python3 -I -c 'import tomllib; print(tomllib.load(open("repo.toml", "rb"))["stack"]["pack"])' || echo "?")
           {
             echo "Rewritten by the weekly [sweep]($run_url) workflow at \`$(git rev-parse --short HEAD)\`."
             echo "Each item is fixed in a normal PR. This issue never blocks one."
             echo
             if [ -s "$s/build.md" ]; then cat "$s/build.md"; echo; fi
-            echo "## Dependency advisories"; echo; part deps.md; echo
+            echo "## Stack checks (\`$pack\` pack)"; echo; part stack.md; echo
+            echo "## Repo tool dependencies"; echo; part tool.md; echo
             echo "## Docs and links due for review"; echo; part docs.md; echo
-            echo "## Available updates"; echo; part updates.md; echo
             echo "## Override audit (last 7 days)"; echo; part audit.md; echo
             echo "## Lane holders older than a day"; echo; part lanes.md; echo
             echo "## Sections re-verified far more than edited (last 180 days)"; echo; part churn.md

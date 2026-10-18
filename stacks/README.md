@@ -11,10 +11,14 @@ review_every = "180d"
 > How a language plugs into the template, and the steps to add a new one. Each pack is one
 > directory under `stacks/`; [rust/](rust/README.md) is the pack the template ships.
 
-Everything in the repo is language-neutral except the stack pack: the commands behind the
-`fmt`, `lint`, `test` and `deps` CI jobs, the lint and dependency config, the patterns that
-mark a lint suppression, the comment that links a package to its docs, and the language's
-rules. A project uses exactly one pack, named in `repo.toml`:
+The stack pack holds what is specific to a language: the commands behind the `fmt`, `lint`,
+`test` and `deps` CI jobs, the setup those jobs need, the paths that make `deps` run, the
+weekly sweep's dependency items, the lint and dependency config, the patterns that mark a
+lint suppression, the comment that links a package to its docs, and the language's rules.
+The workflows read all of it from the pack, so adding a pack edits no workflow. The one
+language they name is Rust, for the repo tool itself: every job that runs `scripts/repo`
+sets up Rust, and the sweep checks the tool's own dependencies. A project uses exactly one
+pack, named in `repo.toml`:
 
 ```toml
 [stack]
@@ -56,9 +60,14 @@ covers = ["tools/repo/src/config.rs", "tools/repo/src/stack.rs"]
 | `[lockfiles]` | no | lockfile glob → the shell command that relocks it, run in the lockfile's directory, such as `"**/Cargo.lock" = "cargo metadata --format-version 1 > /dev/null"`. `scripts/repo docs merge-main` resolves a conflict in a matching file by taking the merged branch's side and running the command |
 | `[backrefs].roots` | yes | globs of package root files. A root whose package a doc section covers carries one back-reference line |
 | `[backrefs].prefix` | yes | the text that starts that line, such as `//! Docs:` or `# Docs:` |
+| `[ci].setup` | no | a composite action directory under `.github/actions/`, such as `.github/actions/rust-stack`. Every stack job in `ci.yml`, and the sweep, runs `scripts/repo stack setup .stack-setup`, which copies the directory there, then `uses: ./.stack-setup` with input `job` set to `fmt`, `lint`, `test`, `deps` or `sweep`. Without the key, or while `detect` is absent, it writes a no-op action there instead |
+| `[ci].deps_paths` | no | globs of the manifests, lockfiles and dependency config whose change on a PR makes the `deps` job run. `.github/scripts/deps-changed.py` reads them, and always adds the setup action, the repo tool's manifests, every `pack.toml` and `ci.yml` |
+| `[[sweep]]` | no | the weekly sweep's items for the stack, in order, each a `title` and a `run` shell command. `scripts/repo stack sweep` runs each from the repo root and prints its Markdown output under `### <title>`; a command that prints nothing shows as passed, and one that fails shows its exit code and the end of its output. It always exits 0, and skips every item while `detect` is absent |
 
 Unknown keys are an error. `scripts/repo config check` loads the pack and checks its globs
-and table names.
+and table names, that `[ci].setup` is a directory under `.github/actions/` holding an
+`action.yml`, and that every `[[sweep]]` item has a `title` and a `run`, with no title
+twice.
 
 > [!NOTE]
 > `reason_required` looks for the literal text `reason =`, which matches Rust's attribute
@@ -76,9 +85,9 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
 
 > [!IMPORTANT]
 > Everything under `stacks/` and `.github/` is a protected path, so the PR is a governance
-> change with a "Governance change" section. The pack's `pack.toml`, the setup action and
-> the CI jobs are maintainer-only paths, so the maintainer approves the PR and applies the
-> `governance-approved` label themselves.
+> change with a "Governance change" section. The pack's `pack.toml`, its setup action and
+> the scripts its sweep items run are maintainer-only paths, so the maintainer approves the
+> PR and applies the `governance-approved` label themselves.
 
 1. **Make the directory** `stacks/<name>/`, lower case, one word (`node`, `python`, `go`).
 2. **Write `pack.toml`.** Pick the `detect` file, then the four job commands. Each command
@@ -100,16 +109,21 @@ project gets it through the [template-upgrade runbook](../docs/runbooks/template
 5. **Write `README.md`**, a tracked doc like [rust/README.md](rust/README.md): what the
    project's first PR in this language does (copying the config files to the root, pinning
    the toolchain) and the lint settings.
-6. **Install the toolchain in CI.** Add a composite action
-   `.github/actions/<name>-setup/action.yml`, with every third-party action pinned to a full
-   commit SHA. Call it in the `fmt`, `lint`, `test` and `deps` jobs of
-   `.github/workflows/ci.yml`, after `rust-setup`. `rust-setup` stays in every job, because
-   the repo tool itself is written in Rust. Add the stack's manifests and lockfiles to the
-   paths the `deps` job watches: on a PR it runs only when one of them changes.
-7. **Add Dependabot** for the stack's package manager in `.github/dependabot.yml`, for
-   directory `/`.
-8. **Add the pack to the table** in [What a pack contains](#layout).
-9. **Check it:**
+6. **Set up CI from the pack.** Write a composite action
+   `.github/actions/<name>-stack/action.yml` that installs the toolchain and the tools the
+   four commands run, with every third-party action pinned to a full commit SHA and every
+   download checked against a pinned checksum. It takes one input, `job`, so it can skip
+   what a job doesn't need. Name it in `[ci].setup`. Its steps run in the job's workspace,
+   after `rust-setup`, which stays in every job because the repo tool is written in Rust.
+   List the stack's manifests, lockfiles and dependency config in `[ci].deps_paths`.
+7. **Add sweep items.** One `[[sweep]]` item per weekly check, such as the full dependency
+   audit and the updates the lockfile would take. A command longer than one line goes in a
+   script under `.github/scripts/`, since the sweep runs it with a token that can write
+   issues. The setup action gets `job: sweep` before the items run.
+8. **Add Dependabot** for the stack's package manager in `.github/dependabot.yml`, for
+   directory `/`. Its `github-actions` entry already watches `.github/actions/*`.
+9. **Add the pack to the table** in [What a pack contains](#layout).
+10. **Check it:**
    ```sh
    scripts/repo config check                         # the pack parses, globs are valid
    scripts/repo stack run fmt                        # prints skip: no <detect> in the template

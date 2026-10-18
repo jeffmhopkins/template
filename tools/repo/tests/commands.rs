@@ -1,5 +1,5 @@
 //! `governance`, `lane-guard`, `progress`, `plan check`, `config check`, `heads-changed`,
-//! `stack run` and `pr-title` against temporary repositories.
+//! `stack run`, `stack setup`, `stack sweep` and `pr-title` against temporary repositories.
 
 mod common;
 
@@ -556,6 +556,126 @@ fn stack_run_skips_without_detect_file() {
     let r = f.repo(&["stack", "run", "fmt"]);
     assert!(r.ok() && r.out.contains("formatting"), "{}", r.out);
     assert_eq!(f.repo(&["stack", "run", "nope"]).code, 2);
+}
+
+#[test]
+fn stack_setup_puts_the_pack_action_in_place() {
+    let pack = format!(
+        "{}[ci]\nsetup = \".github/actions/rust-stack\"\n",
+        common::PACK
+    );
+    let f = Fixture::new(
+        "stack-setup",
+        &[
+            ("stacks/rust/pack.toml", &pack),
+            (
+                ".github/actions/rust-stack/action.yml",
+                "name: rust-stack\n",
+            ),
+            (".github/actions/rust-stack/lib/x.sh", "echo x\n"),
+        ],
+    );
+    // No Cargo.toml yet: a no-op action, whatever the pack names.
+    let r = f.repo(&["stack", "setup", ".stack-setup"]);
+    assert!(r.ok() && r.out.contains("skip: no Cargo.toml"), "{}", r.out);
+    assert!(
+        f.read(".stack-setup/action.yml")
+            .contains("No stack setup.")
+    );
+    // In use: the pack's action, its whole directory, replacing the earlier one.
+    f.write("Cargo.toml", "");
+    let r = f.repo(&["stack", "setup", ".stack-setup/"]);
+    assert!(r.ok() && r.out.contains("rust-stack"), "{}", r.out);
+    assert_eq!(f.read(".stack-setup/action.yml"), "name: rust-stack\n");
+    assert_eq!(f.read(".stack-setup/lib/x.sh"), "echo x\n");
+    // Never over tracked files, and never outside the repository.
+    assert_eq!(f.repo(&["stack", "setup", "stacks"]).code, 2);
+    assert_eq!(f.repo(&["stack", "setup", "../out"]).code, 2);
+    // A pack without [ci].setup gets the no-op action.
+    f.write("stacks/rust/pack.toml", common::PACK);
+    let r = f.repo(&["stack", "setup", ".stack-setup"]);
+    assert!(r.ok() && r.out.contains("no [ci].setup"), "{}", r.out);
+    assert!(
+        f.read(".stack-setup/action.yml")
+            .contains("No stack setup.")
+    );
+}
+
+#[test]
+fn stack_sweep_reports_each_item_and_never_fails() {
+    let pack = format!(
+        "{}[[sweep]]\ntitle = \"Quiet\"\nrun = \"true\"\n\n[[sweep]]\ntitle = \"Report\"\nrun = \"echo '- all current'\"\n\n[[sweep]]\ntitle = \"Broken\"\nrun = \"echo bad advisory >&2; exit 3\"\n",
+        common::PACK
+    );
+    let f = Fixture::new("stack-sweep", &[("stacks/rust/pack.toml", &pack)]);
+    let r = f.repo(&["stack", "sweep"]);
+    assert!(
+        r.ok() && r.out.matches("Skipped: no `Cargo.toml`").count() == 3,
+        "{}",
+        r.out
+    );
+    f.write("Cargo.toml", "");
+    let r = f.repo(&["stack", "sweep"]);
+    assert!(r.ok(), "{}", r.out);
+    let order: Vec<usize> = ["### Quiet", "### Report", "### Broken"]
+        .iter()
+        .map(|t| r.out.find(t).expect("every title"))
+        .collect();
+    assert!(order.windows(2).all(|w| w[0] < w[1]), "{}", r.out);
+    assert!(r.out.contains("Passed: `true`."), "{}", r.out);
+    assert!(r.out.contains("- all current"), "{}", r.out);
+    assert!(
+        r.out.contains("**Failed** (exit 3)") && r.out.contains("bad advisory"),
+        "{}",
+        r.out
+    );
+    f.write("stacks/rust/pack.toml", common::PACK);
+    let r = f.repo(&["stack", "sweep"]);
+    assert!(r.ok() && r.out.contains("no sweep items"), "{}", r.out);
+}
+
+#[test]
+fn config_check_reads_the_ci_and_sweep_tables() {
+    let f = Fixture::new(
+        "config-ci",
+        &[
+            ("lanes.toml", "# none\n"),
+            (
+                ".github/workflows/ci.yml",
+                "on: push\njobs:\n  fmt:\n    runs-on: x\n  docs:\n    runs-on: x\n",
+            ),
+            (".github/actions/rust-stack/action.yml", "name: x\n"),
+        ],
+    );
+    let with = |extra: &str| {
+        f.write("stacks/rust/pack.toml", &format!("{}{extra}", common::PACK));
+        f.repo(&["config", "check"])
+    };
+    let r = with(
+        "[ci]\nsetup = \".github/actions/rust-stack\"\ndeps_paths = [\"**/Cargo.lock\"]\n\n[[sweep]]\ntitle = \"A\"\nrun = \"true\"\n",
+    );
+    assert!(r.ok(), "{}", r.out);
+    let r = with("[ci]\nsetup = \"stacks/rust/setup\"\n");
+    assert!(
+        !r.ok() && r.out.contains("under .github/actions/"),
+        "{}",
+        r.out
+    );
+    let r = with("[ci]\nsetup = \".github/actions/none\"\n");
+    assert!(!r.ok() && r.out.contains("has no action.yml"), "{}", r.out);
+    let r = with("[ci]\ndeps_paths = [\"[\"]\n");
+    assert!(!r.ok() && r.out.contains("[ci].deps_paths"), "{}", r.out);
+    let r =
+        with("[[sweep]]\ntitle = \"A\"\nrun = \"true\"\n\n[[sweep]]\ntitle = \"A\"\nrun = \"x\"\n");
+    assert!(!r.ok() && r.out.contains("appears twice"), "{}", r.out);
+    let r = with("[[sweep]]\ntitle = \"A\"\nrun = \" \"\n");
+    assert!(
+        !r.ok() && r.out.contains("needs a `title` and a `run`"),
+        "{}",
+        r.out
+    );
+    let r = with("[ci]\nnope = 1\n");
+    assert!(!r.ok() && r.out.contains("unknown field"), "{}", r.out);
 }
 
 #[test]

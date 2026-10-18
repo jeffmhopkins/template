@@ -61,6 +61,8 @@ review_every = "180d"
 | `plan check <launch.md> <roster.md> [--row <id>]` | no two running rows own overlapping paths | 1 on an overlap, or a running row without `owns` |
 | `heads-changed --state <file>` | prints `changed` or `unchanged` for `git ls-remote origin`, and stores the listing | always 0 |
 | `stack run <job>` | runs the pack's command for a CI job from the root; prints `skip: no <detect>` when the detect file is absent | the command's status |
+| `stack setup <dir>` | copies the pack's `[ci].setup` action directory to `<dir>`, or writes a no-op action there when the pack names none or the detect file is absent; refuses a path outside the repo or one holding tracked files | 0; 2 on a bad path |
+| `stack sweep` | runs each `[[sweep]]` item and prints its Markdown under `### <title>`, or its exit code and the end of its output when it fails; skips every item when the detect file is absent | always 0 |
 
 </details>
 

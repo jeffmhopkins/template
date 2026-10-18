@@ -13,7 +13,8 @@ review_every = "180d"
 
 A stack pack holds everything language-specific: the commands behind the stack's CI jobs,
 the lint and dependency config, the suppression patterns and the back-reference syntax the
-repo tool reads, and the stack's rules. Everything else in the repo is language-neutral.
+repo tool reads, the stack's CI setup and sweep items, and the stack's rules. The rest of the
+repo is the same for every stack, apart from the Rust setup the repo tool needs for itself.
 
 <a id="plugging-in"></a>
 ## How a pack plugs in
@@ -33,12 +34,16 @@ covers = ["stacks/rust/pack.toml"]
 | `[protected_tables]` | `scripts/repo governance`: an edit to `[lints]` or `[workspace.lints]` in any `Cargo.toml` is a governance change |
 | `[lockfiles]` | `scripts/repo docs merge-main`: a conflicted `Cargo.lock` takes the merged branch's side, then `cargo metadata` in its directory adds this branch's own dependencies back |
 | `[backrefs]` | `scripts/repo docs check`: a file matching `roots` whose package some section covers has one `prefix` line listing exactly those sections as `DOC#anchor` |
+| `[ci].setup` | `scripts/repo stack setup` in every stack job of `ci.yml` and in the sweep: the Rust pack names `.github/actions/rust-stack`, which installs cargo-deny for `deps` and the sweep |
+| `[ci].deps_paths` | `.github/scripts/deps-changed.py`: on a PR, the `deps` job runs only when a `Cargo.toml`, `Cargo.lock` or `deny.toml` changes, or one of the paths the script always watches |
+| `[[sweep]]` | `scripts/repo stack sweep` in the weekly sweep: `cargo deny check`, and the compatible updates `Cargo.lock` would take (`.github/scripts/cargo-updates.sh`) |
 
 The pack's rules are in [RULES.md](RULES.md), a tracked doc with id `RULES-RUST`, whose
 `R-RUST-*` rules sit beside the engineering rules in `docs/RULES.md`.
 
-CI installs the stack's toolchain in `.github/actions/rust-setup`. The repo tool is written
-in Rust, and that action stays whatever the stack.
+The Rust toolchain and build cache come from `.github/actions/rust-setup`. The repo tool is
+written in Rust, so every CI job that runs it uses that action whatever the stack, and the
+Rust pack's own setup action only adds cargo-deny.
 
 <a id="setup"></a>
 ## Starting the Rust project

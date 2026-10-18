@@ -52,7 +52,7 @@ stamp = { hash = "b3:e26320717bd7b6a7", by = "agent:routing-fixer", note = "Rewr
 stamp = { hash = "b3:32f7c60931767b32", by = "agent:scale-batch", note = "The DOCS#tool table only changed the governance sentence and merge-main lockfile handling; the commands table now says merge-main resolves lockfile conflicts too, and every other row holds" }
 
 ["CLAUDE#commands"."dep:DOCS#tool"]
-stamp = { hash = "b3:7f3c6935c767359f", by = "agent:trust-batch", note = "DOCS#tool gained the config check copies comparison and the governance R-GOV and accepted-ADR wording; this command table lists none of those details and still matches the tool." }
+stamp = { hash = "b3:677c7c7cc6e78384", by = "agent:drift-batch", note = "DOCS#tool gained stack setup and stack sweep rows; this table lists builder commands and stack run, which still matches; CI-only commands need no row here" }
 
 ["CLAUDE#docs-duty"."body"]
 stamp = { hash = "b3:96a7dbc05e26bee8", by = "agent:scale-batch", note = "DOCS#merge gained lockfile relocking; the merge-main bullet now says it resolves ledger, @generated and stack lockfile conflicts, and the rest of the duty list holds" }
@@ -97,13 +97,13 @@ stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "Added 
 stamp = { hash = "b3:d083490d135de41c", by = "agent:scale-batch", note = "governance.yml now builds the base tool once in a tool job and hands it to governance, pr-title and lane-guard by artifact; the section now says it builds once per run and shares the binary; head-labels and the rest of the list hold" }
 
 ["DOCS#tool"."body"]
-stamp = { hash = "b3:7f3c6935c767359f", by = "agent:trust-batch", note = "config check row now names the copies comparison (new #copies section), checked against check_constants and check_maintainer_copies in config.rs; governance row unchanged, its R-DOC-008 and R-GOV behaviour is in #governance and the usage text in main.rs." }
+stamp = { hash = "b3:677c7c7cc6e78384", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
 
 ["DOCS#tool"."file:tools/repo/src/args.rs"]
 stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/config.rs"]
-stamp = { hash = "b3:26c9a82b2874eb05", by = "agent:scale-batch", note = "config.rs gained the pack [lockfiles] key and its check, merge.rs and mod.rs the relock step and its output line, main.rs the help text; the merge-main row links to Merging main, which now describes relocking; other rows unchanged" }
+stamp = { hash = "b3:d4fc94b8a3074a1d", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/backrefs.rs"]
 stamp = { hash = "b3:530e42b902d67075", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -154,7 +154,7 @@ stamp = { hash = "b3:d92d274f38a43615", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:c2e8bca7bbe0a31b", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/main.rs"]
-stamp = { hash = "b3:30de92e33a676623", by = "agent:scale-batch", note = "config.rs gained the pack [lockfiles] key and its check, merge.rs and mod.rs the relock step and its output line, main.rs the help text; the merge-main row links to Merging main, which now describes relocking; other rows unchanged" }
+stamp = { hash = "b3:d5e097a5249dabce", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
 
 ["DOCS#tool"."file:tools/repo/src/plan.rs"]
 stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
@@ -166,13 +166,13 @@ stamp = { hash = "b3:44eca1529fc85545", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:ed464d2cd0687466", by = "agent:trust-fixer", note = "Table now has governance --author and the config check name-over-id rule, and the intro the global --root; checked main.rs, git.rs set_root, config.rs job_names, governance.rs, progress.rs and hash.rs" }
 
 ["DOCS#tool"."file:tools/repo/src/stack.rs"]
-stamp = { hash = "b3:2b7a710fbe937b2f", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
+stamp = { hash = "b3:a9b2b35404894380", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
 
 ["DOCS#ttl"."body"]
-stamp = { hash = "b3:eb152e9aae06f174", by = "agent:callout-pass", note = "Moved 'Time-based review never fails a PR' from bold prose into a NOTE alert; wording and the review bullets unchanged" }
+stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "sweep.yml now takes stack items from the pack's [[sweep]] via stack sweep and checks the tool's own advisories and updates; the bullet now says so, the rest of the list matches the issue sections" }
 
 ["DOCS#ttl"."file:.github/workflows/sweep.yml"]
-stamp = { hash = "b3:5a4c815a644a6136", by = "agent:scale-batch", note = "sweep.yml now installs cargo-deny through the shared prebuilt action instead of cargo install; the sweep's contents and its never-fails rule are unchanged, so the section holds" }
+stamp = { hash = "b3:8d9e1c08e77c1a2c", by = "agent:drift-batch", note = "sweep.yml now takes stack items from the pack's [[sweep]] via stack sweep and checks the tool's own advisories and updates; the bullet now says so, the rest of the list matches the issue sections" }
 
 ["GETTING-STARTED#github"."body"]
 stamp = { hash = "b3:899467448fa400a0", by = "agent:scale-batch", note = "Removed the REVIEWER_SESSIONS steps; the label paragraph now says the ready-to-land card comes only when the PR is otherwise ready and comes again for a new head, matching coordinator stop, digest and builder labels" }
@@ -262,7 +262,7 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
 
 ["REVIEW#gather"."dep:DOCS#tool"]
-stamp = { hash = "b3:7f3c6935c767359f", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
+stamp = { hash = "b3:677c7c7cc6e78384", by = "agent:drift-batch", note = "DOCS#tool only added stack setup and stack sweep; the base tool commands gather uses (docs for, docs check, governance with --root) are unchanged" }
 
 ["REVIEW#governance"."body"]
 stamp = { hash = "b3:3001235f745797eb", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
@@ -550,7 +550,7 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "Moved
 stamp = { hash = "b3:ad390f0d50c6b24a", by = "agent:skeleton-verifier", note = "Checked against DOCS#ttl: due docs go to the weekly sweep issue and never fail a PR; docs review <DOC> --by --note takes the same note standard and refuses ADRs and docs without review_every" }
 
 ["SKILL-VERIFY-DOCS#review"."dep:DOCS#ttl"]
-stamp = { hash = "b3:eb152e9aae06f174", by = "agent:callout-pass", note = "DOCS#ttl only moved 'Time-based review never fails a PR' into a NOTE alert; never-blocks-a-PR claim and docs review command still match" }
+stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "DOCS#ttl only changed which dependency items the sweep issue lists; how a due doc is listed and cleared with docs review is unchanged" }
 
 ["STACK-RUST#lints"."body"]
 stamp = { hash = "b3:e656d3c80cf77241", by = "agent:callout-pass", note = "Moved the clippy -D warnings sentence into a WARNING alert; the Docs line sentence stays as prose, lint table unchanged" }
@@ -574,10 +574,10 @@ stamp = { hash = "b3:fd02f988ca24e827", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:1dd78826543f9da8", by = "agent:skeleton-verifier", note = "Checked each lint in the table against its rule: unsafe_code R-RUST-005, unsafe_op_in_unsafe_fn and undocumented_unsafe_blocks R-RUST-006, missing_docs R-RUST-011, allow_attributes_without_reason R-RUST-004, unwrap_used R-RUST-009; -D warnings per R-RUST-003" }
 
 ["STACK-RUST#plugging-in"."body"]
-stamp = { hash = "b3:65a81b4095dc1570", by = "agent:scale-batch", note = "pack.toml gained [lockfiles] for **/Cargo.lock with cargo metadata; added a row saying docs merge-main reads it; other rows match the pack" }
+stamp = { hash = "b3:da54835386768cae", by = "agent:drift-batch", note = "pack.toml now has [ci] naming .github/actions/rust-stack with deps_paths and two [[sweep]] items; the table gains those three rows and the setup paragraph says rust-setup serves the tool" }
 
 ["STACK-RUST#plugging-in"."file:stacks/rust/pack.toml"]
-stamp = { hash = "b3:1b4f30577ef47c3f", by = "agent:scale-batch", note = "pack.toml gained [lockfiles] for **/Cargo.lock with cargo metadata; added a row saying docs merge-main reads it; other rows match the pack" }
+stamp = { hash = "b3:56edaeee8e807875", by = "agent:drift-batch", note = "pack.toml now has [ci] naming .github/actions/rust-stack with deps_paths and two [[sweep]] items; the table gains those three rows and the setup paragraph says rust-setup serves the tool" }
 
 ["STACK-RUST#setup"."body"]
 stamp = { hash = "b3:eba1e4560a341ea6", by = "agent:callout-pass", note = "Turned 'Every one of these is a governance change; stack jobs skip until it lands' into an IMPORTANT alert, wording unchanged" }
@@ -592,23 +592,23 @@ stamp = { hash = "b3:2e8a2e79bc55d1ed", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:0d42bdb64178a8be", by = "agent:skeleton-verifier", note = "Checked deny.toml, clippy.toml and rustfmt.toml headers (live at the repo root beside Cargo.toml), dependabot.yml's note to add a cargo entry for /, and that stack jobs skip while Cargo.toml is absent" }
 
 ["STACKS#adding"."body"]
-stamp = { hash = "b3:92b6ce4301ae7af3", by = "agent:scale-batch", note = "Step 2 now names the [lockfiles] table, and step 6 says to add the stack's manifests to the paths the deps job watches; matches the pack-toml reference and ci.yml" }
+stamp = { hash = "b3:48ffdf9209ff7796", by = "agent:drift-batch", note = "Steps 6 and 7 now set up CI through [ci].setup and [[sweep]] instead of editing ci.yml; renumbered later steps; matches the pack-toml table" }
 
 ["STACKS#adding"."dep:STACKS#pack-toml"]
-stamp = { hash = "b3:87454fd7400267aa", by = "agent:scale-batch", note = "Step 2 now names the [lockfiles] table, and step 6 says to add the stack's manifests to the paths the deps job watches; matches the pack-toml reference and ci.yml" }
+stamp = { hash = "b3:6dcd8ccade7b0134", by = "agent:drift-batch", note = "Steps 6 and 7 now set up CI through [ci].setup and [[sweep]] instead of editing ci.yml; renumbered later steps; matches the pack-toml table" }
 
 ["STACKS#examples"."body"]
 stamp = { hash = "b3:3ccadc1b34545016", by = "agent:skeleton-lead", note = "Both examples use only the keys in STACKS#pack-toml, with reason_required false per that section's note, and roots and prefix in each language's comment syntax" }
 
 ["STACKS#examples"."dep:STACKS#pack-toml"]
-stamp = { hash = "b3:87454fd7400267aa", by = "agent:scale-batch", note = "The pack-toml reference gained the optional [lockfiles] key; the Node, Python and Go examples omit it, which stays valid since the key is optional" }
+stamp = { hash = "b3:6dcd8ccade7b0134", by = "agent:drift-batch", note = "pack-toml gained optional [ci] and [[sweep]] keys; the Node and Python examples stay valid without them, and the note says tools come from the setup action" }
 
 ["STACKS#pack-toml"."body"]
-stamp = { hash = "b3:87454fd7400267aa", by = "agent:scale-batch", note = "Added the [lockfiles] row, matching config.rs's new optional Pack field and its config check of globs and empty commands; stack.rs unchanged" }
+stamp = { hash = "b3:6dcd8ccade7b0134", by = "agent:drift-batch", note = "Added [ci].setup, [ci].deps_paths and [[sweep]] rows and the new config check rules; they match Ci, SweepItem and ci_problems in config.rs and setup/sweep in stack.rs" }
 
 ["STACKS#pack-toml"."file:tools/repo/src/config.rs"]
-stamp = { hash = "b3:26c9a82b2874eb05", by = "agent:scale-batch", note = "Added the [lockfiles] row, matching config.rs's new optional Pack field and its config check of globs and empty commands; stack.rs unchanged" }
+stamp = { hash = "b3:d4fc94b8a3074a1d", by = "agent:drift-batch", note = "Added [ci].setup, [ci].deps_paths and [[sweep]] rows and the new config check rules; they match Ci, SweepItem and ci_problems in config.rs and setup/sweep in stack.rs" }
 
 ["STACKS#pack-toml"."file:tools/repo/src/stack.rs"]
-stamp = { hash = "b3:2b7a710fbe937b2f", by = "agent:skeleton-lead", note = "Each key matches config.rs Pack, Suppressions and Backrefs, which use deny_unknown_fields, and stack.rs: skip: no <detect> when absent, commands run with sh from the repo root. reason_required checks the literal 'reason =' as in governance.rs" }
+stamp = { hash = "b3:a9b2b35404894380", by = "agent:drift-batch", note = "Added [ci].setup, [ci].deps_paths and [[sweep]] rows and the new config check rules; they match Ci, SweepItem and ci_problems in config.rs and setup/sweep in stack.rs" }
 

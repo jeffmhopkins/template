@@ -1,6 +1,7 @@
 # cargo-deny: install a prebuilt cargo-deny release instead of compiling it, after checking the
-# download against its pinned SHA-256. ci.yml's `deps` and sweep.yml both use it, so the version
-# lives here once. Dependabot doesn't track it: to bump, take the new release's
+# download against its pinned SHA-256. ci.yml's `deps`, sweep.yml and the Rust stack's setup
+# (rust-stack) all use it, so the version lives here once. A second use in the same job does
+# nothing. Dependabot doesn't track it: to bump, take the new release's
 # `cargo-deny-<version>-x86_64-unknown-linux-musl.tar.gz.sha256` and change both values.
 # Editing this file is a maintainer-only change.
 
@@ -15,6 +16,10 @@ runs:
         VERSION: 0.20.2
         SHA256: 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f
       run: |
+        if [ "$(cargo-deny --version 2>/dev/null)" = "cargo-deny $VERSION" ]; then
+          echo "cargo-deny $VERSION is already installed."
+          exit 0
+        fi
         name="cargo-deny-$VERSION-x86_64-unknown-linux-musl"
         curl -fsSL --retry 3 -o "$RUNNER_TEMP/$name.tar.gz" \
           "https://github.com/EmbarkStudios/cargo-deny/releases/download/$VERSION/$name.tar.gz"

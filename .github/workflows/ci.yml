@@ -2,8 +2,15 @@
 # changes in the dependency graph. `pr-title`, `lane-guard` and
 # `governance` run from the base commit in governance.yml; `review-gate` is in review-gate.yml.
 # The job names are the check names in repo.toml [checks].required (`scripts/repo config check`
-# compares them). Stack jobs run the stack pack's command (`stacks/<pack>/pack.toml`).
-# Editing this file is a maintainer-only change.
+# compares them). Editing this file is a maintainer-only change.
+#
+# What comes from the stack pack (`stacks/<pack>/pack.toml`), so a new pack needs no edit here:
+# - each stack job's command (`scripts/repo stack run <job>`);
+# - its setup: `scripts/repo stack setup .stack-setup` copies the pack's `[ci].setup` action
+#   there, or a no-op action, and the next step runs it with the job's name;
+# - the files whose change makes `deps` run on a PR (`[ci].deps_paths`).
+# What stays here is the repo tool's own: it is written in Rust, so every job that runs it
+# sets up Rust (rust-setup), and fmt, lint, test and deps also check the tool itself.
 #
 # Third-party actions are pinned to full commit SHAs, with the release in a trailing comment.
 # Dependabot proposes updates. Manual pins: `git ls-remote --tags <repo>`, taking the
@@ -31,8 +38,8 @@ env:
 # Job conditions:
 # - every job: skipped on a draft PR. PRs into a `wave/*` branch run every job (ADR-0007);
 # - `dependency-review`: runs on PRs only;
-# - `deps`: on a PR, does its work only when a manifest, lockfile, the deny config or this
-#   file changes; otherwise it passes at once, so the required check still reports.
+# - `deps`: on a PR, does its work only when a path .github/scripts/deps-changed.py lists
+#   changes; otherwise it passes at once, so the required check still reports.
 # The build cache is saved only on a push to main; PR runs restore it and never write it.
 # `base-tool` runs only there: it saves the cache governance.yml restores.
 
@@ -48,6 +55,10 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           cache-name: fmt
+      - run: scripts/repo stack setup .stack-setup
+      - uses: ./.stack-setup
+        with:
+          job: fmt
       - run: scripts/repo stack run fmt
       - name: Format the repo tool
         run: cargo fmt --manifest-path tools/repo/Cargo.toml --all --check
@@ -73,6 +84,10 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           cache-name: lint
+      - run: scripts/repo stack setup .stack-setup
+      - uses: ./.stack-setup
+        with:
+          job: lint
       - run: scripts/repo stack run lint
       - name: Lint the repo tool
         run: cargo clippy --manifest-path tools/repo/Cargo.toml --all-targets --locked -- -D warnings
@@ -99,6 +114,10 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           cache-name: test
+      - run: scripts/repo stack setup .stack-setup
+      - uses: ./.stack-setup
+        with:
+          job: test
       - name: Test the repo tool
         run: cargo test --manifest-path tools/repo/Cargo.toml --locked
       - run: scripts/repo stack run test
@@ -123,19 +142,12 @@ jobs:
           fetch-depth: 2   # the PR's merge commit and its base parent
       # On a PR, HEAD is GitHub's merge commit; its first parent is the base it merges into.
       - id: changed
-        name: Manifests, lockfiles or deny config changed
+        name: Did anything the deps job checks change
         env:
           EVENT: ${{ github.event_name }}
         run: |
           if [ "$EVENT" != pull_request ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          if git diff --quiet HEAD^1 HEAD -- ':(glob)**/Cargo.toml' ':(glob)**/Cargo.lock' \
-              ':(glob)**/deny.toml' ':(glob)stacks/*/pack.toml' ':(glob).github/actions/cargo-deny/**' \
-              .github/workflows/ci.yml; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "No manifest, lockfile or deny config changed: deps passes without running."
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
+          python3 -I .github/scripts/deps-changed.py
       - id: rust
         if: steps.changed.outputs.run == 'true'
         uses: ./.github/actions/rust-setup
@@ -143,6 +155,12 @@ jobs:
           cache-name: deps
       - if: steps.changed.outputs.run == 'true'
         uses: ./.github/actions/cargo-deny
+      - if: steps.changed.outputs.run == 'true'
+        run: scripts/repo stack setup .stack-setup
+      - if: steps.changed.outputs.run == 'true'
+        uses: ./.stack-setup
+        with:
+          job: deps
       - if: steps.changed.outputs.run == 'true'
         run: scripts/repo stack run deps
       - name: Advisories for the repo tool

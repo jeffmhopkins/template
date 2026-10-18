@@ -30,3 +30,18 @@ reason_required = true   # suppression must carry `reason = "..."`
 [backrefs]
 roots = ["**/src/lib.rs", "**/src/main.rs"]
 prefix = "//! Docs:"
+
+# CI: the composite action every stack job runs after the repo tool's Rust setup, and the files
+# whose change on a PR makes the `deps` job run.
+[ci]
+setup = ".github/actions/rust-stack"
+deps_paths = ["**/Cargo.toml", "**/Cargo.lock", "**/deny.toml"]
+
+# The weekly sweep's items for this stack: each command's Markdown goes under its title.
+[[sweep]]
+title = "Dependency check (`cargo deny check`)"
+run = "cargo deny --color never check"
+
+[[sweep]]
+title = "Available updates"
+run = "bash .github/scripts/cargo-updates.sh Cargo.toml"

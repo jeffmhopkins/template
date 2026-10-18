@@ -322,8 +322,9 @@ Docs also go stale when nothing in the repo changes.
   `review_every` are refused.
 - An external resource is due once `recheck_every` has passed since its last re-check.
 - `scripts/repo docs due` lists the docs and external URLs that are due, and always exits 0.
-- The weekly `sweep` workflow puts that list in its pinned issue, with dependency
-  advisories, available updates, every PR merged in the past week with `governance-approved`
+- The weekly `sweep` workflow puts that list in its pinned issue, with the stack pack's
+  sweep items (for Rust, `cargo deny check` and the updates `Cargo.lock` would take), the
+  repo tool's own advisories and updates, every PR merged in the past week with `governance-approved`
   or `review-override`, sections re-verified far more often than they are edited, and lane
   holders older than a day. Agents take its items as ordinary PRs.
 
@@ -544,3 +545,5 @@ check another, as the reviewer checks a PR head with the base's tool
 | `plan check <launch.md> <roster.md> [--row <id>]` | no `owns` overlap between running rows |
 | `heads-changed --state <file>` | print `changed` or `unchanged` for a sweep, and update the state file |
 | `stack run <job>` | run the stack pack's command for a CI job; skip when the pack's detect file is absent |
+| `stack setup <dir>` | put the pack's CI setup action, or a no-op one, at `<dir>` ([stack packs](../stacks/README.md#pack-toml)) |
+| `stack sweep` | run the pack's weekly sweep items and print their Markdown; exits 0 |
