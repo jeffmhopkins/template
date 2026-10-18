@@ -22,11 +22,12 @@ are in [ADR-0003](0003-decision-tiers.md).
 <!-- @generated begin adr-index -->
 | ADR | Title | Tier | Status |
 |---|---|---|---|
-| [ADR-0001](0001-docs-as-checked-graph.md) | Documentation as a checked graph | agent | accepted |
+| [ADR-0001](0001-docs-as-checked-graph.md) | Documentation as a checked graph | agent | superseded by ADR-0008 |
 | [ADR-0002](0002-review-gate-and-governance.md) | Review gate and governance | maintainer | accepted |
 | [ADR-0003](0003-decision-tiers.md) | Decision tiers | maintainer | accepted |
 | [ADR-0004](0004-ci-drafts-platform-pins.md) | CI: drafts skip, platform jobs after review, SHA pins | agent | accepted |
 | [ADR-0005](0005-waves-and-serial-lanes.md) | Wave branches and serial lanes | agent | superseded by ADR-0007 |
 | [ADR-0006](0006-separate-agent-identities.md) | Separate GitHub identities for agents and the gate | maintainer | proposed |
 | [ADR-0007](0007-swarm-operating-model.md) | Swarm operating model at scale | agent | accepted |
+| [ADR-0008](0008-docs-graph-v2.md) | Documentation as a checked graph, v2 | agent | accepted |
 <!-- @generated end adr-index -->

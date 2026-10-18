@@ -2,14 +2,15 @@
 id = "ADR-0001"
 title = "Documentation as a checked graph"
 kind = "adr"
-status = "accepted"
+status = "superseded"
 tier = "agent"
+superseded_by = "ADR-0008"
 -->
 
 # ADR-0001: Documentation as a checked graph
 
 <!-- @generated begin adr-status -->
-> **Status:** accepted
+> **Status:** superseded by [ADR-0008](0008-docs-graph-v2.md)
 <!-- @generated end adr-status -->
 
 > Docs are anchored sections bound by hashes to what they describe. A stale section blocks

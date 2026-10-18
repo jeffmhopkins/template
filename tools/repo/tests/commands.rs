@@ -332,12 +332,7 @@ fn progress_from_trailers_with_reverts() {
         "{}",
         md.out
     );
-    // README progress block is written by `docs generate`, and `docs check` validates the plan.
-    let readme = "<!-- @doc\nid = \"README\"\ntitle = \"R\"\nkind = \"readme\"\nstatus = \"active\"\n-->\n\n# R\n\n<!-- @generated begin progress -->\n<!-- @generated end progress -->\n";
-    f.write("README.md", readme);
-    f.commit("readme");
-    assert!(f.repo(&["docs", "generate"]).ok());
-    assert!(f.read("README.md").contains("| M0-2 | Two | done | M0-1 |"));
+    // `docs check` validates the plan.
     f.write(
         "docs/progress.toml",
         &format!("{PLAN}\n[[item]]\nid = \"M0-1\"\nmilestone = \"M0\"\ntitle = \"dup\"\n"),

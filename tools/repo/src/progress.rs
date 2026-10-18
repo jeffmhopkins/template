@@ -514,17 +514,6 @@ pub fn markdown(r: &Report) -> String {
     out
 }
 
-/// The inside of the `progress` block, derived from the history of `revs`; `None` when
-/// there is no plan file.
-pub fn block_for(l: &crate::docs::Loaded, revs: &[&str]) -> Result<Option<String>> {
-    if !l.root.join(&l.config.docs.progress).exists() {
-        return Ok(None);
-    }
-    let plan = Plan::load(&l.root, &l.config.docs.progress)?;
-    let msgs = messages(&l.root, revs).unwrap_or_default();
-    Ok(Some(markdown(&report(&plan, &derive(&msgs)))))
-}
-
 /// `repo progress [--format markdown|json]`, or `repo progress --trailers <range>`.
 pub fn run(args: &[String]) -> Outcome {
     let usage = "repo progress [--format markdown|json] | progress --trailers <range>";

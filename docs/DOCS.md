@@ -13,7 +13,7 @@ review_every = "90d"
 
 How documentation stays accurate as the code and the outside world change. The binding
 rules are `R-DOC-*` in [RULES](RULES.md#documentation); the decision is
-[ADR-0001](adr/0001-docs-as-checked-graph.md).
+[ADR-0008](adr/0008-docs-graph-v2.md).
 
 A section's inputs are its own text, the code it describes, and the sections and rules it
 relies on. History, revisions and dates come from git and are never stored in files. One tool, `scripts/repo` ([The tool](#tool)),
@@ -268,9 +268,9 @@ text differs. The blocks:
   `superseded_by`. It may change in an accepted ADR, through the generator only.
 - **`adr-index`**, in [adr/README.md](adr/README.md): a table of every ADR in number order,
   with number, title, tier and status.
-- **`progress`**, in the root README: the milestone table from `scripts/repo progress`
-  ([Progress](#progress)). It is derived from history, so `docs check` does not compare it;
-  any PR that runs `docs generate` refreshes it, and the pinned progress issue is the live view.
+
+Progress is not a generated block: it changes with every merge, so no committed copy could
+stay current. The pinned progress issue holds it ([Progress](#progress)).
 
 <a id="facts"></a>
 ## Facts and external resources
@@ -368,8 +368,8 @@ Roadmap status is derived, never recorded.
 - `scripts/repo progress` reads the trailers on every commit reachable from `HEAD` and prints
   each item's status: `planned`, `in-progress` (a `Part-of:` seen), `done` (`Completes:`
   seen), or `hardware` (done, `hardware = true`, no `Verified-on-hardware:` yet).
-- The planner is the only writer of `progress.toml`. Status reaches the README's `progress`
-  block, the pinned progress issue and the board.
+- The planner is the only writer of `progress.toml`. Status reaches the pinned progress
+  issue, which the `progress` workflow rewrites on every push to `main`, and the board.
 
 <a id="lanes"></a>
 ## Serial lanes

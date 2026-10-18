@@ -318,8 +318,7 @@ fn print_diags(diags: &[Diag]) -> usize {
 
 /// Writes every generated block; returns the paths written and the problems.
 pub fn write_generated(l: &Loaded) -> Result<generate::Generated> {
-    let body = crate::progress::block_for(l, &["HEAD"])?;
-    let g = generate::generate(l, body.as_deref());
+    let g = generate::generate(l);
     for (path, _, text) in &g.files {
         std::fs::write(l.root.join(path), text).with_context(|| format!("writing {path}"))?;
     }

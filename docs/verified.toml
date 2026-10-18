@@ -115,7 +115,7 @@ stamp = { hash = "b3:771be69d90eb1d51", by = "agent:drift-batch", note = "docs c
 stamp = { hash = "b3:02dc7f207ae6c9eb", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/generate.rs"]
-stamp = { hash = "b3:9616247fc4c64809", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
+stamp = { hash = "b3:0a956098d3c3d533", by = "agent:drift-batch", note = "generate.rs no longer has a progress block and generate() takes no progress body; merge-main and docs generate call it that way; the command table needed no change" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/govern.rs"]
 stamp = { hash = "b3:e2204a69436a431a", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -130,10 +130,10 @@ stamp = { hash = "b3:9a324483e317f8f0", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:bba9a8bef669df57", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/merge.rs"]
-stamp = { hash = "b3:65b5d8ab10c1f907", by = "agent:scale-batch", note = "config.rs gained the pack [lockfiles] key and its check, merge.rs and mod.rs the relock step and its output line, main.rs the help text; the merge-main row links to Merging main, which now describes relocking; other rows unchanged" }
+stamp = { hash = "b3:595be95997f3e8ca", by = "agent:drift-batch", note = "generate.rs no longer has a progress block and generate() takes no progress body; merge-main and docs generate call it that way; the command table needed no change" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/mod.rs"]
-stamp = { hash = "b3:2eb9fa193420ef96", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
+stamp = { hash = "b3:472dc4bb4d534675", by = "agent:drift-batch", note = "generate.rs no longer has a progress block and generate() takes no progress body; merge-main and docs generate call it that way; the command table needed no change" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/parse.rs"]
 stamp = { hash = "b3:d51f6948e01cd38c", by = "agent:structure-pass", note = "config.rs adds the required [template].source with an owner/repo check and parse.rs skips fenced code for bare URLs; strict config, root resolution and the command table still hold" }
@@ -163,7 +163,7 @@ stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Comm
 stamp = { hash = "b3:44eca1529fc85545", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/progress.rs"]
-stamp = { hash = "b3:ba6b42dee85a3f9a", by = "agent:drift-batch", note = "progress row now names --trailers <range>, matching the new branch in progress::run and the main.rs usage line" }
+stamp = { hash = "b3:e6aa0fbb78ecdca2", by = "agent:drift-batch", note = "generate.rs no longer has a progress block and generate() takes no progress body; merge-main and docs generate call it that way; the command table needed no change" }
 
 ["DOCS#tool"."file:tools/repo/src/stack.rs"]
 stamp = { hash = "b3:a9b2b35404894380", by = "agent:drift-batch", note = "Added stack setup <dir> and stack sweep rows matching stack.rs and main.rs usage; config.rs gained [ci] and [[sweep]] pack keys, covered by config check's description already" }
@@ -241,7 +241,7 @@ stamp = { hash = "b3:2402370eff262188", by = "agent:scale-batch", note = "Step 3
 stamp = { hash = "b3:c63237876fb8b1d4", by = "agent:scale-batch", note = "Step 3 now says ops, not triage, opens the record PR when the builder has ended, matching AGENT-BUILDER#hardware and the ops brief's issues section" }
 
 ["HARDWARE#flow"."dep:DOCS#progress"]
-stamp = { hash = "b3:2eef1fe93ffde3ba", by = "agent:drift-batch", note = "DOCS#progress gained the --trailers command for wave landings; it also prints Verified-on-hardware lines, and the record PR flow here is unchanged" }
+stamp = { hash = "b3:7f155d20e9aec09c", by = "agent:drift-batch", note = "DOCS#progress now says status reaches the pinned progress issue and the board, not a README block; the record PR and Verified-on-hardware flow here is unchanged" }
 
 ["REVIEW#checks"."body"]
 stamp = { hash = "b3:a44461568994e466", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }

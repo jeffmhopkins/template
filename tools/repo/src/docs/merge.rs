@@ -165,10 +165,7 @@ fn resolve_conflicts(repo: &Repo, ledger_path: &str, report: &mut Merge) -> Resu
     }
     if report.refused.is_empty() && !report.generated.is_empty() {
         let l = load(repo)?;
-        let body = crate::progress::block_for(&l, &["HEAD", "MERGE_HEAD"])
-            .ok()
-            .flatten();
-        let g = generate::generate(&l, body.as_deref());
+        let g = generate::generate(&l);
         for d in &g.problems {
             report
                 .refused
@@ -489,13 +486,13 @@ mod tests {
     fn generated_only_conflicts_take_the_merged_side() {
         let block = |o: &str, t: &str| {
             format!(
-                "<!-- @doc\nid = \"R\"\n-->\n# R\n\n<!-- @generated begin progress -->\n| a |\n<<<<<<< HEAD\n{o}=======\n{t}>>>>>>> origin/main\n<!-- @generated end progress -->\n\nAfter.\n"
+                "<!-- @doc\nid = \"R\"\n-->\n# R\n\n<!-- @generated begin adr-index -->\n| a |\n<<<<<<< HEAD\n{o}=======\n{t}>>>>>>> origin/main\n<!-- @generated end adr-index -->\n\nAfter.\n"
             )
         };
         let text = block("7 left.\n", "8 left.\n");
         let out = resolve_generated("README.md", &text).unwrap();
         assert!(
-            out.contains("| a |\n8 left.\n<!-- @generated end progress -->"),
+            out.contains("| a |\n8 left.\n<!-- @generated end adr-index -->"),
             "{out}"
         );
         let outside = text.replace(
@@ -503,7 +500,7 @@ mod tests {
             "\n<<<<<<< HEAD\nOurs.\n=======\nMain.\n>>>>>>> m\n",
         );
         assert!(resolve_generated("README.md", &outside).is_err());
-        let unowned = text.replace("progress -->", "other -->");
+        let unowned = text.replace("adr-index -->", "other -->");
         assert!(resolve_generated("README.md", &unowned).is_err());
         assert!(resolve_generated("README.md", "no markers\n").is_err());
     }

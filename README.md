@@ -87,25 +87,10 @@ This repo uses template version 0.1.0<!--fact:template-version-->.
 <!-- @section
 -->
 
-Milestones are in [docs/ROADMAP.md](docs/ROADMAP.md). Status is derived from `main`
-([DOCS › Progress](docs/DOCS.md#progress)).
-
-<!-- @generated begin progress -->
-| Milestone | Done | In progress | Hardware run pending | Planned |
-|---|---|---|---|---|
-| M0: Template in place | 0 of 1 | 0 | 0 | 1 |
-
-<details>
-<summary>M0: Template in place</summary>
-
-Demo: A PR that changes one doc section is reviewed, restamped and auto-merged.
-
-| Item | Title | Status | Depends on |
-|---|---|---|---|
-| M0-1 | Repo created from the template, bootstrap run, checks green on main | planned |  |
-
-</details>
-<!-- @generated end progress -->
+Milestones are in [docs/ROADMAP.md](docs/ROADMAP.md). Their status is derived from the
+commits on `main` ([DOCS › Progress](docs/DOCS.md#progress)) and kept in the pinned
+**Progress** issue on the repo's Issues tab, rewritten on every push to `main`.
+`scripts/repo progress` prints the same table from a clone.
 
 <a id="status"></a>
 ## Status

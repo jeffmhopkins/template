@@ -1,8 +1,6 @@
-//! Generated blocks: `adr-status` (the banner under each ADR's title), `adr-index` (the
-//! table of every ADR) and `progress` (the roadmap table derived by `repo progress`).
-//! `docs generate` writes them; `docs check` regenerates the ADR blocks in memory and
-//! reports drift. The `progress` block depends on history that changes with every merge,
-//! so `docs check` does not compare it.
+//! Generated blocks: `adr-status` (the banner under each ADR's title) and `adr-index` (the
+//! table of every ADR). `docs generate` writes them; `docs check` regenerates them in memory
+//! and reports drift.
 
 use std::fmt::Write as _;
 use std::path::{Component, Path};
@@ -12,9 +10,8 @@ use super::{Index, Loaded};
 
 pub const STATUS: &str = "adr-status";
 pub const INDEX: &str = "adr-index";
-pub const PROGRESS: &str = "progress";
 /// Every block name a generator owns.
-pub const NAMES: &[&str] = &[STATUS, INDEX, PROGRESS];
+pub const NAMES: &[&str] = &[STATUS, INDEX];
 
 /// `to` as a link relative to the directory of `from` (both repo paths).
 pub fn relative(from: &str, to: &str) -> String {
@@ -183,9 +180,8 @@ impl Generated {
     }
 }
 
-/// Regenerates the blocks of every doc. `progress` is the inside of the progress block,
-/// when it is to be written.
-pub fn generate(l: &Loaded, progress: Option<&str>) -> Generated {
+/// Regenerates the blocks of every doc.
+pub fn generate(l: &Loaded) -> Generated {
     let index = Index::new(&l.docs);
     let mut g = Generated::default();
     let mut adrs: Vec<&Doc> = l.docs.iter().filter(|d| d.is_adr()).collect();
@@ -236,15 +232,6 @@ pub fn generate(l: &Loaded, progress: Option<&str>) -> Generated {
         let body = index_body(&d.path, &adrs);
         regenerate(&mut g, d, INDEX, &body);
     }
-    if let Some(body) = progress {
-        for d in l
-            .docs
-            .iter()
-            .filter(|d| d.generated.iter().any(|b| b.name == PROGRESS))
-        {
-            regenerate(&mut g, d, PROGRESS, body);
-        }
-    }
     g
 }
 
@@ -261,7 +248,7 @@ fn regenerate(g: &mut Generated, doc: &Doc, name: &str, body: &str) {
 /// Drift findings for `docs check`: ADR banners and the ADR index that differ from what is
 /// on disk.
 pub fn check(l: &Loaded) -> Vec<Diag> {
-    let g = generate(l, None);
+    let g = generate(l);
     let mut out = g.problems;
     for (path, line, _) in g.files {
         out.push(Diag::error(
