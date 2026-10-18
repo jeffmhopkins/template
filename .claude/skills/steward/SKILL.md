@@ -96,18 +96,28 @@ After review has passed, a merge of the base gets its own round:
 <a id="findings"></a>
 ## Review findings
 <!-- @section
-depends_on = ["RULES#R-GOV-004"]
+depends_on = ["RULES#R-GOV-004", "REVIEW#rounds"]
 -->
 
 - Read the whole round comment. Near its end, before the human line and the footer, is
   the verdict marker for one head SHA.
-- **Every `B<n>`** gets a reply: the commit that fixes it, or a concrete rebuttal (a code
-  path, test or doc showing the finding is wrong). The reviewer withdraws a finding only on
+- **Answer in one comment per push,** or per reply without a push, on the PR's
+  conversation. Give each finding one line, every open `B<n>` included, and never quote a
+  marker line:
+
+  ```markdown
+  ## Answers to round <n> · <sha7 of the head these answers are for>
+  - **B1:** fixed in <sha7>: <what changed, `path:line`>.
+  - **B2:** rebuttal: <the evidence: a code path with `file:line`, a test CI ran at <sha7>, or a rule or doc's text>.
+  - **N1:** fixed in <sha7>. / deferred: <why, or the issue>.
+  ```
+- **Every `B<n>`** gets a fix or a concrete rebuttal (a code path, test or doc showing the
+  finding is wrong). It is never deferred. The reviewer withdraws a finding only on
   evidence it can check at the head; argument and repetition don't count. A rebuttal with
   no push still gets a round: send `REVIEW? #<pr> <sha>` for the same head.
 - **`N<n>`**: fix it in the same push when it is cheap and inside the PR's own paths: a
-  rename, a missing test case, a doc sentence. Defer anything else in one line each.
-  Pre-existing problems become issues, not PR changes.
+  rename, a missing test case, a doc sentence. Defer anything else in its line of the
+  answers comment. Pre-existing problems become issues, not PR changes.
 - Never widen the PR beyond its row to answer a finding; send the planner
   `BLOCKED <item>: needs <path>` instead.
 - A `needs-human` label means the maintainer decides that point. Stop arguing it and keep

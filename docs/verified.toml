@@ -640,7 +640,10 @@ stamp = { hash = "b3:25f7797ef722b20b", by = "agent:drift-batch", note = "Added 
 stamp = { hash = "b3:d2e0add9c5752b26", by = "agent:scale-batch", note = "Step 1 now adds the PAUSE-builders check for builders, matching AGENT-BUILDER#on-every-wake; the main-is-red and push steps still hold" }
 
 ["SKILL-STEWARD#findings"."body"]
-stamp = { hash = "b3:819d8b1487da4be4", by = "agent:reviewer-fix", note = "R-GOV-004 now sends a twice-rejected rebuttal to needs-human via REVIEW#escalate; edited this section to say only checked evidence withdraws a finding and that a rebuttal without a push needs REVIEW? for the same head" }
+stamp = { hash = "b3:3d9a718c6017c286", by = "agent:reviewer-fix", note = "Added the one 'Answers to round n' comment per push with a line per finding, B never deferred, N deferred in its line; now depends on REVIEW#rounds, whose evidence rule for withdrawing matches this text" }
+
+["SKILL-STEWARD#findings"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:656ea82fd605dbca", by = "agent:reviewer-fix", note = "Added the one 'Answers to round n' comment per push with a line per finding, B never deferred, N deferred in its line; now depends on REVIEW#rounds, whose evidence rule for withdrawing matches this text" }
 
 ["SKILL-STEWARD#findings"."dep:RULES#R-GOV-004"]
 stamp = { hash = "b3:cc60719a1cb9daa4", by = "agent:reviewer-fix", note = "R-GOV-004 now sends a twice-rejected rebuttal to needs-human via REVIEW#escalate; edited this section to say only checked evidence withdraws a finding and that a rebuttal without a push needs REVIEW? for the same head" }
