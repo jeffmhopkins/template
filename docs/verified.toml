@@ -382,10 +382,19 @@ stamp = { hash = "b3:c63237876fb8b1d4", by = "agent:scale-batch", note = "Step 3
 stamp = { hash = "b3:7f155d20e9aec09c", by = "agent:drift-batch", note = "DOCS#progress now says status reaches the pinned progress issue and the board, not a README block; the record PR and Verified-on-hardware flow here is unchanged" }
 
 ["REVIEW#checks"."body"]
-stamp = { hash = "b3:a44461568994e466", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
+stamp = { hash = "b3:3b071cf0f925d29a", by = "agent:reviewer-fix", note = "Added the full-read and split rule, item 0 Intent citing R-GIT-005, R-GIT-004 and R-ARCH-001 with ADR-0003 tiers, process rules in item 2, git grep for renamed names, Ran: claims vs CI under R-TEST-003 and R-TEST-004, security exception, item 8 performance and compatibility" }
+
+["REVIEW#checks"."dep:RULES#R-ARCH-001"]
+stamp = { hash = "b3:0232524f861e5517", by = "agent:reviewer-fix", note = "Added the full-read and split rule, item 0 Intent citing R-GIT-005, R-GIT-004 and R-ARCH-001 with ADR-0003 tiers, process rules in item 2, git grep for renamed names, Ran: claims vs CI under R-TEST-003 and R-TEST-004, security exception, item 8 performance and compatibility" }
 
 ["REVIEW#checks"."dep:RULES#R-DOC-004"]
 stamp = { hash = "b3:1bf330d30ad3605f", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
+
+["REVIEW#checks"."dep:RULES#R-GIT-004"]
+stamp = { hash = "b3:ed408314925685c9", by = "agent:reviewer-fix", note = "Added the full-read and split rule, item 0 Intent citing R-GIT-005, R-GIT-004 and R-ARCH-001 with ADR-0003 tiers, process rules in item 2, git grep for renamed names, Ran: claims vs CI under R-TEST-003 and R-TEST-004, security exception, item 8 performance and compatibility" }
+
+["REVIEW#checks"."dep:RULES#R-GIT-005"]
+stamp = { hash = "b3:ede8f3ccda452f8c", by = "agent:reviewer-fix", note = "Added the full-read and split rule, item 0 Intent citing R-GIT-005, R-GIT-004 and R-ARCH-001 with ADR-0003 tiers, process rules in item 2, git grep for renamed names, Ran: claims vs CI under R-TEST-003 and R-TEST-004, security exception, item 8 performance and compatibility" }
 
 ["REVIEW#checks"."dep:RULES#R-GOV-001"]
 stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
@@ -397,7 +406,7 @@ stamp = { hash = "b3:719c860cc28f8ec9", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#notes only reformatted its first bullet as a CAUTION alert, wording unchanged; the note-judging bullets still match it" }
 
 ["REVIEW#gather"."body"]
-stamp = { hash = "b3:8d2e8918c53cdb93", by = "agent:reviewer-fix", note = "Step 1 diffs against the trusted <base>; step 4 points to the governance log line 'only the maintainer's label is missing' that the tool now prints for the expected red." }
+stamp = { hash = "b3:cb34e9591c9a5900", by = "agent:reviewer-fix", note = "docs for now prints process rules, so item 2 says to check them and how to get them from an older base tool; new item 3 runs docs for on both rename paths; item 6 reads the item's other PRs for dormant code; later items renumbered, wave landing text unchanged" }
 
 ["REVIEW#gather"."dep:DOCS#tool"]
 stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "DOCS#tool dropped docs check --draft, which gather never used; the --root docs check call is unchanged" }
@@ -415,7 +424,7 @@ stamp = { hash = "b3:d61bd36d515c40f1", by = "agent:drift-batch", note = "The re
 stamp = { hash = "b3:1c29b6ee8c1be803", by = "agent:reviewer-fix", note = "Maintainer-only PRs: missing label is expected red with the new tool line, not a finding; reviewer judges the section and /approve; label comes on the ready-to-land card. Override check matches the gate's trailer and session-URL handling." }
 
 ["REVIEW#ground-rules"."body"]
-stamp = { hash = "b3:350df424465479f3", by = "agent:reviewer-fix", note = "Trusted base defined: base branch only for main or wave/*, otherwise merge-base with origin/main or the stack's wave; base PR's unmerged commits join the diff; tool built from the trusted base." }
+stamp = { hash = "b3:cd2b5219755e4c0f", by = "agent:reviewer-fix", note = "Trusted base now covers every judging standard (ARCHITECTURE, ADRs, stack rules doc, briefs, runbooks), not just REVIEW, RULES and DOCS; no-speculation keeps its rule and adds the security exception for a credible path to a sensitive sink" }
 
 ["REVIEW#ground-rules"."dep:ADR-0002"]
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names verdict-marker forgery and points the maintainer-only list at repo.toml; the ground rules (only comment, base branch, recusal by trailer) are unaffected and still hold." }
@@ -556,7 +565,7 @@ stamp = { hash = "b3:fd59049830728d61", by = "agent:drift-batch", note = "Step 3
 stamp = { hash = "b3:fbf887268466cf56", by = "agent:scale-batch", note = "Ops owns landing and fixes what the landing run finds since builders end on merge into the wave; every check runs as on every wave PR; ADR-0007 replaces ADR-0005" }
 
 ["RUNBOOK-WAVES#landing"."dep:REVIEW#gather"]
-stamp = { hash = "b3:8d2e8918c53cdb93", by = "agent:reviewer-fix", note = "REVIEW#gather's wave landing step is unchanged (sync merges via remerge-diff); its step 1 now diffs against the trusted base, which for a landing PR is main, so step 4 here holds." }
+stamp = { hash = "b3:cb34e9591c9a5900", by = "agent:reviewer-fix", note = "Gather renumbered the wave landing item to 7 and added docs for on renames and the split-item read; step 4 still links REVIEW#gather for sync merges and conflict resolutions, which is unchanged" }
 
 ["RUNBOOK-WAVES#sync"."body"]
 stamp = { hash = "b3:78d98f13f6d38e0e", by = "agent:scale-batch", note = "After a sync merges, ops sends MERGE-MAIN only to wave PRs left dirty and never BASE, per ADR-0007; DOCS#merge relocking doesn't change the sync steps" }
@@ -610,10 +619,10 @@ stamp = { hash = "b3:6f1bb67d68524039", by = "agent:reviewer-fix", note = "Worke
 stamp = { hash = "b3:d76f716a3bf506e2", by = "agent:reviewer-fix", note = "Worker builds the tool from the trusted base, as reviewer-worker#steps now says; the worker still never decides decision validity, consistent with its fail-closed escalate draft." }
 
 ["SECURITY-AGENTS#untrusted-text"."body"]
-stamp = { hash = "b3:eb31091db3773827", by = "agent:reviewer-fix", note = "Reviewer reads REVIEW/RULES/DOCS at the trusted base (base branch only for main or wave/*), matching REVIEW#ground-rules; the list of data sources is unchanged." }
+stamp = { hash = "b3:f56da2f841656bf4", by = "agent:reviewer-fix", note = "Ground rules now read every judging standard at the trusted base; edited this section to say REVIEW.md and every standard it judges against, instead of naming only RULES and DOCS; the base definition still matches" }
 
 ["SECURITY-AGENTS#untrusted-text"."dep:REVIEW#ground-rules"]
-stamp = { hash = "b3:350df424465479f3", by = "agent:reviewer-fix", note = "Reviewer reads REVIEW/RULES/DOCS at the trusted base (base branch only for main or wave/*), matching REVIEW#ground-rules; the list of data sources is unchanged." }
+stamp = { hash = "b3:cd2b5219755e4c0f", by = "agent:reviewer-fix", note = "Ground rules now read every judging standard at the trusted base; edited this section to say REVIEW.md and every standard it judges against, instead of naming only RULES and DOCS; the base definition still matches" }
 
 ["SKILL-STEWARD#ci"."body"]
 stamp = { hash = "b3:768186a969485129", by = "agent:callout-pass", note = "Moved the review-gate pending bullet into a NOTE alert below the list; wording unchanged, the reproduce and fix guidance still holds" }
