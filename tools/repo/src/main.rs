@@ -34,7 +34,7 @@ usage: repo [--root <dir>] <command> [args]
 commands:
   config check                              schema-check repo.toml, lanes.toml, the stack pack, CI job names;
                                             compare the copies of repo.toml values with it
-  docs check [--draft]                      metadata, references, ledger freshness, generated drift, rule enforcers
+  docs check                                metadata, references, ledger freshness, generated drift, rule enforcers
   docs verify <DOC#anchor> --by <who> --note <text>
                                             restamp a section after a re-read
   docs for <path>                           the sections, rules and ADRs that govern a file

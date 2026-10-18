@@ -45,14 +45,15 @@ const EXTERNAL_KEYS: &[&str] = &[
 ];
 const FACT_KEYS: &[&str] = &["id", "value", "note", "check", "source"];
 
+/// The architecture doc's id. Its sections summarize package sections and cover no code.
+const ARCH_ID: &str = "ARCH";
+
 /// Everything the checks read, besides the docs.
 pub struct Ctx<'a> {
     pub l: &'a Loaded,
     pub index: Index<'a>,
     pub files: Files<'a>,
     pub ledger: Ledger,
-    /// `--draft`: stale sections are warnings.
-    pub draft: bool,
 }
 
 /// Days in a duration such as `"90d"`.
@@ -348,6 +349,15 @@ fn check_section(
     }
     let covers = string_array(meta, "covers", p, line, out);
     let deps = string_array(meta, "depends_on", p, line, out);
+    if doc.id() == ARCH_ID && !covers.is_empty() {
+        out.push(Diag::error(
+            p,
+            line,
+            format!(
+                "section `{anchor}`: architecture sections cover no code; depend on the package sections that cover it instead"
+            ),
+        ));
+    }
     let status = doc.status();
     let mut all = BTreeSet::new();
     for g in covers.iter().filter(|_| status != "retired") {
@@ -430,11 +440,7 @@ fn check_section(
                 let msg = format!(
                     "section `{anchor}` is stale ({why}): re-read it against the change; if it still holds run `scripts/repo docs verify {key} --by <who> --note \"<what you checked>\"`, otherwise edit it"
                 );
-                out.push(if cx.draft {
-                    Diag::warning(p, line, msg)
-                } else {
-                    Diag::error(p, line, msg)
-                });
+                out.push(Diag::error(p, line, msg));
             }
         }
         Err(e) => out.push(Diag::error(p, line, format!("section `{anchor}`: {e:#}"))),

@@ -146,7 +146,7 @@ pub fn stamped_sections(docs: &[Doc]) -> BTreeSet<String> {
 }
 
 /// Every docs finding in the repository.
-pub fn check_repo(l: &Loaded, draft: bool) -> Vec<Diag> {
+pub fn check_repo(l: &Loaded) -> Vec<Diag> {
     let mut diags = l.parse_diags.clone();
     let ledger = check::check_ledger(l, &mut diags);
     let cx = check::Ctx {
@@ -154,11 +154,10 @@ pub fn check_repo(l: &Loaded, draft: bool) -> Vec<Diag> {
         index: Index::new(&l.docs),
         files: hash::Files::new(&l.root, &l.files, &l.config.docs.ledger),
         ledger,
-        draft,
     };
     diags.extend(check::check(&cx));
     diags.extend(backrefs::check(l, &cx.index, &cx.files));
-    diags.extend(generate::check(l, draft));
+    diags.extend(generate::check(l));
     if let Err(e) = crate::progress::Plan::load(&l.root, &l.config.docs.progress) {
         diags.push(Diag::error(&l.config.docs.progress, 1, format!("{e:#}")));
     }
@@ -340,23 +339,18 @@ pub fn run(sub: &str, args: &[String]) -> Outcome {
     };
     match sub {
         "check" => {
-            let a = Args::parse(args, &[], &["draft"])?;
-            a.exactly(0, "repo docs check [--draft]")?;
+            let a = Args::parse(args, &[], &[])?;
+            a.exactly(0, "repo docs check")?;
             let l = load(&Repo::open()?)?;
-            let diags = check_repo(&l, a.switch("draft"));
+            let diags = check_repo(&l);
             let errors = print_diags(&diags);
             let warnings = diags.len() - errors;
-            let draft = a.switch("draft");
             if errors == 0 {
                 println!("docs check: ok ({warnings} warning(s))");
-            } else if draft {
-                println!(
-                    "docs check --draft: {errors} problem(s), {warnings} warning(s); not failing a draft"
-                );
             } else {
                 println!("docs check: {errors} problem(s), {warnings} warning(s)");
             }
-            Ok(errors == 0 || draft)
+            Ok(errors == 0)
         }
         "verify" => {
             let (target, by, note) = stamp_args(

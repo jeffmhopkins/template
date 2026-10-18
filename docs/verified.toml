@@ -52,7 +52,7 @@ stamp = { hash = "b3:e26320717bd7b6a7", by = "agent:routing-fixer", note = "Rewr
 stamp = { hash = "b3:32f7c60931767b32", by = "agent:scale-batch", note = "The DOCS#tool table only changed the governance sentence and merge-main lockfile handling; the commands table now says merge-main resolves lockfile conflicts too, and every other row holds" }
 
 ["CLAUDE#commands"."dep:DOCS#tool"]
-stamp = { hash = "b3:b4cb023c255c06ac", by = "agent:drift-batch", note = "DOCS#tool changed only the heads-changed row (refs filter, atomic state write); builders don't run heads-changed, so this table still holds" }
+stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "DOCS#tool dropped the unused docs check --draft flag; this table already lists plain docs check, so it holds" }
 
 ["CLAUDE#docs-duty"."body"]
 stamp = { hash = "b3:96a7dbc05e26bee8", by = "agent:scale-batch", note = "DOCS#merge gained lockfile relocking; the merge-main bullet now says it resolves ledger, @generated and stack lockfile conflicts, and the rest of the duty list holds" }
@@ -97,7 +97,7 @@ stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "Added 
 stamp = { hash = "b3:d083490d135de41c", by = "agent:scale-batch", note = "governance.yml now builds the base tool once in a tool job and hands it to governance, pr-title and lane-guard by artifact; the section now says it builds once per run and shares the binary; head-labels and the rest of the list hold" }
 
 ["DOCS#tool"."body"]
-stamp = { hash = "b3:b4cb023c255c06ac", by = "agent:drift-batch", note = "heads-changed row now says it watches main and wave/* by default, takes --refs globs, and replaces the state file in one step, matching heads.rs and the usage line" }
+stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
 
 ["DOCS#tool"."file:tools/repo/src/args.rs"]
 stamp = { hash = "b3:7a02482965d2f0f4", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -109,13 +109,13 @@ stamp = { hash = "b3:d4fc94b8a3074a1d", by = "agent:drift-batch", note = "Added 
 stamp = { hash = "b3:530e42b902d67075", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/check.rs"]
-stamp = { hash = "b3:f64350fa3c39c2f9", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
+stamp = { hash = "b3:771be69d90eb1d51", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/due.rs"]
 stamp = { hash = "b3:02dc7f207ae6c9eb", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/generate.rs"]
-stamp = { hash = "b3:179b0cb29250c755", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
+stamp = { hash = "b3:9616247fc4c64809", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/govern.rs"]
 stamp = { hash = "b3:e2204a69436a431a", by = "agent:skeleton-verifier", note = "Compared the command table with main.rs dispatch/USAGE and each module's arg parsing; added docs log --rev, lane-guard --wave, plan check --row; exit codes 0/1/2, deny_unknown_fields config, git::root resolution hold" }
@@ -133,7 +133,7 @@ stamp = { hash = "b3:bba9a8bef669df57", by = "agent:skeleton-verifier", note = "
 stamp = { hash = "b3:65b5d8ab10c1f907", by = "agent:scale-batch", note = "config.rs gained the pack [lockfiles] key and its check, merge.rs and mod.rs the relock step and its output line, main.rs the help text; the merge-main row links to Merging main, which now describes relocking; other rows unchanged" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/mod.rs"]
-stamp = { hash = "b3:07043189f7fc8aad", by = "agent:scale-batch", note = "config.rs gained the pack [lockfiles] key and its check, merge.rs and mod.rs the relock step and its output line, main.rs the help text; the merge-main row links to Merging main, which now describes relocking; other rows unchanged" }
+stamp = { hash = "b3:2eb9fa193420ef96", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
 
 ["DOCS#tool"."file:tools/repo/src/docs/parse.rs"]
 stamp = { hash = "b3:d51f6948e01cd38c", by = "agent:structure-pass", note = "config.rs adds the required [template].source with an owner/repo check and parse.rs skips fenced code for bare URLs; strict config, root resolution and the command table still hold" }
@@ -154,7 +154,7 @@ stamp = { hash = "b3:0f870b5fbd65fc45", by = "agent:drift-batch", note = "heads-
 stamp = { hash = "b3:c2e8bca7bbe0a31b", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
 
 ["DOCS#tool"."file:tools/repo/src/main.rs"]
-stamp = { hash = "b3:5b438e530eec6e81", by = "agent:drift-batch", note = "heads-changed row now says it watches main and wave/* by default, takes --refs globs, and replaces the state file in one step, matching heads.rs and the usage line" }
+stamp = { hash = "b3:62a302886f6e795a", by = "agent:drift-batch", note = "docs check row loses --draft, matching mod.rs and main.rs; check.rs now fails covers in the ARCH doc, described in DOCS#gate item 9" }
 
 ["DOCS#tool"."file:tools/repo/src/plan.rs"]
 stamp = { hash = "b3:8a33a0d72a0d48d7", by = "agent:routing-fixer", note = "Command table shows governance --into/--main and lane-guard --wave --head-ref/--base-ref; plan.rs adds the ended state, config.rs [template].commit, hints now say scripts/repo; table matches main.rs usage" }
@@ -262,7 +262,7 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:16e1b15e3f26dbf1", by = "agent:trust-batch", note = "Step 4 now says governance prints maintainer-only entries that are a path or a path#R-GOV rule, matching the new governance output; the tool table change in DOCS#tool needs nothing else here." }
 
 ["REVIEW#gather"."dep:DOCS#tool"]
-stamp = { hash = "b3:b4cb023c255c06ac", by = "agent:drift-batch", note = "DOCS#tool changed only the heads-changed row; the base tool commands a review gathers with are unchanged" }
+stamp = { hash = "b3:f7cca0d3f120337c", by = "agent:drift-batch", note = "DOCS#tool dropped docs check --draft, which gather never used; the --root docs check call is unchanged" }
 
 ["REVIEW#governance"."body"]
 stamp = { hash = "b3:3001235f745797eb", by = "agent:trust-batch", note = "Added that maintainer-only covers R-GOV rules and a bullet that an accepted ADR edit beyond superseding fails governance whatever the labels; matches DOCS#governance, R-GOV-007 and governance.rs hard_problems." }
@@ -310,7 +310,7 @@ stamp = { hash = "b3:3aed8b8aa18a5ac6", by = "agent:scale-batch", note = "REVIEW
 stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-008 now says status changes only to superseded with superseded_by and that governance fails any other edit whatever the labels; the section's dependency DOCS#gate is unchanged and the group still holds." }
 
 ["RULES#documentation"."dep:DOCS#gate"]
-stamp = { hash = "b3:a2da6e7fc4cb2041", by = "agent:skeleton-verifier", note = "Checked R-DOC-001..011 against DOCS#gate's eight failure classes: metadata blocks, references, stale ledger, covers bounds (draft warning), enforced_by, generated drift, file facts, back-references; R-DOC-008 matches governance.rs ADR exceptions" }
+stamp = { hash = "b3:a2c6fe480176d777", by = "agent:drift-batch", note = "DOCS#gate gained item 9 (covers in an ARCH section) and lost the --draft line; the R-DOC rules enforced by ci:docs still match what the check fails on" }
 
 ["RULES#governance"."body"]
 stamp = { hash = "b3:b24ffc237966c908", by = "agent:trust-batch", note = "ADR-0002 now names marker forgery and points to repo.toml for the maintainer-only list; R-GOV-007 gained the R-GOV rule clause and the extended applies_to that config check compares with repo.toml." }

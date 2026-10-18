@@ -46,7 +46,7 @@ review_every = "180d"
 | Command | Does | Exit |
 |---|---|---|
 | `config check` | schema-checks `repo.toml`, the stack pack and `lanes.toml`; every `[checks].required` name must be a check name in `.github/workflows/*.yml`: a job's `name:`, else its id (a job whose `name:` is an expression has none); every copy of a `[labels]` or `[review].marker` value under `.github/` carries the annotation `[labels].<key> in repo.toml` (on its line or the comment line above) and equals the value; R-GOV-007's `applies_to` and the maintainer-only list in `docs/agents/project-instructions.md` equal `[governance].maintainer_only` | 1 on any problem |
-| `docs check [--draft]` | every docs finding: metadata, anchors, references, rules, facts, external URLs, `covers` bounds, ledger form and freshness, back-references, ADR banner and index drift, `progress.toml` | 1 on any error; with `--draft`, always 0, and stale sections and drift print as warnings |
+| `docs check` | every docs finding: metadata, anchors, references, rules, facts, external URLs, `covers` bounds, `covers` in an architecture section, ledger form and freshness, back-references, ADR banner and index drift, `progress.toml` | 1 on any error |
 | `docs verify <DOC#anchor> --by <who> --note "<text>"` | writes the section's current input hashes into the ledger; entries whose input changed or is new take this `by` and `note` | 2 on a stock note, a bad `--by`, or untracked covered files |
 | `docs for <path>` | the sections, rules and ADRs that govern a file; the file need not exist | 0 |
 | `docs generate` | rewrites every `@generated` block: `adr-status`, `adr-index`, `progress` | 1 when a block can't be generated |

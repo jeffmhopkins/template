@@ -78,6 +78,7 @@ depends_on = ["ARCH#data-model", "RULES#R-TEST-001"]
   `RULES#R-…`, or a bare `DOC` for a whole ADR. Optional. Docs never depend on whole docs
   other than ADRs.
 - Architecture sections depend on the package sections they summarize and cover no code.
+  `docs check` fails on `covers` in the doc whose id is `ARCH`.
 - A section with `covers` or `depends_on` is **ledgered**: it needs stamps in the
   [ledger](#ledger).
 - A `###` belongs to its `##`, except rules, which are `###` headings with their own
@@ -511,9 +512,8 @@ it from git, following the first-parent line of `main`:
 5. an `enforced_by` entry it doesn't recognize ([Rules format](#rules));
 6. generated drift ([Generated blocks](#generated));
 7. a file fact whose value no longer matches ([Facts](#facts));
-8. a back-reference mismatch ([Code back-references](#backrefs)).
-
-With `--draft` it reports the same findings and exits 0.
+8. a back-reference mismatch ([Code back-references](#backrefs));
+9. a section of `ARCHITECTURE.md` (doc id `ARCH`) with `covers` ([Sections](#sections)).
 
 <a id="tool"></a>
 ## The tool
@@ -531,7 +531,7 @@ check another, as the reviewer checks a PR head with the base's tool
 | Command | What it does |
 |---|---|
 | `config check` | schema-check `repo.toml`, `lanes.toml` and the stack pack; compare `[checks].required` with the check names in `.github/workflows/`: a job's `name:`, else its id; compare every copy of a `repo.toml` value with the value ([One source](#copies)) |
-| `docs check [--draft]` | [What the docs check fails on](#gate) |
+| `docs check` | [What the docs check fails on](#gate) |
 | `docs verify <DOC#anchor> --by … --note …` | restamp a section ([The ledger](#ledger)) |
 | `docs for <path>` | what governs a file ([Code back-references](#backrefs)) |
 | `docs generate` | rewrite generated blocks ([Generated blocks](#generated)) |

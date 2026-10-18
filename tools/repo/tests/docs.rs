@@ -19,12 +19,6 @@ fn check_verify_and_staleness() {
         "{}",
         r.out
     );
-    let draft = f.repo(&["docs", "check", "--draft"]);
-    assert!(
-        draft.ok() && draft.out.contains("warning: section `a` is stale"),
-        "{}",
-        draft.out
-    );
     let stock = f.repo(&["docs", "verify", "A#a", "--by", "agent:t", "--note", "ok"]);
     assert_eq!(stock.code, 2, "{}", stock.out);
     let v = f.repo(&["docs", "verify", "A#a", "--by", "agent:t", "--note", NOTE]);
@@ -69,16 +63,49 @@ fn structural_findings() {
     ] {
         assert!(r.out.contains(needle), "missing {needle:?} in\n{}", r.out);
     }
-    let draft = f.repo(&["docs", "check", "--draft"]);
-    assert!(
-        draft.ok() && draft.out.contains("not failing a draft"),
-        "{}",
-        draft.out
-    );
+    assert_eq!(f.repo(&["docs", "check", "--draft"]).code, 2);
 }
 
 const ADR: &str = "<!-- @doc\nid = \"ADR-0001\"\ntitle = \"First\"\nkind = \"adr\"\nstatus = \"accepted\"\ntier = \"agent\"\n-->\n\n# ADR-0001: First\n\n<a id=\"context\"></a>\n## Context\nWhy.\n";
 const INDEX: &str = "<!-- @doc\nid = \"ADR-INDEX\"\ntitle = \"ADRs\"\nkind = \"readme\"\nstatus = \"active\"\n-->\n\n# ADRs\n\n<!-- @generated begin adr-index -->\n<!-- @generated end adr-index -->\n";
+
+#[test]
+fn architecture_sections_cover_no_code() {
+    let f = Fixture::new(
+        "arch",
+        &[
+            (
+                "docs/ARCHITECTURE.md",
+                &doc("ARCH", "parts", "src/**", "The parts."),
+            ),
+            (
+                "docs/PKG.md",
+                &doc("PKG", "core", "src/**", "The core package."),
+            ),
+            ("src/a.rs", "a\n"),
+        ],
+    );
+    let r = f.repo(&["docs", "check"]);
+    assert!(
+        !r.ok()
+            && r.out
+                .contains("section `parts`: architecture sections cover no code"),
+        "{}",
+        r.out
+    );
+    assert!(!r.out.contains("section `core`: architecture"), "{}", r.out);
+    // Depending on the package section is the way.
+    f.write(
+        "docs/ARCHITECTURE.md",
+        "<!-- @doc\nid = \"ARCH\"\ntitle = \"ARCH\"\nkind = \"normative\"\nstatus = \"active\"\n-->\n\n# ARCH\n\n<a id=\"parts\"></a>\n## Parts\n<!-- @section\ndepends_on = [\"PKG#core\"]\n-->\nThe parts.\n",
+    );
+    let r = f.repo(&["docs", "check"]);
+    assert!(
+        !r.out.contains("architecture sections cover no code"),
+        "{}",
+        r.out
+    );
+}
 
 #[test]
 fn generate_writes_banners_and_index() {

@@ -260,16 +260,15 @@ fn regenerate(g: &mut Generated, doc: &Doc, name: &str, body: &str) {
 
 /// Drift findings for `docs check`: ADR banners and the ADR index that differ from what is
 /// on disk.
-pub fn check(l: &Loaded, draft: bool) -> Vec<Diag> {
+pub fn check(l: &Loaded) -> Vec<Diag> {
     let g = generate(l, None);
     let mut out = g.problems;
     for (path, line, _) in g.files {
-        let msg = "generated content is out of date: run `scripts/repo docs generate`";
-        out.push(if draft {
-            Diag::warning(&path, line, msg)
-        } else {
-            Diag::error(&path, line, msg)
-        });
+        out.push(Diag::error(
+            &path,
+            line,
+            "generated content is out of date: run `scripts/repo docs generate`",
+        ));
     }
     out
 }
