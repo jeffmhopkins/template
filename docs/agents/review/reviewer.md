@@ -32,9 +32,11 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
 -->
 
 - **`REVIEW.md` (in the repo) says how to judge a PR:** what to gather, what to check, how to
-  classify findings, the comment and marker format. It is read from the PR's **base** branch.
-- **This file says how to run as a reviewer:** what to review when, shards, kinds of round,
-  state and reporting.
+  classify findings, the kinds of round, the comment and marker format. It is read from the
+  PR's **trusted base** ([REVIEW › Ground rules](../../../REVIEW.md#ground-rules)), and so is
+  the [review round template](review-template.md) the comment is built from.
+- **This file says how to run as a reviewer:** what to review when, shards, workers, state
+  and reporting.
 - **[reviewer-worker.md](reviewer-worker.md)** is the brief for the worker that drafts one
   PR's round.
 
@@ -71,37 +73,33 @@ verdict marker for the head SHA. The `review-gate` check reads that marker.
   `REVIEW?` once it is green. The [expected reds](../../../REVIEW.md#severity) don't count as
   red: a lane PR's `lane-guard` before it holds the slot, and `governance` on a
   maintainer-only PR whose log says `governance: only the maintainer's label is missing`.
-- **Drafts** get a round only when their author or the coordinator asks for one.
+- **Drafts** get a round only when someone asks for one
+  ([REVIEW › Rounds](../../../REVIEW.md#rounds) says who may).
 - **Shards.** A PR's shard is its number mod the reviewer count that `ops/roster.md`'s
   `shards:` line gives for that number, so adding a reviewer never moves a PR. Your PRs are
   those in your shard, plus any sent to you as `RECUSED #<pr>`.
-- **Fan-out:** at most 2 workers at a time. CI check runs are the test evidence; a worker builds
-  only to confirm or refute a specific finding. You post the worker's draft after checking the
-  head hasn't moved.
+- **Fan-out:** at most 2 workers at a time. Start each one with the input block in
+  [reviewer worker › Input](reviewer-worker.md#input), every line filled. CI check runs are
+  the test evidence; a worker builds only to confirm or refute a specific finding. You post
+  the worker's draft after checking the head hasn't moved.
 - **Don't subscribe to PR events.** They belong to the PR's author session.
 
 <a id="kinds-of-round"></a>
 ## Kinds of round
 <!-- @section
+depends_on = ["REVIEW#rounds"]
 -->
 
-[REVIEW › Rounds](../../../REVIEW.md#rounds) defines full, incremental and merge-only
-rounds, and the commands that tell them apart: `git range-diff` from your recorded
-merge base and head, `git log --merges` and `git show --remerge-diff`.
-
-| Kind | When | What |
-|---|---|---|
-| Full | new PR; an earlier reviewed commit changed; asked for; or 3 incremental rounds in a row | `REVIEW.md` on the whole diff against the base |
-| Incremental | `git range-diff` shows the earlier reviewed commits unchanged, with new commits on top, or a merge's remerge-diff has a hunk its conflict doesn't explain | the new commits and those hunks, and every open finding |
-| Merge-only | `git range-diff` shows the PR's own commits unchanged, only base merges were added, and their remerge-diffs are conflict resolution only | each merge's remerge-diff and each restamp note; carry earlier findings forward |
-| Lane value | the only change is setting the lane value from `LANE-HOLD` | the value and every file that names it |
-| Draft | asked for on a draft waiting on a lane or a base PR | full review against its own base; staleness from waiting isn't a finding |
-| Wave landing | head `wave/*`, base `main` | the sync merges and conflict resolutions, and the `Completes:` list |
-| Unchanged bot rebase | Dependabot, previous verdict `fail`, range-diff identical | a one-line round restating the open finding |
+Every round is one of the kinds in the table in
+[REVIEW › Rounds](../../../REVIEW.md#rounds), which also gives the commands that tell them
+apart and who may ask for a round. Find the kind before you start a worker, from the merge
+base and head your state file recorded, and name it in the worker's input with what the
+commands showed. Record it in the round's state line by its name.
 
 <a id="round-rules"></a>
 ## Rules of the round
 <!-- @section
+depends_on = ["REVIEW#tiers", "REVIEW#escalate", "AGENT-REVIEWER-WORKER#output"]
 -->
 
 - Recuse if your session id appears in the `Claude-Session` trailer of any commit not
@@ -117,8 +115,19 @@ merge base and head, `git log --merges` and `git show --remerge-diff`.
   unchanged since the head of the last round before that message, apart from the ADR's
   status ([REVIEW › Tier checks](../../../REVIEW.md#tiers)). Your worker can't do this.
 - **The draft fails closed.** A worker whose verdict relies on a maintainer decision drafts
-  `escalate`, with the `pass` marker and human line ready in its report. Switch the draft to
-  `pass` only after every `source:` checks out. If any fails, post the `escalate` as drafted.
+  `escalate`, with a pass swap in its report. Switch the draft to `pass` only after every
+  `source:` checks out. If any fails, post the `escalate` as drafted. Either way, fill in the
+  "Maintainer decisions" line with how each `source:` checked out. A switch changes more than
+  the marker's verdict:
+  - **to `pass`:** take the human line from the pass swap, don't apply `needs-human`, and
+    don't send the report's `NEEDS-MAINTAINER` line;
+  - **to `escalate`,** for a `fail` draft whose `source:` fails: rewrite the human line to
+    name what waits on the maintainer and list the open blocking findings, apply
+    `needs-human`, and send `NEEDS-MAINTAINER`.
+- **Renumber before posting.** Read the PR's markers again just before you post. If a round
+  was posted since the worker drafted, take the next round number in the header, the first
+  paragraph, the marker and the human line, and renumber any new finding whose ID that round
+  used ([REVIEW › Rounds](../../../REVIEW.md#rounds)).
 - A worker never runs the PR's code: it builds the tool from the base and points it at the
   head ([reviewer worker › Steps](reviewer-worker.md#steps)).
 - A blocking finding needs a traced path and a `file:line`. Otherwise it's a question, apart

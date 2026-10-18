@@ -36,6 +36,54 @@ stamp = { hash = "b3:fd59049830728d61", by = "agent:drift-batch", note = "Landin
 ["AGENT-OPS#waves"."dep:RUNBOOK-WAVES#when"]
 stamp = { hash = "b3:47003c8eb9fe7da4", by = "agent:scale-batch", note = "New ops waves section: turns on by MERGE-MAIN rate or runner queue as RUNBOOK-WAVES#when says, MERGE-MAIN only to PRs left dirty after a sync, no BASE on sync, ops fixes landing breakage as RUNBOOK-WAVES#landing step 5 now says" }
 
+["AGENT-REVIEWER#kinds-of-round"."body"]
+stamp = { hash = "b3:14a1653ff1c688d5", by = "agent:reviewer-fix", note = "The copied table is gone; the section points at the single kinds table in REVIEW#rounds, and says to find the kind before starting a worker, pass it in the input with the evidence, and record its name" }
+
+["AGENT-REVIEWER#kinds-of-round"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "The copied table is gone; the section points at the single kinds table in REVIEW#rounds, and says to find the kind before starting a worker, pass it in the input with the evidence, and record its name" }
+
+["AGENT-REVIEWER#round-rules"."body"]
+stamp = { hash = "b3:903f34a93a1d4347", by = "agent:reviewer-fix", note = "The fail-closed swap now lists what changes each way (human line, decisions line, needs-human, NEEDS-MAINTAINER), and a renumber-before-posting rule matches REVIEW#rounds; tiers and escalation links unchanged" }
+
+["AGENT-REVIEWER#round-rules"."dep:AGENT-REVIEWER-WORKER#output"]
+stamp = { hash = "b3:eadf4c6268f80dc5", by = "agent:reviewer-fix", note = "The fail-closed swap now lists what changes each way (human line, decisions line, needs-human, NEEDS-MAINTAINER), and a renumber-before-posting rule matches REVIEW#rounds; tiers and escalation links unchanged" }
+
+["AGENT-REVIEWER#round-rules"."dep:REVIEW#escalate"]
+stamp = { hash = "b3:896953e9438b0277", by = "agent:reviewer-fix", note = "The fail-closed swap now lists what changes each way (human line, decisions line, needs-human, NEEDS-MAINTAINER), and a renumber-before-posting rule matches REVIEW#rounds; tiers and escalation links unchanged" }
+
+["AGENT-REVIEWER#round-rules"."dep:REVIEW#tiers"]
+stamp = { hash = "b3:c7f8599d398b0b28", by = "agent:reviewer-fix", note = "The fail-closed swap now lists what changes each way (human line, decisions line, needs-human, NEEDS-MAINTAINER), and a renumber-before-posting rule matches REVIEW#rounds; tiers and escalation links unchanged" }
+
+["AGENT-REVIEWER-WORKER#input"."body"]
+stamp = { hash = "b3:4c7099e7508487e1", by = "agent:reviewer-fix", note = "New input block: PR, head, trusted base and how chosen, merge base, last round, kind with the range-diff evidence, provisional round, role, session, asker, scratch and draft path, as REVIEW#rounds needs" }
+
+["AGENT-REVIEWER-WORKER#input"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "New input block: PR, head, trusted base and how chosen, merge base, last round, kind with the range-diff evidence, provisional round, role, session, asker, scratch and draft path, as REVIEW#rounds needs" }
+
+["AGENT-REVIEWER-WORKER#output"."body"]
+stamp = { hash = "b3:eadf4c6268f80dc5", by = "agent:reviewer-fix", note = "The restated Step 4 list is gone: the draft follows REVIEW#output's form for the kind, from the template; the report is a fixed block with kind, base, mb, needs-human, NEEDS-MAINTAINER, sources, pass swap and issues" }
+
+["AGENT-REVIEWER-WORKER#output"."dep:REVIEW#output"]
+stamp = { hash = "b3:370c444be7eea204", by = "agent:reviewer-fix", note = "The restated Step 4 list is gone: the draft follows REVIEW#output's form for the kind, from the template; the report is a fixed block with kind, base, mb, needs-human, NEEDS-MAINTAINER, sources, pass swap and issues" }
+
+["AGENT-REVIEWER-WORKER#output"."dep:REVIEW-TEMPLATE#template"]
+stamp = { hash = "b3:8ad34829d2c68c5f", by = "agent:reviewer-fix", note = "The restated Step 4 list is gone: the draft follows REVIEW#output's form for the kind, from the template; the report is a fixed block with kind, base, mb, needs-human, NEEDS-MAINTAINER, sources, pass swap and issues" }
+
+["AGENT-REVIEWER-WORKER#steps"."body"]
+stamp = { hash = "b3:120eb3812cd5c0d4", by = "agent:reviewer-fix", note = "Step 1 reads REVIEW and the template from the trusted base; Step 2 adds --into for wave PRs per REVIEW#gather; statuses and kinds now link REVIEW#rounds; recuse uses the short form; decisions use the pass swap" }
+
+["AGENT-REVIEWER-WORKER#steps"."dep:REVIEW#escalate"]
+stamp = { hash = "b3:896953e9438b0277", by = "agent:reviewer-fix", note = "Step 1 reads REVIEW and the template from the trusted base; Step 2 adds --into for wave PRs per REVIEW#gather; statuses and kinds now link REVIEW#rounds; recuse uses the short form; decisions use the pass swap" }
+
+["AGENT-REVIEWER-WORKER#steps"."dep:REVIEW#gather"]
+stamp = { hash = "b3:cb34e9591c9a5900", by = "agent:reviewer-fix", note = "Step 1 reads REVIEW and the template from the trusted base; Step 2 adds --into for wave PRs per REVIEW#gather; statuses and kinds now link REVIEW#rounds; recuse uses the short form; decisions use the pass swap" }
+
+["AGENT-REVIEWER-WORKER#steps"."dep:REVIEW#ground-rules"]
+stamp = { hash = "b3:cd2b5219755e4c0f", by = "agent:reviewer-fix", note = "Step 1 reads REVIEW and the template from the trusted base; Step 2 adds --into for wave PRs per REVIEW#gather; statuses and kinds now link REVIEW#rounds; recuse uses the short form; decisions use the pass swap" }
+
+["AGENT-REVIEWER-WORKER#steps"."dep:REVIEW#rounds"]
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "Step 1 reads REVIEW and the template from the trusted base; Step 2 adds --into for wave PRs per REVIEW#gather; statuses and kinds now link REVIEW#rounds; recuse uses the short form; decisions use the pass swap" }
+
 ["AGENTS#permissions"."body"]
 stamp = { hash = "b3:eac96200b6d55e59", by = "agent:trust-batch", note = "New section describing .claude/settings.json: allow list (check-only bootstrap, gh api reads, --disable-auto) and deny list (review-override labels, gh api method/body flags in every spelling); checked line by line against the file." }
 
@@ -70,10 +118,10 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:6aca6fa387d19a55", by = "agent:reviewer-fix", note = "REVIEW#output's escalate row now lists open blocking findings and REVIEW#rounds gives same-head rebuttal rounds; edited step 4 and the flowchart edge so a rebuttal with REVIEW? also starts a round; needs-human step still holds" }
 
 ["CLAUDE#pr-loop"."dep:REVIEW#output"]
-stamp = { hash = "b3:27952cf1c309ab91", by = "agent:reviewer-fix", note = "REVIEW#output's escalate row now lists open blocking findings and REVIEW#rounds gives same-head rebuttal rounds; edited step 4 and the flowchart edge so a rebuttal with REVIEW? also starts a round; needs-human step still holds" }
+stamp = { hash = "b3:370c444be7eea204", by = "agent:reviewer-fix", note = "REVIEW#output gained the full and short forms and the N format, REVIEW#rounds the kinds table and who may ask; the loop's B and N findings, one marker per round and REVIEW? after a rebuttal still hold" }
 
 ["CLAUDE#pr-loop"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:656ea82fd605dbca", by = "agent:reviewer-fix", note = "REVIEW#output's escalate row now lists open blocking findings and REVIEW#rounds gives same-head rebuttal rounds; edited step 4 and the flowchart edge so a rebuttal with REVIEW? also starts a round; needs-human step still holds" }
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "REVIEW#output gained the full and short forms and the N format, REVIEW#rounds the kinds table and who may ask; the loop's B and N findings, one marker per round and REVIEW? after a rebuttal still hold" }
 
 ["CLAUDE#pr-loop"."dep:RULES#R-GOV-005"]
 stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Added the Claude-Session trailer rule to step 1 (commits and PR body, R-GIT-005); REVIEW#output now exempts main's commits and signed Dependabot ones, R-GOV-005/006 add the source check, none contradict the loop" }
@@ -124,7 +172,7 @@ stamp = { hash = "b3:cb8ea50cb732b2e4", by = "agent:reviewer-fix", note = "revie
 stamp = { hash = "b3:a76af3ef4f29267a", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
 
 ["DESIGN#ci"."dep:REVIEW#output"]
-stamp = { hash = "b3:27952cf1c309ab91", by = "agent:reviewer-fix", note = "REVIEW#output changed only the fail and escalate rows of the verdict table; the review-gate.yml summary here (counted markers, edited and multi-marker comments, override link) still matches" }
+stamp = { hash = "b3:370c444be7eea204", by = "agent:reviewer-fix", note = "REVIEW#output now adds the round forms, header line and N format; the review-gate summary here (head SHA, login, roles, one marker line, edits as fail, override link) is unchanged by that" }
 
 ["DESIGN#ci"."dep:RULES#R-GIT-003"]
 stamp = { hash = "b3:a7ac95a8d51a7f8e", by = "agent:drift-batch", note = "New CI section covering ci.yml, main-health, progress, after-review, the four composite actions, the node tests and the session hook; each paragraph checked against its file, including the pack-driven stack setup and main-health's main-only check_suite filter" }
@@ -399,6 +447,9 @@ stamp = { hash = "b3:ede8f3ccda452f8c", by = "agent:reviewer-fix", note = "Added
 ["REVIEW#checks"."dep:RULES#R-GOV-001"]
 stamp = { hash = "b3:dc1de2c6a90771db", by = "agent:skeleton-verifier", note = "Checked the review order against R-DOC-004 (wrong docs fixed in the same PR, verify only after re-read) and R-GOV-001 (label plus Governance change section); the documentation and governance steps match both rules" }
 
+["REVIEW#checks"."file:.github/pull_request_template.md"]
+stamp = { hash = "b3:6d714c6c8e359f7c", by = "agent:reviewer-fix", note = "Now covers the PR template: Step 2.9 judges the description against its Summary, Testing, Docs, Governance change and Review override items and its Completes, Part-of and Claude-Session trailers, which the template has" }
+
 ["REVIEW#docs-notes"."body"]
 stamp = { hash = "b3:719c860cc28f8ec9", by = "agent:skeleton-verifier", note = "Checked against DOCS#notes: false verification and notes not engaging with the change are blocking, merge notes need earlier note plus merge change, one note copied across sections fails" }
 
@@ -430,7 +481,10 @@ stamp = { hash = "b3:cd2b5219755e4c0f", by = "agent:reviewer-fix", note = "Trust
 stamp = { hash = "b3:3afd307de4726119", by = "agent:trust-batch", note = "ADR-0002 now names verdict-marker forgery and points the maintainer-only list at repo.toml; the ground rules (only comment, base branch, recusal by trailer) are unaffected and still hold." }
 
 ["REVIEW#output"."body"]
-stamp = { hash = "b3:27952cf1c309ab91", by = "agent:reviewer-fix", note = "fail row now says no maintainer decision is needed; escalate row applies whenever Escalation says a decision is needed, whatever else is open, and its human line lists the open blocking findings; gate parsing text unchanged" }
+stamp = { hash = "b3:370c444be7eea204", by = "agent:reviewer-fix", note = "Added the template link, full and short forms with header line and kind, the N format with a Question variant; now covers review-gate-decide.test.mjs, whose tests match the gate reading rules stated here" }
+
+["REVIEW#output"."file:.github/tests/review-gate-decide.test.mjs"]
+stamp = { hash = "b3:be02d26dc9792a8e", by = "agent:reviewer-fix", note = "Added the template link, full and short forms with header line and kind, the N format with a Question variant; now covers review-gate-decide.test.mjs, whose tests match the gate reading rules stated here" }
 
 ["REVIEW#output"."file:.github/workflows/review-gate.yml"]
 stamp = { hash = "b3:c37f891140684158", by = "agent:reviewer-fix", note = "Matches review-gate.yml: edited or multi-marker comments count as fail at their highest round regardless of SHA/role/session; deleted ones are left to the sweep; new caution never to reproduce a marker line." }
@@ -445,16 +499,16 @@ stamp = { hash = "b3:9f8bce207e2aff0c", by = "agent:trust-fixer", note = "Decisi
 stamp = { hash = "b3:f068612fec993eb3", by = "agent:trust-fixer", note = "Decisions now need a source the reviewer checks with fetch_messages against ops/maintainer.md, and range cards count only listed ids; matches amended ADR-0003 and R-GOV-005" }
 
 ["REVIEW-TEMPLATE#template"."body"]
-stamp = { hash = "b3:a0b4901e1eda3a29", by = "agent:reviewer-fix", note = "Earlier-findings line now shows rebuttals rejected in rounds and withdrawal on evidence checked at this head; escalate human line lists open blocking findings, matching REVIEW#output and the new REVIEW#escalate dependency" }
+stamp = { hash = "b3:8ad34829d2c68c5f", by = "agent:reviewer-fix", note = "Split into full and short forms; header line with the kind name from REVIEW#rounds, deferred and rebutted-in-rounds statuses, N format with Question, decisions with source:, the S caution; matches REVIEW#output and #rounds" }
 
 ["REVIEW-TEMPLATE#template"."dep:REVIEW#escalate"]
 stamp = { hash = "b3:896953e9438b0277", by = "agent:reviewer-fix", note = "Earlier-findings line now shows rebuttals rejected in rounds and withdrawal on evidence checked at this head; escalate human line lists open blocking findings, matching REVIEW#output and the new REVIEW#escalate dependency" }
 
 ["REVIEW-TEMPLATE#template"."dep:REVIEW#output"]
-stamp = { hash = "b3:27952cf1c309ab91", by = "agent:reviewer-fix", note = "Earlier-findings line now shows rebuttals rejected in rounds and withdrawal on evidence checked at this head; escalate human line lists open blocking findings, matching REVIEW#output and the new REVIEW#escalate dependency" }
+stamp = { hash = "b3:370c444be7eea204", by = "agent:reviewer-fix", note = "Split into full and short forms; header line with the kind name from REVIEW#rounds, deferred and rebutted-in-rounds statuses, N format with Question, decisions with source:, the S caution; matches REVIEW#output and #rounds" }
 
 ["REVIEW-TEMPLATE#template"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:656ea82fd605dbca", by = "agent:reviewer-fix", note = "Earlier-findings line now shows rebuttals rejected in rounds and withdrawal on evidence checked at this head; escalate human line lists open blocking findings, matching REVIEW#output and the new REVIEW#escalate dependency" }
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "Split into full and short forms; header line with the kind name from REVIEW#rounds, deferred and rebutted-in-rounds statuses, N format with Question, decisions with source:, the S caution; matches REVIEW#output and #rounds" }
 
 ["RULES#documentation"."body"]
 stamp = { hash = "b3:394a989a0f31d62b", by = "agent:trust-batch", note = "R-DOC-008 now says status changes only to superseded with superseded_by and that governance fails any other edit whatever the labels; the section's dependency DOCS#gate is unchanged and the group still holds." }
@@ -616,7 +670,7 @@ stamp = { hash = "b3:398a292664325578", by = "agent:structure-pass", note = "New
 stamp = { hash = "b3:559df345c7abc21b", by = "agent:reviewer-fix", note = "Worker builds the tool from the trusted base, as reviewer-worker#steps now says; the worker still never decides decision validity, consistent with its fail-closed escalate draft." }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENT-REVIEWER-WORKER#steps"]
-stamp = { hash = "b3:463f0eb49f61e224", by = "agent:reviewer-fix", note = "Worker steps now run docs for on both rename paths and judge rebuttals on evidence; still built from the trusted base with --root, no head code runs, fetch_messages stays with the reviewer" }
+stamp = { hash = "b3:120eb3812cd5c0d4", by = "agent:reviewer-fix", note = "Worker Steps now read REVIEW and the round template from the trusted base, add --into for wave PRs and use the input block; still base-built tool with --root, no head code, sources listed for the reviewer" }
 
 ["SECURITY-AGENTS#sub-workers"."dep:AGENTS#state"]
 stamp = { hash = "b3:d76f716a3bf506e2", by = "agent:reviewer-fix", note = "Worker builds the tool from the trusted base, as reviewer-worker#steps now says; the worker still never decides decision validity, consistent with its fail-closed escalate draft." }
@@ -643,7 +697,7 @@ stamp = { hash = "b3:d2e0add9c5752b26", by = "agent:scale-batch", note = "Step 1
 stamp = { hash = "b3:3d9a718c6017c286", by = "agent:reviewer-fix", note = "Added the one 'Answers to round n' comment per push with a line per finding, B never deferred, N deferred in its line; now depends on REVIEW#rounds, whose evidence rule for withdrawing matches this text" }
 
 ["SKILL-STEWARD#findings"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:656ea82fd605dbca", by = "agent:reviewer-fix", note = "Added the one 'Answers to round n' comment per push with a line per finding, B never deferred, N deferred in its line; now depends on REVIEW#rounds, whose evidence rule for withdrawing matches this text" }
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "REVIEW#rounds now reads the Answers to round n comment this section defines, links here, and adds deferred for N only and never for B, which matches the answer lines here" }
 
 ["SKILL-STEWARD#findings"."dep:RULES#R-GOV-004"]
 stamp = { hash = "b3:cc60719a1cb9daa4", by = "agent:reviewer-fix", note = "R-GOV-004 now sends a twice-rejected rebuttal to needs-human via REVIEW#escalate; edited this section to say only checked evidence withdraws a finding and that a rebuttal without a push needs REVIEW? for the same head" }
@@ -661,7 +715,7 @@ stamp = { hash = "b3:0960c01e8e54fc0e", by = "agent:callout-pass", note = "DOCS#
 stamp = { hash = "b3:a989592e73f80b70", by = "agent:scale-batch", note = "REVIEW#rounds now has incremental rounds; a later real-change push now gets its own round, incremental or full when it changes a reviewed commit, instead of always full" }
 
 ["SKILL-STEWARD#merge-only"."dep:REVIEW#rounds"]
-stamp = { hash = "b3:656ea82fd605dbca", by = "agent:reviewer-fix", note = "REVIEW#rounds now adds the rebuttal evidence standard and same-head rebuttal rounds, and moved disputes to REVIEW#escalate; the merge-only push and one-line comment steps here are unaffected" }
+stamp = { hash = "b3:361ea40864c8c12b", by = "agent:reviewer-fix", note = "REVIEW#rounds now holds the one kinds table with merge-only as merge-only; the push of a merge alone, its one-line comment and the incremental or full round for a later change still match it" }
 
 ["SKILL-STEWARD#merging"."body"]
 stamp = { hash = "b3:a42e150b4b73c0e2", by = "agent:skeleton-verifier", note = "Checked against CLAUDE#pr-loop step 2: enable_pr_auto_merge with SQUASH or gh pr merge --auto --squash, say so if it fails, lane PRs keep it off until they hold the slot, merges once every required check is green" }

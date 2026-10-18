@@ -17,8 +17,8 @@ PR. Your verdict is the merge gate: a `pass` for a PR's current head commit turn
 passes. Nobody else reviews the code before it lands.
 
 This file says **how** to judge a PR. It does not restate the rules: you pull the rules
-that apply to each changed file from the repo. How to run as a reviewer (shards, kinds of
-round, state) is in [docs/agents/reviewer.md](docs/agents/review/reviewer.md).
+that apply to each changed file from the repo. How to run as a reviewer (shards, workers,
+state) is in [docs/agents/review/reviewer.md](docs/agents/review/reviewer.md).
 
 <a id="ground-rules"></a>
 ## Ground rules
@@ -97,6 +97,7 @@ depends_on = ["DOCS#tool"]
 <a id="checks"></a>
 ## Step 2: Review
 <!-- @section
+covers = [".github/pull_request_template.md"]
 depends_on = ["RULES#R-DOC-004", "RULES#R-GOV-001", "RULES#R-ARCH-001", "RULES#R-GIT-004", "RULES#R-GIT-005"]
 -->
 
@@ -271,28 +272,49 @@ Don't inflate. A PR with only non-blocking findings gets `pass`.
 <a id="output"></a>
 ## Step 4: Post the review
 <!-- @section
-covers = [".github/workflows/review-gate.yml"]
+covers = [".github/workflows/review-gate.yml", ".github/tests/review-gate-decide.test.mjs"]
 -->
 
-Post **one summary comment per round**. Inline comments are welcome, as long as the
-summary lists every finding. The summary holds, in order:
+Post **one summary comment per round**, built from the
+[review round template](docs/agents/review/review-template.md) as it is at the trusted
+base. Inline comments are welcome, as long as the summary lists every finding.
 
-1. one paragraph on what you reviewed;
-2. the status of every earlier finding (see [Rounds](#rounds));
-3. the analysis, by topic;
-4. docs re-verifications, one bullet per section: holds or doesn't, and why;
-5. the findings;
-6. governance and security; the PR description; CI at the head;
-7. exactly one marker line, then the human line, then the attribution footer.
+**The full form** is for every round but two. It holds, in order, and leaves no part out
+(an empty part says "None"):
+
+1. the header line, `## Review · round <n> · <sha7> · <kind>`, with the kind's name from
+   [Rounds](#rounds);
+2. one paragraph on what you reviewed, and why the round is that kind;
+3. the status of every earlier finding (see [Rounds](#rounds));
+4. the analysis, by topic;
+5. docs re-verifications, one bullet per section: holds or doesn't, and why;
+6. the findings;
+7. governance, maintainer decisions with their `source:`, security, the PR description, and
+   CI at the head;
+8. exactly one marker line, then the human line, then the attribution footer.
+
+**The short form** is for a `recuse` round and a `bot-rebase` round. It holds the header
+line, one line that says why (the session that authored the PR, or the earlier round whose
+findings still stand, with their IDs), then the marker line, the human line and the footer.
 
 Finding IDs are permanent within a PR: `B1, B2, …` for blocking, `N1, N2, …` for
-non-blocking. Never reuse one. Each finding:
+non-blocking. Never reuse one. A blocking finding:
 
 ```markdown
 **B1 · blocking · R-TEST-001 · `src/parser.rs:142`**
 Problem: an empty input returns `Ok` with no tokens, and the caller indexes the first one.
 Path: `load("")` → `parse` → `tokens[0]` in `Loader::header`.
 Fix: return `Err(Empty)` from `parse`, and add a test for the empty input.
+```
+
+A non-blocking finding has no `Path:`. It cites the rule ID or doc anchor it rests on, or
+`suggestion` when none applies. A question takes `Question:` in place of `Problem:` and
+`Fix:`. A pre-existing problem says so, and names the issue you file for it.
+
+```markdown
+**N1 · non-blocking · suggestion · `src/parser.rs:88`**
+Problem: `parse_header` copies the whole buffer to read its first four bytes.
+Fix: read them from a borrowed slice.
 ```
 
 The marker line, on its own line, exactly in this form:
@@ -343,12 +365,19 @@ a wave's squash commits carry the trailer from the PR body. A push removes
 -->
 
 The round number is one more than the highest `round=` in any earlier marker on the PR,
-or 1 for the first. Review a head only once every required check other than `review-gate` is
-green on it, apart from the [expected reds](#severity), unless the author or the maintainer
-asks for a round anyway.
+or 1 for the first. Check it again just before posting: if a round was posted meanwhile,
+take the next number, in the header, the paragraph, the marker and the human line, and give
+any new finding an ID that round didn't use. Review a head only once every required check
+other than `review-gate` is green on it, apart from the [expected reds](#severity), unless
+someone who may ask for a round asks for one.
 
-Each round is one of the kinds below. `<mb>` is `git merge-base <base> <head>`, and
-`<last-mb>` and `<last-head>` are the ones your last round recorded. Find the kind with:
+**Who may ask.** The PR's author, the coordinator and the maintainer may ask for a round on
+a head with a red check, for a full round, and for a round on a draft. You choose a full
+round yourself when an incremental one widens (below).
+
+Each round is one of the kinds below, and the state line records it by its name. `<mb>` is
+`git merge-base <base> <head>`, and `<last-mb>` and `<last-head>` are the ones your last
+round recorded. Find the kind with:
 - `git range-diff <last-mb>..<last-head> <mb>..<head>`: the PR's own commits. A line marked
   `<`, `>` or `!` is a removed, new or changed commit; `=` is unchanged.
 - `git log --merges --first-parent <last-head>..<head>`: the merges added since. Range-diff
@@ -357,22 +386,36 @@ Each round is one of the kinds below. `<mb>` is `git merge-base <base> <head>`, 
   clean automatic merge, lockfiles and `docs/verified.toml` included. Read every hunk. A hunk
   that the conflict doesn't explain is new code, so the round is at least incremental.
 
-| Kind | When | What you review |
-|---|---|---|
-| **Full** | a new PR; the range-diff changes an earlier reviewed commit; asked for by the author, the maintainer or a reviewer; or the last 3 rounds were incremental | the whole diff against the base |
-| **Incremental** | every earlier reviewed commit is unchanged, and new commits sit on top, or a merge adds hunks its conflict doesn't explain | the new commits and those hunks, against the code they touch, and every open finding |
-| **Merge-only** | every earlier reviewed commit is unchanged, no new commit but merges of the base, and every remerge-diff hunk is conflict resolution | each merge's remerge-diff and each restamp note; earlier findings carry forward |
+| Kind | When | What you review | Form |
+|---|---|---|---|
+| `full` | a new PR; the range-diff changes an earlier reviewed commit; asked for (above); or the last 3 rounds were incremental | the whole diff against the base | full |
+| `incremental` | every earlier reviewed commit is unchanged, and new commits sit on top, or a merge adds hunks its conflict doesn't explain | the new commits and those hunks, against the code they touch, and every open finding | full |
+| `merge-only` | every earlier reviewed commit is unchanged, no new commit but merges of the base, and every remerge-diff hunk is conflict resolution | each merge's remerge-diff and each restamp note; earlier findings carry forward | full |
+| `lane-value` | the only change since the last round sets the lane value that `LANE-HOLD` gave | the value and every file that names it | full |
+| `draft` | a draft PR, when asked for (above), such as one waiting on a lane or a base PR | a full review against its own base; staleness from waiting isn't a finding | full |
+| `wave-landing` | head `wave/*`, base `main`, and `ops/waves.md` names the wave | the sync merges, their conflict resolutions and the carried trailers and sections ([Step 1](#gather)) | full |
+| `bot-rebase` | a Dependabot PR whose last verdict was `fail`, and the range-diff marks every commit `=` | nothing new: restate the open findings | short |
 
 Then:
 
-1. Give every earlier finding a status: **resolved** (cite where), **still open** (adding
-   `rebuttals rejected in rounds 2, 3` once you have rejected a rebuttal of it), or
-   **withdrawn** (cite the evidence that convinced you, or the maintainer's decision with its
-   `source:`).
+1. Give every earlier finding one status:
+   - **resolved:** cite the commit and `file:line`;
+   - **still open:** say why, adding `(rebutted in rounds 2, 3)` with each round that
+     rejected a rebuttal of it. The round that adds the second one escalates
+     ([Escalation](#escalate));
+   - **deferred:** a non-blocking finding the builder deferred, with their reason or issue.
+     A blocking finding is never deferred;
+   - **withdrawn:** cite the evidence that convinced you, or the maintainer's decision with
+     its `source:`.
 2. New findings get new IDs.
-3. Say in the round's first paragraph which kind it was. An incremental round that finds
-   the new commits reach code the earlier rounds reviewed under other assumptions widens
-   itself to a full round.
+3. Say in the header and the first paragraph which kind it was. An incremental round that
+   finds the new commits reach code the earlier rounds reviewed under other assumptions
+   widens itself to a full round.
+
+**Answers.** The builder answers a round in one `## Answers to round <n> · <sha7>` comment
+per push, or per reply without a push, with one line for each finding it answers
+([steward › Review findings](.claude/skills/steward/SKILL.md#findings)). Read it, and every
+other reply since your last round. A blocking finding with no answer stays open.
 
 **Rebuttals.** The builder may answer that a finding is wrong. Weigh the rebuttal honestly,
 and withdraw the finding only on evidence you checked yourself at this head:
