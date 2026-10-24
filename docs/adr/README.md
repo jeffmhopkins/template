@@ -34,4 +34,5 @@ the numbers alone don't say which ADRs came from the template
 | [ADR-0006](0006-separate-agent-identities.md) | Separate GitHub identities for agents and the gate | maintainer | proposed |
 | [ADR-0007](0007-swarm-operating-model.md) | Swarm operating model at scale | agent | accepted |
 | [ADR-0008](0008-docs-graph-v2.md) | Documentation as a checked graph, v2 | agent | accepted |
+| [ADR-0009](0009-review-gate-v2.md) | Review gate and governance, v2 | maintainer | proposed |
 <!-- @generated end adr-index -->
